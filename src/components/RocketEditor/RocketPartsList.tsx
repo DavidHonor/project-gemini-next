@@ -5,6 +5,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import Image from "next/image";
 
 const RocketPartsList = () => {
     return (
@@ -16,7 +17,19 @@ const RocketPartsList = () => {
                 >
                     <AccordionTrigger>{key}</AccordionTrigger>
                     <AccordionContent>
-                        Yes. It adheres to the WAI-ARIA design pattern.
+                        {RocketPartPrototypes.filter(
+                            (partCat) => partCat.part_type === key
+                        ).map((part) => (
+                            <div className="flex flex-row">
+                                <Image
+                                    alt={key}
+                                    width={100}
+                                    height={100}
+                                    src={`/rocket_parts/${part.image}`}
+                                />
+                                {part.name}
+                            </div>
+                        ))}
                     </AccordionContent>
                 </AccordionItem>
             ))}
