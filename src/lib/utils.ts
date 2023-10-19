@@ -64,3 +64,7 @@ export function getCursorPosition<T extends Element>(event: MouseEvent<T>) {
 
     console.log(event.clientX, event.clientY);
 }
+
+export function capitalizeFirstLetter(word: string) {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
