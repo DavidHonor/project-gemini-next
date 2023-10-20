@@ -4,8 +4,8 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import { z } from "zod";
 import { absoluteUrl } from "@/lib/utils";
-
 import { RocketPartSchema } from "../../prisma/generated/zod";
+import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
 
 export const appRouter = router({
     authCallback: publicProcedure.query(async () => {
@@ -95,7 +95,7 @@ export const appRouter = router({
             //     },
             // });
 
-            const part = db.rocketPart.update({
+            const part = await db.rocketPart.update({
                 where: {
                     id: rocketPart.id,
                 },
@@ -111,9 +111,69 @@ export const appRouter = router({
                     message: "Rocket part not found",
                 });
 
-            console.log("new pos:", rocketPart.x, rocketPart.y);
-
             return part;
+        }),
+    createRocketPart: privateProcedure
+        .input(z.object({ partName: z.string(), rocketId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { partName, rocketId } = input;
+
+            if (!partName || !rocketId)
+                return new TRPCError({ code: "NOT_FOUND" });
+
+            const prototypePart = RocketPartPrototypes.find(
+                (x) => x.name === partName
+            );
+
+            if (!prototypePart) return new TRPCError({ code: "NOT_FOUND" });
+
+            const rocket = await db.rocket.findFirst({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+                include: {
+                    stages: true,
+                },
+            });
+
+            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+
+            // =====================================
+            // = Create rocket stages if neccecary =
+            // =====================================
+            if (!rocket.stages.length) {
+                await db.rocketStage.create({
+                    data: {
+                        rocketId,
+                    },
+                });
+            }
+
+            const latestStage = rocket.stages[rocket.stages.length - 1];
+
+            const newPart = await db.rocketPart.create({
+                data: {
+                    stageId: latestStage.id,
+                    part_type: prototypePart.part_type,
+                    name: partName,
+                    x: 0,
+                    y: 0,
+                    height: prototypePart.height,
+                    width: prototypePart.width,
+                    image: prototypePart.image ?? "",
+                    scale: prototypePart.scale,
+                    scaled_height: 0,
+                    scaled_width: 0,
+                    targetStage: rocket.stages.length - 1,
+                    weight: prototypePart.weight,
+                    length: prototypePart.length ?? 0, //for fuel tanks
+                    diameter: prototypePart.diameter ?? 0, //for fuel tanks
+                },
+            });
+
+            return newPart;
         }),
 });
 

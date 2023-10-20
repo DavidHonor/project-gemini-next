@@ -12,7 +12,7 @@ interface RocketPartCompProps {
 }
 
 const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
-    const { saveRocketPart } = useContext(RocketContext);
+    const { saveRocketPart, rocketPartIdDrag } = useContext(RocketContext);
 
     const [drag, setDrag] = useState({
         enabled: false,
@@ -30,6 +30,17 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     });
 
     if (!rocketPart) return "";
+
+    useEffect(() => {
+        if (rocketPartIdDrag !== "" && rocketPartIdDrag === rocketPart.id) {
+            console.log("DRAG START");
+            setDrag({
+                enabled: true,
+                offset_x: 0,
+                offset_y: 0,
+            });
+        }
+    }, [rocketPartIdDrag]);
 
     const initialOffset = (event: React.MouseEvent<HTMLImageElement>) => {
         if (event.button === 0) {
@@ -66,6 +77,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             const handleMouseUp = () => {
                 //handle save rocket part
                 console.log("save this:", finalPosition.current);
+
                 saveRocketPart({
                     ...rocketPart,
                     x: finalPosition.current.x,
@@ -90,8 +102,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         <Image
             key={`part_img_${rocketPart.id}`}
             alt={rocketPart.name}
-            width={rocketPart.scaled_width}
-            height={rocketPart.scaled_height}
+            width={rocketPart.width * rocketPart.scale}
+            height={rocketPart.height * rocketPart.scale}
             src={`/rocket_parts/${rocketPart.image}`}
             style={{
                 position: "absolute",

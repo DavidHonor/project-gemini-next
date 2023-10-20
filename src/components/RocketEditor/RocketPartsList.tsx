@@ -5,7 +5,8 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import Image from "next/image";
+
+import PrototypePartCard from "./PrototypePartCard";
 
 const RocketPartsList = () => {
     return (
@@ -20,15 +21,10 @@ const RocketPartsList = () => {
                         {RocketPartPrototypes.filter(
                             (partCat) => partCat.part_type === key
                         ).map((part) => (
-                            <div className="flex flex-row">
-                                <Image
-                                    alt={key}
-                                    width={100}
-                                    height={100}
-                                    src={`/rocket_parts/${part.image}`}
-                                />
-                                {part.name}
-                            </div>
+                            <PrototypePartCard
+                                key={`part:_${key.toString()}_${part.name}`}
+                                part={{ name: part.name, image: part.image }}
+                            />
                         ))}
                     </AccordionContent>
                 </AccordionItem>

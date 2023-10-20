@@ -91,16 +91,15 @@ model RocketPart{
     part_type       String
     name            String
     image           String
-    diameter        Float
-    length          Float
+    diameter        Float?
+    length          Float?
     weight          Float
-    scale           Float
+    scale           Float  @default(1.0)
     width           Float
     height          Float
     scaled_width    Float
     scaled_height   Float
-    targetStage     Int
-    x               Float
-    y               Float
-    uniqueId        String
+    targetStage     Int @default(0)
+    x               Float @default(0)
+    y               Float @default(0)
 }

@@ -22,7 +22,7 @@ export const RocketScalarFieldEnumSchema = z.enum(['id','createdAt','activeStage
 
 export const RocketStageScalarFieldEnumSchema = z.enum(['id','rocketId']);
 
-export const RocketPartScalarFieldEnumSchema = z.enum(['id','stageId','part_type','name','image','diameter','length','weight','scale','width','height','scaled_width','scaled_height','targetStage','x','y','uniqueId']);
+export const RocketPartScalarFieldEnumSchema = z.enum(['id','stageId','part_type','name','image','diameter','length','weight','scale','width','height','scaled_width','scaled_height','targetStage','x','y']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
@@ -120,8 +120,8 @@ export const RocketPartSchema = z.object({
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().nullable(),
+  length: z.number().nullable(),
   weight: z.number(),
   scale: z.number(),
   width: z.number(),
@@ -131,7 +131,6 @@ export const RocketPartSchema = z.object({
   targetStage: z.number().int(),
   x: z.number(),
   y: z.number(),
-  uniqueId: z.string(),
 })
 
 export type RocketPart = z.infer<typeof RocketPartSchema>
@@ -332,7 +331,6 @@ export const RocketPartSelectSchema: z.ZodType<Prisma.RocketPartSelect> = z.obje
   targetStage: z.boolean().optional(),
   x: z.boolean().optional(),
   y: z.boolean().optional(),
-  uniqueId: z.boolean().optional(),
   rocketStage: z.union([z.boolean(),z.lazy(() => RocketStageArgsSchema)]).optional(),
 }).strict()
 
@@ -741,8 +739,8 @@ export const RocketPartWhereInputSchema: z.ZodType<Prisma.RocketPartWhereInput> 
   part_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  diameter: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  length: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
+  diameter: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
+  length: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
   weight: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   scale: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   width: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -752,7 +750,6 @@ export const RocketPartWhereInputSchema: z.ZodType<Prisma.RocketPartWhereInput> 
   targetStage: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
   x: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   y: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  uniqueId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   rocketStage: z.union([ z.lazy(() => RocketStageNullableRelationFilterSchema),z.lazy(() => RocketStageWhereInputSchema) ]).optional().nullable(),
 }).strict();
 
@@ -762,8 +759,8 @@ export const RocketPartOrderByWithRelationInputSchema: z.ZodType<Prisma.RocketPa
   part_type: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
   image: z.lazy(() => SortOrderSchema).optional(),
-  diameter: z.lazy(() => SortOrderSchema).optional(),
-  length: z.lazy(() => SortOrderSchema).optional(),
+  diameter: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  length: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   weight: z.lazy(() => SortOrderSchema).optional(),
   scale: z.lazy(() => SortOrderSchema).optional(),
   width: z.lazy(() => SortOrderSchema).optional(),
@@ -773,7 +770,6 @@ export const RocketPartOrderByWithRelationInputSchema: z.ZodType<Prisma.RocketPa
   targetStage: z.lazy(() => SortOrderSchema).optional(),
   x: z.lazy(() => SortOrderSchema).optional(),
   y: z.lazy(() => SortOrderSchema).optional(),
-  uniqueId: z.lazy(() => SortOrderSchema).optional(),
   rocketStage: z.lazy(() => RocketStageOrderByWithRelationInputSchema).optional()
 }).strict();
 
@@ -789,8 +785,8 @@ export const RocketPartWhereUniqueInputSchema: z.ZodType<Prisma.RocketPartWhereU
   part_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  diameter: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  length: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
+  diameter: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
+  length: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
   weight: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   scale: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   width: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -800,7 +796,6 @@ export const RocketPartWhereUniqueInputSchema: z.ZodType<Prisma.RocketPartWhereU
   targetStage: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
   x: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   y: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  uniqueId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   rocketStage: z.union([ z.lazy(() => RocketStageNullableRelationFilterSchema),z.lazy(() => RocketStageWhereInputSchema) ]).optional().nullable(),
 }).strict());
 
@@ -810,8 +805,8 @@ export const RocketPartOrderByWithAggregationInputSchema: z.ZodType<Prisma.Rocke
   part_type: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
   image: z.lazy(() => SortOrderSchema).optional(),
-  diameter: z.lazy(() => SortOrderSchema).optional(),
-  length: z.lazy(() => SortOrderSchema).optional(),
+  diameter: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  length: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   weight: z.lazy(() => SortOrderSchema).optional(),
   scale: z.lazy(() => SortOrderSchema).optional(),
   width: z.lazy(() => SortOrderSchema).optional(),
@@ -821,7 +816,6 @@ export const RocketPartOrderByWithAggregationInputSchema: z.ZodType<Prisma.Rocke
   targetStage: z.lazy(() => SortOrderSchema).optional(),
   x: z.lazy(() => SortOrderSchema).optional(),
   y: z.lazy(() => SortOrderSchema).optional(),
-  uniqueId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => RocketPartCountOrderByAggregateInputSchema).optional(),
   _avg: z.lazy(() => RocketPartAvgOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => RocketPartMaxOrderByAggregateInputSchema).optional(),
@@ -838,8 +832,8 @@ export const RocketPartScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Ro
   part_type: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   image: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  diameter: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
-  length: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
+  diameter: z.union([ z.lazy(() => FloatNullableWithAggregatesFilterSchema),z.number() ]).optional().nullable(),
+  length: z.union([ z.lazy(() => FloatNullableWithAggregatesFilterSchema),z.number() ]).optional().nullable(),
   weight: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
   scale: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
   width: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
@@ -849,7 +843,6 @@ export const RocketPartScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Ro
   targetStage: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
   x: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
   y: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
-  uniqueId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object({
@@ -1184,18 +1177,17 @@ export const RocketPartCreateInputSchema: z.ZodType<Prisma.RocketPartCreateInput
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string(),
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
   rocketStage: z.lazy(() => RocketStageCreateNestedOneWithoutPartsInputSchema).optional()
 }).strict();
 
@@ -1205,18 +1197,17 @@ export const RocketPartUncheckedCreateInputSchema: z.ZodType<Prisma.RocketPartUn
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string()
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional()
 }).strict();
 
 export const RocketPartUpdateInputSchema: z.ZodType<Prisma.RocketPartUpdateInput> = z.object({
@@ -1224,8 +1215,8 @@ export const RocketPartUpdateInputSchema: z.ZodType<Prisma.RocketPartUpdateInput
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1235,7 +1226,6 @@ export const RocketPartUpdateInputSchema: z.ZodType<Prisma.RocketPartUpdateInput
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   rocketStage: z.lazy(() => RocketStageUpdateOneWithoutPartsNestedInputSchema).optional()
 }).strict();
 
@@ -1245,8 +1235,8 @@ export const RocketPartUncheckedUpdateInputSchema: z.ZodType<Prisma.RocketPartUn
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1256,7 +1246,6 @@ export const RocketPartUncheckedUpdateInputSchema: z.ZodType<Prisma.RocketPartUn
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const RocketPartCreateManyInputSchema: z.ZodType<Prisma.RocketPartCreateManyInput> = z.object({
@@ -1265,18 +1254,17 @@ export const RocketPartCreateManyInputSchema: z.ZodType<Prisma.RocketPartCreateM
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string()
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional()
 }).strict();
 
 export const RocketPartUpdateManyMutationInputSchema: z.ZodType<Prisma.RocketPartUpdateManyMutationInput> = z.object({
@@ -1284,8 +1272,8 @@ export const RocketPartUpdateManyMutationInputSchema: z.ZodType<Prisma.RocketPar
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1295,7 +1283,6 @@ export const RocketPartUpdateManyMutationInputSchema: z.ZodType<Prisma.RocketPar
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const RocketPartUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RocketPartUncheckedUpdateManyInput> = z.object({
@@ -1304,8 +1291,8 @@ export const RocketPartUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RocketPa
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1315,7 +1302,6 @@ export const RocketPartUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RocketPa
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
@@ -1758,8 +1744,7 @@ export const RocketPartCountOrderByAggregateInputSchema: z.ZodType<Prisma.Rocket
   scaled_height: z.lazy(() => SortOrderSchema).optional(),
   targetStage: z.lazy(() => SortOrderSchema).optional(),
   x: z.lazy(() => SortOrderSchema).optional(),
-  y: z.lazy(() => SortOrderSchema).optional(),
-  uniqueId: z.lazy(() => SortOrderSchema).optional()
+  y: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const RocketPartAvgOrderByAggregateInputSchema: z.ZodType<Prisma.RocketPartAvgOrderByAggregateInput> = z.object({
@@ -1792,8 +1777,7 @@ export const RocketPartMaxOrderByAggregateInputSchema: z.ZodType<Prisma.RocketPa
   scaled_height: z.lazy(() => SortOrderSchema).optional(),
   targetStage: z.lazy(() => SortOrderSchema).optional(),
   x: z.lazy(() => SortOrderSchema).optional(),
-  y: z.lazy(() => SortOrderSchema).optional(),
-  uniqueId: z.lazy(() => SortOrderSchema).optional()
+  y: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const RocketPartMinOrderByAggregateInputSchema: z.ZodType<Prisma.RocketPartMinOrderByAggregateInput> = z.object({
@@ -1812,8 +1796,7 @@ export const RocketPartMinOrderByAggregateInputSchema: z.ZodType<Prisma.RocketPa
   scaled_height: z.lazy(() => SortOrderSchema).optional(),
   targetStage: z.lazy(() => SortOrderSchema).optional(),
   x: z.lazy(() => SortOrderSchema).optional(),
-  y: z.lazy(() => SortOrderSchema).optional(),
-  uniqueId: z.lazy(() => SortOrderSchema).optional()
+  y: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const RocketPartSumOrderByAggregateInputSchema: z.ZodType<Prisma.RocketPartSumOrderByAggregateInput> = z.object({
@@ -3007,18 +2990,17 @@ export const RocketPartCreateWithoutRocketStageInputSchema: z.ZodType<Prisma.Roc
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string()
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional()
 }).strict();
 
 export const RocketPartUncheckedCreateWithoutRocketStageInputSchema: z.ZodType<Prisma.RocketPartUncheckedCreateWithoutRocketStageInput> = z.object({
@@ -3026,18 +3008,17 @@ export const RocketPartUncheckedCreateWithoutRocketStageInputSchema: z.ZodType<P
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string()
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional()
 }).strict();
 
 export const RocketPartCreateOrConnectWithoutRocketStageInputSchema: z.ZodType<Prisma.RocketPartCreateOrConnectWithoutRocketStageInput> = z.object({
@@ -3104,8 +3085,8 @@ export const RocketPartScalarWhereInputSchema: z.ZodType<Prisma.RocketPartScalar
   part_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  diameter: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  length: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
+  diameter: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
+  length: z.union([ z.lazy(() => FloatNullableFilterSchema),z.number() ]).optional().nullable(),
   weight: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   scale: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   width: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -3115,7 +3096,6 @@ export const RocketPartScalarWhereInputSchema: z.ZodType<Prisma.RocketPartScalar
   targetStage: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
   x: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   y: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  uniqueId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const RocketStageCreateWithoutPartsInputSchema: z.ZodType<Prisma.RocketStageCreateWithoutPartsInput> = z.object({
@@ -3325,18 +3305,17 @@ export const RocketPartCreateManyRocketStageInputSchema: z.ZodType<Prisma.Rocket
   part_type: z.string(),
   name: z.string(),
   image: z.string(),
-  diameter: z.number(),
-  length: z.number(),
+  diameter: z.number().optional().nullable(),
+  length: z.number().optional().nullable(),
   weight: z.number(),
-  scale: z.number(),
+  scale: z.number().optional(),
   width: z.number(),
   height: z.number(),
   scaled_width: z.number(),
   scaled_height: z.number(),
-  targetStage: z.number().int(),
-  x: z.number(),
-  y: z.number(),
-  uniqueId: z.string()
+  targetStage: z.number().int().optional(),
+  x: z.number().optional(),
+  y: z.number().optional()
 }).strict();
 
 export const RocketPartUpdateWithoutRocketStageInputSchema: z.ZodType<Prisma.RocketPartUpdateWithoutRocketStageInput> = z.object({
@@ -3344,8 +3323,8 @@ export const RocketPartUpdateWithoutRocketStageInputSchema: z.ZodType<Prisma.Roc
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3355,7 +3334,6 @@ export const RocketPartUpdateWithoutRocketStageInputSchema: z.ZodType<Prisma.Roc
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const RocketPartUncheckedUpdateWithoutRocketStageInputSchema: z.ZodType<Prisma.RocketPartUncheckedUpdateWithoutRocketStageInput> = z.object({
@@ -3363,8 +3341,8 @@ export const RocketPartUncheckedUpdateWithoutRocketStageInputSchema: z.ZodType<P
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3374,7 +3352,6 @@ export const RocketPartUncheckedUpdateWithoutRocketStageInputSchema: z.ZodType<P
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const RocketPartUncheckedUpdateManyWithoutRocketStageInputSchema: z.ZodType<Prisma.RocketPartUncheckedUpdateManyWithoutRocketStageInput> = z.object({
@@ -3382,8 +3359,8 @@ export const RocketPartUncheckedUpdateManyWithoutRocketStageInputSchema: z.ZodTy
   part_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  diameter: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  length: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  diameter: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  length: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   weight: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   scale: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   width: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3393,7 +3370,6 @@ export const RocketPartUncheckedUpdateManyWithoutRocketStageInputSchema: z.ZodTy
   targetStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   x: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
   y: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  uniqueId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 /////////////////////////////////////////

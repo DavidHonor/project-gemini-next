@@ -14,14 +14,17 @@ interface Props {
 
 export const RocketContext = createContext({
     saveRocketPart: (rocketPart: RocketPart | null) => {},
+    createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
     rocket: null as Rocket | null,
     isLoading: false,
+    rocketPartIdDrag: "",
 });
 
 export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const [rocket, setRocket] = useState<Rocket | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [rocketPartIdDrag, setRocketPartIdDrag] = useState("");
 
     const utils = trpc.useContext();
 
@@ -29,8 +32,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const { mutate: getRocket_ } = useMutation({
         mutationFn: async ({ rocketId }: { rocketId: string }) => {
-            setIsLoading(true);
-
             const response = await utils.client.getUserRocket.query({
                 rocketId,
             });
@@ -43,7 +44,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 });
 
             setRocket(response);
-            setIsLoading(false);
         },
     });
 
@@ -59,6 +59,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                     description: "No rocketPart provided",
                     variant: "destructive",
                 });
+
+            if (rocketPartIdDrag !== "") {
+                setRocketPartIdDrag("");
+            }
 
             const response = await utils.client.saveRocketPart.mutate({
                 rocketPart: rocketPart,
@@ -86,15 +90,50 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
+    const { mutate: createRocketPart_ } = useMutation({
+        mutationFn: async ({ partName }: { partName: string }) => {
+            if (!rocket || !rocket.id)
+                return toast({
+                    title: "Something went wrong",
+                    description: "Please try again later",
+                    variant: "destructive",
+                });
+
+            const response = await utils.client.createRocketPart.mutate({
+                rocketId: rocket.id,
+                partName,
+            });
+
+            if (!response || !("id" in response))
+                return toast({
+                    title: "Something went wrong",
+                    description: "Please try again later",
+                    variant: "destructive",
+                });
+
+            setRocketPartIdDrag(response.id);
+            getRocket_({ rocketId });
+        },
+    });
+
     const saveRocketPart = (rocketPart: RocketPart | null) =>
         saveRocketPart_({ rocketPart });
+    const createRocketPart = (partName: string) =>
+        createRocketPart_({ partName });
     const getRocket = (rocketId: string) => {
         getRocket_({ rocketId });
     };
 
     return (
         <RocketContext.Provider
-            value={{ rocket, isLoading, saveRocketPart, getRocket }}
+            value={{
+                rocket,
+                isLoading,
+                rocketPartIdDrag,
+                saveRocketPart,
+                createRocketPart,
+                getRocket,
+            }}
         >
             {children}
         </RocketContext.Provider>

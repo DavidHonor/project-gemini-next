@@ -17,6 +17,8 @@ export const RocketPartPrototypes = [
         isp_vc: 452,
         weight: 3177,
         scale: 1,
+        width: 0,
+        height: 0,
     },
     {
         part_type: PartTypes.ENGINE,
@@ -29,6 +31,8 @@ export const RocketPartPrototypes = [
         isp_vc: 311,
         weight: 470,
         scale: 0.7,
+        width: 187,
+        height: 323,
     },
     {
         part_type: PartTypes.ENGINE,
@@ -41,6 +45,8 @@ export const RocketPartPrototypes = [
         isp_vc: 363,
         weight: 1600,
         scale: 1,
+        width: 0,
+        height: 0,
     },
 
     {
@@ -51,6 +57,8 @@ export const RocketPartPrototypes = [
         length: 10,
         weight: 5000,
         scale: 1,
+        width: 0,
+        height: 0,
     },
     {
         part_type: PartTypes.FUELTANK,
@@ -60,6 +68,8 @@ export const RocketPartPrototypes = [
         length: 10,
         weight: 7500,
         scale: 0.7,
+        width: 300,
+        height: 500,
     },
     {
         part_type: PartTypes.FUELTANK,
@@ -69,6 +79,8 @@ export const RocketPartPrototypes = [
         length: 10,
         weight: 15000,
         scale: 1,
+        width: 0,
+        height: 0,
     },
     {
         part_type: PartTypes.FUELTANK,
@@ -78,6 +90,8 @@ export const RocketPartPrototypes = [
         length: 45,
         weight: 26500,
         scale: 1,
+        width: 0,
+        height: 0,
     },
     {
         part_type: PartTypes.FUELTANK,
@@ -87,6 +101,8 @@ export const RocketPartPrototypes = [
         length: 41,
         weight: 25000,
         scale: 1,
+        width: 0,
+        height: 0,
     },
 
     {
@@ -95,12 +111,16 @@ export const RocketPartPrototypes = [
         image: "gemini.png",
         weight: 3700,
         scale: 1,
+        width: 300,
+        height: 300,
     },
     {
         part_type: PartTypes.COMMANDPOD,
         name: "apollo spacecraft",
         weight: 5800,
         scale: 1,
+        width: 0,
+        height: 0,
     },
 
     {
@@ -109,5 +129,7 @@ export const RocketPartPrototypes = [
         image: "landing_leg.png",
         weight: 1500,
         scale: 1,
+        width: 401,
+        height: 239,
     },
 ];
