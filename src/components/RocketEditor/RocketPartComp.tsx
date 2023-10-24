@@ -5,6 +5,8 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 
 import type { RocketPart } from "@prisma/client";
 import { RocketContext } from "./RocketContext";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CogIcon } from "lucide-react";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
@@ -19,6 +21,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         offset_x: 0,
         offset_y: 0,
     });
+
+    const [selected, setSelected] = useState(false);
 
     const [positioning, setPositioning] = useState({
         left: rocketPart?.x,
@@ -84,6 +88,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     y: finalPosition.current.y,
                 });
 
+                setSelected((prevstate) => !prevstate);
+
                 window.removeEventListener("mousemove", handleMouseMove);
                 window.removeEventListener("mouseup", handleMouseUp);
                 setDrag({
@@ -99,20 +105,34 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     }, [drag]);
 
     return (
-        <Image
-            key={`part_img_${rocketPart.id}`}
-            alt={rocketPart.name}
-            width={rocketPart.width * rocketPart.scale}
-            height={rocketPart.height * rocketPart.scale}
-            src={`/rocket_parts/${rocketPart.image}`}
+        <div
             style={{
                 position: "absolute",
                 ...positioning,
-                cursor: drag ? "grabbing" : "grab", // Change cursor style on drag
+                cursor: drag ? "grabbing" : "grab",
             }}
-            draggable="false"
-            onMouseDown={initialOffset}
-        />
+        >
+            <Image
+                key={`part_img_${rocketPart.id}`}
+                alt={rocketPart.name}
+                width={rocketPart.width * rocketPart.scale}
+                height={rocketPart.height * rocketPart.scale}
+                src={`/rocket_parts/${rocketPart.image}`}
+                draggable="false"
+                onMouseDown={initialOffset}
+                className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out"
+            />
+            {selected ? (
+                <Popover>
+                    <PopoverTrigger>
+                        <CogIcon className="w-5 h-5" />
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        Place content for the popover here.
+                    </PopoverContent>
+                </Popover>
+            ) : null}
+        </div>
     );
 };
 

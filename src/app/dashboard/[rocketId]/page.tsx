@@ -1,4 +1,4 @@
-import DashboardWrapper from "@/components/DashboardWrapper";
+import DashboardWrapper from "@/components/DashboardWrapper/DashboardWrapper";
 import { RocketContextProvider } from "@/components/RocketEditor/RocketContext";
 
 interface RocketEditProps {

@@ -15,7 +15,7 @@ const PrototypePartCard = ({ part }: PrototypePartCardProps) => {
 
     return (
         <Card
-            className="hover:bg-zinc-300 hover:cursor-pointer"
+            className="hover:bg-zinc-300 hover:cursor-pointer mt-2"
             onClick={() => createRocketPart(part.name)}
         >
             <CardContent className="pt-2 ">

@@ -28,7 +28,6 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                     );
                 })
             )}
-            <Circle className="h-5 w-5 absolute top-[200px] left-[200px] red" />
         </div>
     );
 };
