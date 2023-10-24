@@ -17,7 +17,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
         return <Loader2 className="h-8 w-8 animate-spin text-zinc-800" />;
 
     return (
-        <div className="flex w-full justify-center max-h-[calc(100vh-3.5rem)]">
+        <div className="flex w-full justify-center max-h-[calc(100vh-3.5rem)] overflow-x-hidden">
             {/* mobile layout */}
             <div className="md:hidden flex w-full h-full">
                 <RocketCanvas rocket={rocket!} />
@@ -31,7 +31,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                 <div className="w-[50%] h-[calc(100vh-3.5rem)]">
                     <RocketCanvas rocket={rocket!} />
                 </div>
-                <div className="w-1/4 h-[calc(100vh-3.5rem)] break-words"></div>
+                <div className="w-1/4 h-[calc(100vh-3.5rem)] border-l border-zinc-200"></div>
             </div>
         </div>
     );

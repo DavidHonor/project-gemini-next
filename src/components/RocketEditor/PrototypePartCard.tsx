@@ -18,7 +18,7 @@ const PrototypePartCard = ({ part }: PrototypePartCardProps) => {
             className="hover:bg-zinc-300 hover:cursor-pointer mt-2"
             onClick={() => createRocketPart(part.name)}
         >
-            <CardContent className="pt-2 ">
+            <CardContent className="pt-2">
                 <div className="flex flex-row justify-between">
                     <div className="flex items-center justify-center">
                         <Image

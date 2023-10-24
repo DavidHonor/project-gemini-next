@@ -111,6 +111,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 ...positioning,
                 cursor: drag ? "grabbing" : "grab",
             }}
+            className="z-10"
         >
             <Image
                 key={`part_img_${rocketPart.id}`}
@@ -121,13 +122,14 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 draggable="false"
                 onMouseDown={initialOffset}
                 className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out"
+                style={{ maxWidth: "none" }}
             />
             {selected ? (
                 <Popover>
-                    <PopoverTrigger>
-                        <CogIcon className="w-5 h-5" />
+                    <PopoverTrigger className="z-50">
+                        <CogIcon className="w-5 h-5 p-1 rounded bg-white" />
                     </PopoverTrigger>
-                    <PopoverContent>
+                    <PopoverContent className="z-50">
                         Place content for the popover here.
                     </PopoverContent>
                 </Popover>
