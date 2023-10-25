@@ -19,6 +19,7 @@ export const RocketContext = createContext({
     getRocket: (rocketId: string) => {},
     setCursorMode: (cursorMode: CursorOptions) => {},
     saveRocketScale: (newScale: number) => {},
+    updatePartScale: (partScale: number, partId: string) => {},
     rocket: null as Rocket | null,
     isLoading: false,
     rocketPartIdDrag: "",
@@ -168,6 +169,38 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
+    const { mutate: updatePartScale_ } = useMutation({
+        mutationFn: async ({
+            partScale,
+            partId,
+        }: {
+            partScale: number;
+            partId: string;
+        }) => {
+            if (rocket === null || rocket.id === null)
+                return toast({
+                    title: "Something went wrong",
+                    description: "Please try again later",
+                    variant: "destructive",
+                });
+
+            const rocketCopy = structuredClone(rocket);
+            for (const stage of rocketCopy.stages) {
+                for (const part of stage.parts) {
+                    if (part.id === partId) {
+                        part.scale = partScale;
+                    }
+                }
+            }
+            setRocket(rocketCopy);
+
+            const response = await utils.client.updatePartScale.mutate({
+                partScale,
+                partId,
+            });
+        },
+    });
+
     const saveRocketPart = (rocketPart: RocketPart | null) =>
         saveRocketPart_({ rocketPart });
     const createRocketPart = (partName: string) =>
@@ -181,6 +214,9 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const saveRocketScale = (newScale: number) =>
         saveRocketScale_({ newScale });
 
+    const updatePartScale = (partScale: number, partId: string) =>
+        updatePartScale_({ partScale, partId });
+
     return (
         <RocketContext.Provider
             value={{
@@ -193,6 +229,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 getRocket,
                 setCursorMode,
                 saveRocketScale,
+                updatePartScale,
             }}
         >
             {children}

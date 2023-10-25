@@ -50,6 +50,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                 });
             })}
 
+            {/* Canvas related controls */}
             <div className="absolute flex left-1 top-1 z-50 gap-1">
                 <Card
                     className={cn(

@@ -129,8 +129,6 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
             part.x += widthChange / 2;
             part.y += heightChange / 2;
 
-            console.log(part.name, part.x);
-
             // If it's not the root part, adjust its position relative to the root
             if (part.id !== rootPart.id) {
                 const relativeX = partCoords.x - rootPartCoords.x;
@@ -141,8 +139,6 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
 
                 const newScaledX = rootPart.x + unitX * scaleSliderValue;
                 const newScaledY = rootPart.y + unitY * scaleSliderValue;
-
-                console.log(part.name, relativeX, newScaledX);
 
                 part.x = newScaledX;
                 part.y = newScaledY;

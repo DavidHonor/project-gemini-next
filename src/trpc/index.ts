@@ -192,7 +192,49 @@ export const appRouter = router({
             });
             if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
 
+            //TODO IMPLEMENT THE CHANGES TO ROCKET PART COORDINATES AND SIZES
+
             return { status: "success", message: "Scale updated successfully" };
+        }),
+    updatePartScale: privateProcedure
+        .input(z.object({ partScale: z.number(), partId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { partScale, partId } = input;
+
+            // Fetch the part with its associated rocket
+            const partWithRocket = await db.rocketPart.findUnique({
+                where: { id: partId },
+                include: { rocketStage: { include: { rocket: true } } },
+            });
+
+            if (!partWithRocket) return new TRPCError({ code: "NOT_FOUND" });
+            if (
+                partWithRocket === null ||
+                partWithRocket.rocketStage === null ||
+                partWithRocket.rocketStage.rocket === null
+            )
+                return new TRPCError({ code: "NOT_FOUND" });
+
+            // Check if the part's rocket's userId matches the current user's userId
+            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
+            if (partRocketUserId !== userId) {
+                return new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You don't have permission to update this part.",
+                });
+            }
+
+            // If the user has permission, update the part
+            const updatedPart = await db.rocketPart.update({
+                where: { id: partId },
+                data: { scale: partScale },
+            });
+
+            return {
+                status: "success",
+                message: "Part scale updated successfully",
+            };
         }),
 });
 

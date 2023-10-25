@@ -7,6 +7,7 @@ import type { RocketPart } from "@prisma/client";
 import { RocketContext } from "./RocketContext";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CogIcon, XCircle } from "lucide-react";
+import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
@@ -14,8 +15,14 @@ interface RocketPartCompProps {
 }
 
 const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
-    const { saveRocketPart, rocketPartIdDrag, isLoading, cursorMode, rocket } =
-        useContext(RocketContext);
+    const {
+        saveRocketPart,
+        rocketPartIdDrag,
+        isLoading,
+        cursorMode,
+        rocket,
+        updatePartScale,
+    } = useContext(RocketContext);
 
     const [drag, setDrag] = useState({
         enabled: false,
@@ -147,7 +154,15 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                             <CogIcon className="w-8 h-8 p-1" />
                         </PopoverTrigger>
                         <PopoverContent className="z-30">
-                            Place content for the popover here.
+                            <ControlledSlider
+                                value={rocketPart.scale}
+                                min={0.3}
+                                max={1.5}
+                                step={0.1}
+                                onValueCommit={(values) =>
+                                    updatePartScale(values[0], rocketPart.id)
+                                }
+                            />
                         </PopoverContent>
                     </Popover>
                 ) : null}
