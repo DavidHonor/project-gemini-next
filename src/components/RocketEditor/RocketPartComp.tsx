@@ -48,21 +48,25 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         }
     }, [rocketPartIdDrag]);
 
-    const initialOffset = (event: React.MouseEvent<HTMLImageElement>) => {
-        if (
-            event.button === 0 &&
-            !isLoading &&
-            cursorMode !== CursorOptions.SELECT
-        ) {
+    useEffect(() => {
+        setPositioning({ left: rocketPart.x, top: rocketPart.y });
+    }, [rocketPart.x, rocketPart.y]);
+
+    const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
+        if (event.button === 0 && !isLoading) {
             const rect = forwardedRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            setDrag({
-                enabled: true,
-                offset_x: rocketPart.x - x,
-                offset_y: rocketPart.y - y,
-            });
+            if (cursorMode === CursorOptions.GRAB)
+                setDrag({
+                    enabled: true,
+                    offset_x: rocketPart.x - x,
+                    offset_y: rocketPart.y - y,
+                });
+            else if (cursorMode === CursorOptions.SELECT) {
+                setSelected((isSelected) => !isSelected);
+            }
         }
     };
 
@@ -88,14 +92,11 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 if (deleteIconRef.current)
                     console.log(deleteIconRef.current.getBoundingClientRect());
 
-                //handle save rocket part
                 saveRocketPart({
                     ...rocketPart,
                     x: finalPosition.current.x,
                     y: finalPosition.current.y,
                 });
-
-                setSelected((prevstate) => !prevstate);
 
                 window.removeEventListener("mousemove", handleMouseMove);
                 window.removeEventListener("mouseup", handleMouseUp);
@@ -120,7 +121,6 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     ...positioning,
                     cursor: drag ? "grabbing" : "grab",
                 }}
-                className="z-10"
             >
                 <Image
                     key={`part_img_${rocketPart.id}`}
@@ -137,14 +137,14 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     }
                     src={`/rocket_parts/${rocketPart.image}`}
                     draggable="false"
-                    onMouseDown={initialOffset}
-                    className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out"
+                    onMouseDown={handleMouseDown}
+                    className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out z-10"
                     style={{ maxWidth: "none" }}
                 />
                 {selected ? (
                     <Popover>
-                        <PopoverTrigger className="z-30">
-                            <CogIcon className="w-5 h-5 p-1 rounded bg-white" />
+                        <PopoverTrigger className="z-30 bg-white rounded relative">
+                            <CogIcon className="w-8 h-8 p-1" />
                         </PopoverTrigger>
                         <PopoverContent className="z-30">
                             Place content for the popover here.

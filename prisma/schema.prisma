@@ -77,6 +77,8 @@ model Rocket {
 
 model RocketStage {
     id String @id @default(cuid())
+    createdAt DateTime @default(now())
+
     rocket Rocket? @relation(fields: [rocketId], references: [id])
     rocketId String?
 
@@ -85,6 +87,8 @@ model RocketStage {
 
 model RocketPart{
     id String @id @default(cuid())
+    createdAt DateTime @default(now())
+    
     rocketStage RocketStage? @relation(fields: [stageId], references: [id])
     stageId String?
 

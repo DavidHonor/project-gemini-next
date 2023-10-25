@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket } from "@/types/rocket";
-import { CursorOptions } from "@/lib/utils";
+import { CursorOptions, rocketScaleChanged } from "@/lib/utils";
 
 interface Props {
     rocketId: string;
@@ -39,16 +39,30 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const { mutate: getRocket_ } = useMutation({
         mutationFn: async ({ rocketId }: { rocketId: string }) => {
-            const response = await utils.client.getUserRocket.query({
+            const rawResponse = await utils.client.getUserRocket.query({
                 rocketId,
             });
 
-            if (!response)
+            if (!rawResponse)
                 return toast({
                     title: "Something went wrong",
                     description: "Please try again later",
                     variant: "destructive",
                 });
+
+            //convert the strings to actual dates
+            const response: Rocket = {
+                ...rawResponse,
+                createdAt: new Date(rawResponse.createdAt),
+                stages: rawResponse.stages.map((stage) => ({
+                    ...stage,
+                    createdAt: new Date(stage.createdAt),
+                    parts: stage.parts.map((part) => ({
+                        ...part,
+                        createdAt: new Date(part.createdAt),
+                    })),
+                })),
+            };
 
             setRocket(response);
         },
@@ -72,16 +86,21 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 setRocketPartIdDrag("");
             }
 
-            const response = await utils.client.saveRocketPart.mutate({
+            const rawResponse = await utils.client.saveRocketPart.mutate({
                 rocketPart: rocketPart,
             });
 
-            if (!response)
+            if (!rawResponse)
                 return toast({
                     title: "Something went wrong",
                     description: "Please try again later",
                     variant: "destructive",
                 });
+
+            const response = {
+                ...rawResponse,
+                createdAt: new Date(rawResponse.createdAt),
+            };
 
             //update rocket with part
             const rocketClone = structuredClone(rocket);
@@ -134,8 +153,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                     variant: "destructive",
                 });
 
-            const rocketCopy = structuredClone(rocket);
-            rocketCopy.scaleSlider = newScale;
+            const rocketCopy = rocketScaleChanged(rocket, newScale);
+
             setRocket(rocketCopy);
 
             utils.client.updateRocketScale

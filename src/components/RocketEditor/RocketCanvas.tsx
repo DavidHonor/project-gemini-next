@@ -1,9 +1,9 @@
 import { Rocket } from "@/types/rocket";
-import type { RocketPart } from "@prisma/client";
-import Image from "next/image";
+import { RocketPart } from "../../../prisma/generated/zod";
+
 import React, { useContext, useRef } from "react";
 import RocketPartComp from "./RocketPartComp";
-import { Circle, Grab, Loader2, MousePointerSquareDashed } from "lucide-react";
+import { Grab, Loader2, MousePointerSquareDashed } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { RocketContext } from "./RocketContext";
 import { CursorOptions, cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "../ui/tooltip";
-import { Slider } from "../ui/slider";
+
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
 interface RocketCanvasProps {
@@ -38,8 +38,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     return (
         <div ref={ref} className="h-full w-full relative">
-            {rocket.stages.flatMap((stage) =>
-                stage.parts.map((part: RocketPart) => {
+            {rocket.stages.flatMap((stage, index) => {
+                return stage.parts.map((part: RocketPart) => {
                     return (
                         <RocketPartComp
                             key={"rp_" + part?.id}
@@ -47,8 +47,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                             forwardedRef={ref}
                         />
                     );
-                })
-            )}
+                });
+            })}
 
             <div className="absolute flex left-1 top-1 z-50 gap-1">
                 <Card
