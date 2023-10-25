@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket } from "@/types/rocket";
+import { CursorOptions } from "@/lib/utils";
 
 interface Props {
     rocketId: string;
@@ -16,15 +17,20 @@ export const RocketContext = createContext({
     saveRocketPart: (rocketPart: RocketPart | null) => {},
     createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
+    setCursorMode: (cursorMode: CursorOptions) => {},
     rocket: null as Rocket | null,
     isLoading: false,
     rocketPartIdDrag: "",
+    cursorMode: CursorOptions.GRAB,
 });
 
 export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const [rocket, setRocket] = useState<Rocket | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [rocketPartIdDrag, setRocketPartIdDrag] = useState("");
+    const [cursorMode, setCursorMode_] = useState<CursorOptions>(
+        CursorOptions.GRAB
+    );
 
     const utils = trpc.useContext();
 
@@ -53,6 +59,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }: {
             rocketPart: RocketPart | null;
         }) => {
+            setIsLoading(true);
             if (rocketPart === null)
                 return toast({
                     title: "Something went wrong",
@@ -87,6 +94,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             rocketClone!.stages[stageIndex!].parts[partIndex!] = response;
 
             setRocket(rocketClone);
+            setIsLoading(false);
         },
     });
 
@@ -123,6 +131,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const getRocket = (rocketId: string) => {
         getRocket_({ rocketId });
     };
+    const setCursorMode = (newCursorMode: CursorOptions) =>
+        setCursorMode_(newCursorMode);
 
     return (
         <RocketContext.Provider
@@ -130,9 +140,11 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 rocket,
                 isLoading,
                 rocketPartIdDrag,
+                cursorMode,
                 saveRocketPart,
                 createRocketPart,
                 getRocket,
+                setCursorMode,
             }}
         >
             {children}

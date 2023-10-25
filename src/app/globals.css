@@ -80,3 +80,19 @@
 .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
     border-radius: 7px;
 }
+
+.curve-effect {
+    padding: 50px 20px 20px 20px;
+    background-image: radial-gradient(
+            ellipse 100% 200% at 50% 200%,
+            rgba(255, 68, 51, 0.413) 90%,
+            #0000 90%
+        ),
+        radial-gradient(
+            ellipse 100% 200% at 50% 190%,
+            rgba(255, 137, 119, 0.646) 90%,
+            #0000 90%
+        );
+    opacity: 0.2;
+    text-align: center;
+}
