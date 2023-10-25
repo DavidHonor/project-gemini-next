@@ -175,6 +175,25 @@ export const appRouter = router({
 
             return newPart;
         }),
+    updateRocketScale: privateProcedure
+        .input(z.object({ scaleSlider: z.number(), rocketId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { scaleSlider, rocketId } = input;
+
+            const rocket = await db.rocket.update({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+                data: {
+                    scaleSlider,
+                },
+            });
+            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+
+            return { status: "success", message: "Scale updated successfully" };
+        }),
 });
 
 export type AppRouter = typeof appRouter;

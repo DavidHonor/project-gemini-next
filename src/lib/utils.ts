@@ -73,3 +73,8 @@ export enum CursorOptions {
     GRAB,
     SELECT,
 }
+
+export function roundToDecimalPlaces(num: number, places: number): number {
+    const factor = Math.pow(10, places);
+    return Math.round(num * factor) / factor;
+}

@@ -18,6 +18,7 @@ export const RocketContext = createContext({
     createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
     setCursorMode: (cursorMode: CursorOptions) => {},
+    saveRocketScale: (newScale: number) => {},
     rocket: null as Rocket | null,
     isLoading: false,
     rocketPartIdDrag: "",
@@ -124,6 +125,30 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
+    const { mutate: saveRocketScale_ } = useMutation({
+        mutationFn: async ({ newScale }: { newScale: number }) => {
+            if (rocket === null)
+                return toast({
+                    title: "Something went wrong",
+                    description: "Please try again later",
+                    variant: "destructive",
+                });
+
+            const rocketCopy = structuredClone(rocket);
+            rocketCopy.scaleSlider = newScale;
+            setRocket(rocketCopy);
+
+            utils.client.updateRocketScale
+                .mutate({
+                    rocketId,
+                    scaleSlider: newScale,
+                })
+                .then((response) => {
+                    console.log(response);
+                });
+        },
+    });
+
     const saveRocketPart = (rocketPart: RocketPart | null) =>
         saveRocketPart_({ rocketPart });
     const createRocketPart = (partName: string) =>
@@ -133,6 +158,9 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     };
     const setCursorMode = (newCursorMode: CursorOptions) =>
         setCursorMode_(newCursorMode);
+
+    const saveRocketScale = (newScale: number) =>
+        saveRocketScale_({ newScale });
 
     return (
         <RocketContext.Provider
@@ -145,6 +173,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 createRocketPart,
                 getRocket,
                 setCursorMode,
+                saveRocketScale,
             }}
         >
             {children}

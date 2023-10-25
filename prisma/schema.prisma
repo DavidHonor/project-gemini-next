@@ -68,7 +68,7 @@ model Rocket {
 
     activeStage Int @default(0)
     activeChart String?
-    scaleSlider Float?
+    scaleSlider Float @default(1)
     stages RocketStage[]
 
     User User? @relation(fields: [userId], references: [id])

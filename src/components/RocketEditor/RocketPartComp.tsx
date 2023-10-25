@@ -1,5 +1,5 @@
 import { trpc } from "@/app/_trpc/client";
-import { getCursorPosition } from "@/lib/utils";
+import { CursorOptions, getCursorPosition } from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -14,7 +14,7 @@ interface RocketPartCompProps {
 }
 
 const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
-    const { saveRocketPart, rocketPartIdDrag, isLoading, cursorMode } =
+    const { saveRocketPart, rocketPartIdDrag, isLoading, cursorMode, rocket } =
         useContext(RocketContext);
 
     const [drag, setDrag] = useState({
@@ -49,7 +49,11 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     }, [rocketPartIdDrag]);
 
     const initialOffset = (event: React.MouseEvent<HTMLImageElement>) => {
-        if (event.button === 0 && !isLoading) {
+        if (
+            event.button === 0 &&
+            !isLoading &&
+            cursorMode !== CursorOptions.SELECT
+        ) {
             const rect = forwardedRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
@@ -121,8 +125,16 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 <Image
                     key={`part_img_${rocketPart.id}`}
                     alt={rocketPart.name}
-                    width={rocketPart.width * rocketPart.scale}
-                    height={rocketPart.height * rocketPart.scale}
+                    width={
+                        rocketPart.width *
+                        rocketPart.scale *
+                        rocket!.scaleSlider
+                    }
+                    height={
+                        rocketPart.height *
+                        rocketPart.scale *
+                        rocket!.scaleSlider
+                    }
                     src={`/rocket_parts/${rocketPart.image}`}
                     draggable="false"
                     onMouseDown={initialOffset}
