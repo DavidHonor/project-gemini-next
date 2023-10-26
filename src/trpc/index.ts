@@ -197,14 +197,14 @@ export const appRouter = router({
             return { status: "success", message: "Scale updated successfully" };
         }),
     updatePartScale: privateProcedure
-        .input(z.object({ partScale: z.number(), partId: z.string() }))
+        .input(z.object({ part: RocketPartSchema }))
         .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
-            const { partScale, partId } = input;
+            const { part } = input;
 
             // Fetch the part with its associated rocket
             const partWithRocket = await db.rocketPart.findUnique({
-                where: { id: partId },
+                where: { id: part.id },
                 include: { rocketStage: { include: { rocket: true } } },
             });
 
@@ -227,8 +227,14 @@ export const appRouter = router({
 
             // If the user has permission, update the part
             const updatedPart = await db.rocketPart.update({
-                where: { id: partId },
-                data: { scale: partScale },
+                where: { id: part.id },
+                data: {
+                    scale: part.scale,
+                    width: part.width,
+                    height: part.height,
+                    x: part.x,
+                    y: part.y,
+                },
             });
 
             return {

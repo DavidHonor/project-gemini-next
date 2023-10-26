@@ -16,6 +16,9 @@ import {
 
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
+import { toPng } from "html-to-image";
+import { Button } from "../ui/button";
+
 interface RocketCanvasProps {
     rocket: Rocket;
 }
@@ -36,19 +39,37 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
             </div>
         );
 
+    const captureRocketImage = async () => {
+        if (ref === null || ref.current === null) return;
+
+        console.log(ref.current.offsetWidth);
+        toPng(ref.current, { cacheBust: true })
+            .then((dataUrl) => {
+                const link = document.createElement("a");
+                link.download = "my-image-name.png";
+                link.href = dataUrl;
+                link.click();
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    };
+
     return (
-        <div ref={ref} className="h-full w-full relative">
-            {rocket.stages.flatMap((stage, index) => {
-                return stage.parts.map((part: RocketPart) => {
-                    return (
-                        <RocketPartComp
-                            key={"rp_" + part?.id}
-                            rocketPart={part}
-                            forwardedRef={ref}
-                        />
-                    );
-                });
-            })}
+        <div className="h-full w-full relative">
+            <div ref={ref} className="h-full w-full relative">
+                {rocket.stages.flatMap((stage, index) => {
+                    return stage.parts.map((part: RocketPart) => {
+                        return (
+                            <RocketPartComp
+                                key={"rp_" + part?.id}
+                                rocketPart={part}
+                                forwardedRef={ref}
+                            />
+                        );
+                    });
+                })}
+            </div>
 
             {/* Canvas related controls */}
             <div className="absolute flex left-1 top-1 z-50 gap-1">
@@ -111,6 +132,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                         />
                     </CardContent>
                 </Card>
+
+                <Button onClick={() => captureRocketImage()}>Capture</Button>
             </div>
         </div>
     );

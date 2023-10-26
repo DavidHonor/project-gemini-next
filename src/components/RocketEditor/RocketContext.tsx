@@ -6,7 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket } from "@/types/rocket";
-import { CursorOptions, rocketScaleChanged } from "@/lib/utils";
+import { CursorOptions } from "@/lib/utils";
+import { rocketScaleChanged, partScaleChanged } from "@/lib/ship_functions";
 
 interface Props {
     rocketId: string;
@@ -184,19 +185,11 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                     variant: "destructive",
                 });
 
-            const rocketCopy = structuredClone(rocket);
-            for (const stage of rocketCopy.stages) {
-                for (const part of stage.parts) {
-                    if (part.id === partId) {
-                        part.scale = partScale;
-                    }
-                }
-            }
-            setRocket(rocketCopy);
+            const partScaleResult = partScaleChanged(rocket, partScale, partId);
+            setRocket(partScaleResult.updatedRocket);
 
             const response = await utils.client.updatePartScale.mutate({
-                partScale,
-                partId,
+                part: partScaleResult.updatedPart,
             });
         },
     });
