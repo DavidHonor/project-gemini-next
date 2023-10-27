@@ -45,30 +45,27 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             variant: "destructive",
         });
 
-    const { mutate: getRocket_ } = useMutation({
-        mutationFn: async ({ rocketId }: { rocketId: string }) => {
-            const rawResponse = await utils.client.getUserRocket.query({
-                rocketId,
-            });
+    const getRocketMutation = useMutation(async (rocketId: string) => {
+        const response = await utils.client.getUserRocket.query({ rocketId });
+        if (!response) {
+            handleAPIError();
+            return;
+        }
 
-            if (!rawResponse) return handleAPIError();
-
-            //convert the strings to actual dates
-            const response: Rocket = {
-                ...rawResponse,
-                createdAt: new Date(rawResponse.createdAt),
-                stages: rawResponse.stages.map((stage) => ({
-                    ...stage,
-                    createdAt: new Date(stage.createdAt),
-                    parts: stage.parts.map((part) => ({
-                        ...part,
-                        createdAt: new Date(part.createdAt),
-                    })),
+        const parsedResponse: Rocket = {
+            ...response,
+            createdAt: new Date(response.createdAt),
+            stages: response.stages.map((stage) => ({
+                ...stage,
+                createdAt: new Date(stage.createdAt),
+                parts: stage.parts.map((part) => ({
+                    ...part,
+                    createdAt: new Date(part.createdAt),
                 })),
-            };
+            })),
+        };
 
-            setRocket(response);
-        },
+        setRocket(parsedResponse);
     });
 
     const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
@@ -117,7 +114,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             if (!response || !("id" in response)) return handleAPIError();
 
             setRocketPartIdDrag(response.id);
-            getRocket_({ rocketId });
+            getRocketMutation.mutate(rocketId);
         },
     });
 
@@ -161,9 +158,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const createRocketPart = (partName: string) =>
         createRocketPart_({ partName });
-    const getRocket = (rocketId: string) => {
-        getRocket_({ rocketId });
-    };
     const setCursorMode = (newCursorMode: CursorOptions) =>
         setCursorMode_(newCursorMode);
 
@@ -182,7 +176,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 cursorMode,
                 updatePartPosition: updatePartPosition.mutate,
                 createRocketPart,
-                getRocket,
+                getRocket: getRocketMutation.mutate,
                 setCursorMode,
                 saveRocketScale,
                 updatePartScale,
