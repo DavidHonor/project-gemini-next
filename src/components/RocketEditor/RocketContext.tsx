@@ -19,7 +19,7 @@ export const RocketContext = createContext({
     createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
     setCursorMode: (cursorMode: CursorOptions) => {},
-    saveRocketScale: (newScale: number) => {},
+    updateRocketScale: (scale: number) => {},
     updatePartScale: (partScale: number, partId: string) => {},
     rocket: null as Rocket | null,
     isLoading: false,
@@ -118,23 +118,21 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
-    const { mutate: saveRocketScale_ } = useMutation({
-        mutationFn: async ({ newScale }: { newScale: number }) => {
-            if (rocket === null) return handleAPIError();
+    const updateRocketScale = useMutation(async (scale: number) => {
+        if (rocket === null) return handleAPIError();
 
-            const rocketCopy = rocketScaleChanged(rocket, newScale);
+        const rocketCopy = rocketScaleChanged(rocket, scale);
 
-            setRocket(rocketCopy);
+        setRocket(rocketCopy);
 
-            utils.client.updateRocketScale
-                .mutate({
-                    rocketId,
-                    scaleSlider: newScale,
-                })
-                .then((response) => {
-                    console.log(response);
-                });
-        },
+        utils.client.updateRocketScale
+            .mutate({
+                rocket: rocketCopy,
+                scaleSlider: scale,
+            })
+            .then((response) => {
+                console.log(response);
+            });
     });
 
     const { mutate: updatePartScale_ } = useMutation({
@@ -161,9 +159,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const setCursorMode = (newCursorMode: CursorOptions) =>
         setCursorMode_(newCursorMode);
 
-    const saveRocketScale = (newScale: number) =>
-        saveRocketScale_({ newScale });
-
     const updatePartScale = (partScale: number, partId: string) =>
         updatePartScale_({ partScale, partId });
 
@@ -178,7 +173,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 createRocketPart,
                 getRocket: getRocketMutation.mutate,
                 setCursorMode,
-                saveRocketScale,
+                updateRocketScale: updateRocketScale.mutate,
                 updatePartScale,
             }}
         >

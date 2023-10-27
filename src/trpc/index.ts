@@ -4,8 +4,22 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import { z } from "zod";
 import { absoluteUrl } from "@/lib/utils";
-import { RocketPartSchema } from "../../prisma/generated/zod";
+import {
+    RocketStageSchema,
+    RocketPartSchema,
+    RocketSchema,
+    RocketPart,
+} from "../../prisma/generated/zod";
+
 import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
+
+const ExtendedRocketStageSchema = RocketStageSchema.extend({
+    parts: z.array(RocketPartSchema),
+});
+
+const ExtendedRocketSchema = RocketSchema.extend({
+    stages: z.array(ExtendedRocketStageSchema),
+});
 
 export const appRouter = router({
     authCallback: publicProcedure.query(async () => {
@@ -185,25 +199,40 @@ export const appRouter = router({
             return newPart;
         }),
     updateRocketScale: privateProcedure
-        .input(z.object({ scaleSlider: z.number(), rocketId: z.string() }))
+        .input(
+            z.object({ scaleSlider: z.number(), rocket: ExtendedRocketSchema })
+        )
         .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
-            const { scaleSlider, rocketId } = input;
+            const { scaleSlider, rocket } = input;
 
-            const rocket = await db.rocket.update({
+            const rocketDb = await db.rocket.update({
                 where: {
                     userId,
-                    id: rocketId,
+                    id: rocket.id,
                 },
                 data: {
                     scaleSlider,
                 },
             });
-            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+            if (!rocketDb) return new TRPCError({ code: "NOT_FOUND" });
 
-            //TODO IMPLEMENT THE CHANGES TO ROCKET PART COORDINATES AND SIZES
+            for (const stage of rocket.stages) {
+                for (const part of stage.parts) {
+                    await db.rocketPart.update({
+                        where: { id: part.id },
+                        data: {
+                            x: part.x,
+                            y: part.y,
+                        },
+                    });
+                }
+            }
 
-            return { status: "success", message: "Scale updated successfully" };
+            return {
+                status: "success",
+                message: "Scale updated successfully",
+            };
         }),
     updatePartScale: privateProcedure
         .input(z.object({ part: RocketPartSchema }))

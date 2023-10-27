@@ -26,7 +26,7 @@ interface RocketCanvasProps {
 const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     const ref = useRef<HTMLDivElement>(null);
 
-    const { setCursorMode, cursorMode, saveRocketScale } =
+    const { setCursorMode, cursorMode, updateRocketScale } =
         useContext(RocketContext);
 
     if (!rocket || !rocket.stages)
@@ -127,7 +127,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                             step={0.1}
                             value={rocket.scaleSlider}
                             onValueCommit={(values) => {
-                                saveRocketScale(values[0]);
+                                updateRocketScale(values[0]);
                             }}
                         />
                     </CardContent>
