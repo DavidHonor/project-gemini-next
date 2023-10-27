@@ -72,7 +72,7 @@ export const appRouter = router({
             },
         });
     }),
-    saveRocketPart: privateProcedure
+    updatePartPosition: privateProcedure
         .input(
             z.object({
                 rocketPart: RocketPartSchema,
@@ -82,18 +82,27 @@ export const appRouter = router({
             const { userId } = ctx;
             const { rocketPart } = input;
 
-            // const part = db.rocketPart.findFirst({
-            //     where: {
-            //         id: partId,
-            //     },
-            //     include: {
-            //         rocketStage: {
-            //             include: {
-            //                 rocket: true,
-            //             },
-            //         },
-            //     },
-            // });
+            // Fetch the part with its associated rocket
+            const partWithRocket = await db.rocketPart.findUnique({
+                where: { id: rocketPart.id },
+                include: { rocketStage: { include: { rocket: true } } },
+            });
+
+            if (
+                partWithRocket === null ||
+                partWithRocket.rocketStage === null ||
+                partWithRocket.rocketStage.rocket === null
+            )
+                return new TRPCError({ code: "NOT_FOUND" });
+
+            // Check if the part's rocket's userId matches the current user's userId
+            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
+            if (partRocketUserId !== userId) {
+                return new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You don't have permission to update this part.",
+                });
+            }
 
             const part = await db.rocketPart.update({
                 where: {
@@ -208,7 +217,6 @@ export const appRouter = router({
                 include: { rocketStage: { include: { rocket: true } } },
             });
 
-            if (!partWithRocket) return new TRPCError({ code: "NOT_FOUND" });
             if (
                 partWithRocket === null ||
                 partWithRocket.rocketStage === null ||

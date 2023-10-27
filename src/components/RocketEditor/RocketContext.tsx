@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const RocketContext = createContext({
-    saveRocketPart: (rocketPart: RocketPart | null) => {},
+    updatePartPosition: (rocketPart: RocketPart) => {},
     createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
     setCursorMode: (cursorMode: CursorOptions) => {},
@@ -36,8 +36,14 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     );
 
     const utils = trpc.useContext();
-
     const { toast } = useToast();
+
+    const handleAPIError = () =>
+        toast({
+            title: "Something went wrong",
+            description: "Please try again later",
+            variant: "destructive",
+        });
 
     const { mutate: getRocket_ } = useMutation({
         mutationFn: async ({ rocketId }: { rocketId: string }) => {
@@ -45,12 +51,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 rocketId,
             });
 
-            if (!rawResponse)
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
+            if (!rawResponse) return handleAPIError();
 
             //convert the strings to actual dates
             const response: Rocket = {
@@ -70,76 +71,50 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
-    const { mutate: saveRocketPart_ } = useMutation({
-        mutationFn: async ({
+    const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
+        if (!rocketPart) return handleAPIError();
+
+        setIsLoading(true);
+
+        const rawResponse = await utils.client.updatePartPosition.mutate({
             rocketPart,
-        }: {
-            rocketPart: RocketPart | null;
-        }) => {
-            setIsLoading(true);
-            if (rocketPart === null)
-                return toast({
-                    title: "Something went wrong",
-                    description: "No rocketPart provided",
-                    variant: "destructive",
-                });
-
-            if (rocketPartIdDrag !== "") {
-                setRocketPartIdDrag("");
-            }
-
-            const rawResponse = await utils.client.saveRocketPart.mutate({
-                rocketPart: rocketPart,
-            });
-
-            if (!rawResponse)
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
-
-            const response = {
-                ...rawResponse,
-                createdAt: new Date(rawResponse.createdAt),
-            };
-
-            //update rocket with part
-            const rocketClone = structuredClone(rocket);
-            const stageIndex = rocketClone?.stages.findIndex(
-                (x) => x.id === response.stageId
-            );
-            const partIndex = rocketClone?.stages[stageIndex!].parts.findIndex(
-                (x) => x.id === response.id
-            );
-
-            rocketClone!.stages[stageIndex!].parts[partIndex!] = response;
-
-            setRocket(rocketClone);
+        });
+        if (!rawResponse || !("id" in rawResponse)) {
             setIsLoading(false);
-        },
+            handleAPIError();
+            return;
+        }
+
+        const response = {
+            ...rawResponse,
+            createdAt: new Date(rawResponse.createdAt),
+        };
+
+        //update rocket with part
+        const rocketClone = structuredClone(rocket);
+        const stageIndex = rocketClone?.stages.findIndex(
+            (x) => x.id === response.stageId
+        );
+        const partIndex = rocketClone?.stages[stageIndex!].parts.findIndex(
+            (x) => x.id === response.id
+        );
+
+        rocketClone!.stages[stageIndex!].parts[partIndex!] = response;
+
+        setRocket(rocketClone);
+        setIsLoading(false);
     });
 
     const { mutate: createRocketPart_ } = useMutation({
         mutationFn: async ({ partName }: { partName: string }) => {
-            if (!rocket || !rocket.id)
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
+            if (!rocket || !rocket.id) return handleAPIError();
 
             const response = await utils.client.createRocketPart.mutate({
                 rocketId: rocket.id,
                 partName,
             });
 
-            if (!response || !("id" in response))
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
+            if (!response || !("id" in response)) return handleAPIError();
 
             setRocketPartIdDrag(response.id);
             getRocket_({ rocketId });
@@ -148,12 +123,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const { mutate: saveRocketScale_ } = useMutation({
         mutationFn: async ({ newScale }: { newScale: number }) => {
-            if (rocket === null)
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
+            if (rocket === null) return handleAPIError();
 
             const rocketCopy = rocketScaleChanged(rocket, newScale);
 
@@ -178,12 +148,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             partScale: number;
             partId: string;
         }) => {
-            if (rocket === null || rocket.id === null)
-                return toast({
-                    title: "Something went wrong",
-                    description: "Please try again later",
-                    variant: "destructive",
-                });
+            if (rocket === null || rocket.id === null) return handleAPIError();
 
             const partScaleResult = partScaleChanged(rocket, partScale, partId);
             setRocket(partScaleResult.updatedRocket);
@@ -194,8 +159,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         },
     });
 
-    const saveRocketPart = (rocketPart: RocketPart | null) =>
-        saveRocketPart_({ rocketPart });
     const createRocketPart = (partName: string) =>
         createRocketPart_({ partName });
     const getRocket = (rocketId: string) => {
@@ -217,7 +180,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 isLoading,
                 rocketPartIdDrag,
                 cursorMode,
-                saveRocketPart,
+                updatePartPosition: updatePartPosition.mutate,
                 createRocketPart,
                 getRocket,
                 setCursorMode,

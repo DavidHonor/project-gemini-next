@@ -16,7 +16,7 @@ interface RocketPartCompProps {
 
 const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     const {
-        saveRocketPart,
+        updatePartPosition,
         rocketPartIdDrag,
         isLoading,
         cursorMode,
@@ -33,12 +33,12 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     const [selected, setSelected] = useState(false);
 
     const [positioning, setPositioning] = useState({
-        left: rocketPart?.x,
-        top: rocketPart?.y,
+        left: rocketPart.x,
+        top: rocketPart.y,
     });
     const finalPosition = useRef({
-        x: 0,
-        y: 0,
+        x: rocketPart.x,
+        y: rocketPart.y,
     });
 
     const deleteIconRef = useRef<HTMLDivElement>(null);
@@ -99,7 +99,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 if (deleteIconRef.current)
                     console.log(deleteIconRef.current.getBoundingClientRect());
 
-                saveRocketPart({
+                updatePartPosition({
                     ...rocketPart,
                     x: finalPosition.current.x,
                     y: finalPosition.current.y,
