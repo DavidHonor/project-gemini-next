@@ -5,9 +5,16 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 
 import type { RocketPart } from "@prisma/client";
 import { RocketContext } from "./RocketContext";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { CogIcon, XCircle } from "lucide-react";
+
+import { Scaling, XCircle } from "lucide-react";
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "../ui/card";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
@@ -30,9 +37,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         offset_y: 0,
     });
 
-    const [selected, setSelected] = useState(false);
-
-    const [positioning, setPositioning] = useState({
+    const [partPosition, setPartPosition] = useState({
         left: rocketPart.x,
         top: rocketPart.y,
     });
@@ -56,8 +61,23 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     }, [rocketPartIdDrag]);
 
     useEffect(() => {
-        setPositioning({ left: rocketPart.x, top: rocketPart.y });
+        setPartPosition({ left: rocketPart.x, top: rocketPart.y });
     }, [rocketPart.x, rocketPart.y]);
+
+    useEffect(() => {
+        if (drag.enabled) {
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
+        }
+    }, [drag]);
+
+    useEffect(() => {
+        setDrag({
+            enabled: false,
+            offset_x: 0,
+            offset_y: 0,
+        });
+    }, [cursorMode]);
 
     const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
         if (event.button === 0 && !isLoading) {
@@ -72,61 +92,66 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     offset_y: rocketPart.y - y,
                 });
             else if (cursorMode === CursorOptions.SELECT) {
-                setSelected((isSelected) => !isSelected);
+                setDrag({
+                    enabled: !drag.enabled,
+                    offset_x: drag.enabled ? 0 : x,
+                    offset_y: drag.enabled ? 0 : y,
+                });
             }
         }
     };
 
-    useEffect(() => {
-        if (drag.enabled) {
-            const handleMouseMove = (event: MouseEvent) => {
-                if (forwardedRef.current) {
-                    const rect = forwardedRef.current.getBoundingClientRect();
-                    const x = event.clientX - rect.left;
-                    const y = event.clientY - rect.top;
+    const handleMouseMove = (event: MouseEvent) => {
+        if (forwardedRef.current && cursorMode === CursorOptions.GRAB) {
+            const rect = forwardedRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-                    setPositioning({
-                        left: x + drag.offset_x,
-                        top: y + drag.offset_y,
-                    });
+            setPartPosition({
+                left: x + drag.offset_x,
+                top: y + drag.offset_y,
+            });
 
-                    finalPosition.current.x = x + drag.offset_x;
-                    finalPosition.current.y = y + drag.offset_y;
-                }
-            };
-
-            const handleMouseUp = () => {
-                if (deleteIconRef.current)
-                    console.log(deleteIconRef.current.getBoundingClientRect());
-
-                updatePartPosition({
-                    ...rocketPart,
-                    x: finalPosition.current.x,
-                    y: finalPosition.current.y,
-                });
-
-                window.removeEventListener("mousemove", handleMouseMove);
-                window.removeEventListener("mouseup", handleMouseUp);
-
-                setDrag({
-                    enabled: false,
-                    offset_x: 0,
-                    offset_y: 0,
-                });
-            };
-
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
+            finalPosition.current.x = x + drag.offset_x;
+            finalPosition.current.y = y + drag.offset_y;
         }
-    }, [drag]);
+    };
+
+    const handleMouseUp = () => {
+        if (deleteIconRef.current)
+            console.log(deleteIconRef.current.getBoundingClientRect());
+
+        if (cursorMode === CursorOptions.GRAB) {
+            updatePartPosition({
+                ...rocketPart,
+                x: finalPosition.current.x,
+                y: finalPosition.current.y,
+            });
+            setDrag({
+                enabled: false,
+                offset_x: 0,
+                offset_y: 0,
+            });
+        }
+
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    const Cursor = () => {
+        if (cursorMode === CursorOptions.GRAB) {
+            return drag ? "grabbing" : "grab";
+        }
+        return "pointer";
+    };
 
     return (
         <>
             <div
                 style={{
                     position: "absolute",
-                    ...positioning,
-                    cursor: drag ? "grabbing" : "grab",
+                    ...partPosition,
+                    cursor: Cursor(),
                 }}
             >
                 <Image
@@ -148,26 +173,35 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out z-10"
                     style={{ maxWidth: "none" }}
                 />
-                {selected ? (
-                    <Popover>
-                        <PopoverTrigger className="z-30 bg-white rounded relative">
-                            <CogIcon className="w-8 h-8 p-1" />
-                        </PopoverTrigger>
-                        <PopoverContent className="z-30">
-                            <ControlledSlider
-                                value={rocketPart.scale}
-                                min={0.3}
-                                max={1.5}
-                                step={0.1}
-                                onValueCommit={(values) =>
-                                    updatePartScale(values[0], rocketPart.id)
-                                }
-                            />
-                        </PopoverContent>
-                    </Popover>
-                ) : null}
             </div>
-            {drag.enabled || true ? (
+            {drag.enabled && cursorMode === CursorOptions.SELECT ? (
+                <Card
+                    className="absolute w-[200px] z-30"
+                    style={{ left: drag.offset_x, top: drag.offset_y }}
+                >
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <span>Adjust size</span>
+                            <Scaling className="ml-1 w-5 h-5" />
+                        </CardTitle>
+                        <CardDescription className="flex">
+                            <span>{`Scale of part: ${rocketPart.name}`}</span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ControlledSlider
+                            value={rocketPart.scale}
+                            min={0.3}
+                            max={1.5}
+                            step={0.1}
+                            onValueCommit={(values) =>
+                                updatePartScale(values[0], rocketPart.id)
+                            }
+                        />
+                    </CardContent>
+                </Card>
+            ) : null}
+            {drag.enabled ? (
                 <div
                     ref={deleteIconRef}
                     className="group absolute bottom-5 left-1/2"

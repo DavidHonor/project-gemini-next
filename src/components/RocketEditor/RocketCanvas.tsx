@@ -42,7 +42,6 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     const onLoadCapture = async () => {
         const img = await captureRocketImage();
-        console.log(img);
         if (img !== undefined) uploadRocketPreview(img);
     };
 

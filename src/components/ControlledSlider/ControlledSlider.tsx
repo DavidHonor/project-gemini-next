@@ -20,7 +20,7 @@ const ControlledSlider = ({
     const [stateValue, setValue] = useState<number>(value);
 
     return (
-        <>
+        <div className="flex w-full">
             <Slider
                 defaultValue={[1]}
                 max={max}
@@ -36,7 +36,7 @@ const ControlledSlider = ({
             <p className="pl-2 font-semibold text-zinc-700">
                 {`${roundToDecimalPlaces(stateValue * 100, 1)}%`}
             </p>
-        </>
+        </div>
     );
 };
 
