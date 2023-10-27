@@ -16,7 +16,7 @@ const RocketList = () => {
                 </h2>
             </div>
             {isLoading ? (
-                <Skeleton height={100} className="my-2" count={3} />
+                <Skeleton className="h-16" />
             ) : (
                 <div className="flex flex-col mt-5">
                     {rockets?.map((rocket) => (

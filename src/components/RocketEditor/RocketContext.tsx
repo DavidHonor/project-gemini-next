@@ -21,6 +21,8 @@ export const RocketContext = createContext({
     setCursorMode: (cursorMode: CursorOptions) => {},
     updateRocketScale: (scale: number) => {},
     updatePartScale: (partScale: number, partId: string) => {},
+    uploadRocketPreview: (image: string) => {},
+    getRocketPreview: () => {},
     rocket: null as Rocket | null,
     isLoading: false,
     rocketPartIdDrag: "",
@@ -135,6 +137,21 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             });
     });
 
+    const uploadRocketPreview = useMutation(async (image: string) => {
+        if (rocket === null) return handleAPIError();
+
+        utils.client.uploadRocketPreview.mutate({
+            image: image,
+            rocketId: rocket.id,
+        });
+    });
+
+    const getRocketPreview = useMutation(async () => {
+        if (rocketId === null) return handleAPIError();
+
+        utils.client.getRocketPreview.query({ rocketId });
+    });
+
     const { mutate: updatePartScale_ } = useMutation({
         mutationFn: async ({
             partScale,
@@ -175,6 +192,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 setCursorMode,
                 updateRocketScale: updateRocketScale.mutate,
                 updatePartScale,
+                uploadRocketPreview: uploadRocketPreview.mutate,
+                getRocketPreview: getRocketPreview.mutate,
             }}
         >
             {children}

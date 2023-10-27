@@ -13,6 +13,10 @@ import {
 
 import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
 
+import { dataUriToBuffer } from "data-uri-to-buffer";
+
+import { admin } from "@/firebase/firebase";
+
 const ExtendedRocketStageSchema = RocketStageSchema.extend({
     parts: z.array(RocketPartSchema),
 });
@@ -278,6 +282,72 @@ export const appRouter = router({
                 status: "success",
                 message: "Part scale updated successfully",
             };
+        }),
+    uploadRocketPreview: privateProcedure
+        .input(z.object({ rocketId: z.string(), image: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { rocketId, image } = input;
+
+            const bucket = admin
+                .storage()
+                .bucket("project-gemini-next.appspot.com");
+            console.log(bucket.name);
+            const file = bucket.file(`rocket_previews/${rocketId}.png`);
+
+            // Upload the image to Firebase Storage
+            const parsedData = dataUriToBuffer(image);
+            const mimetype = parsedData.type;
+            const arrayBuffer = parsedData.buffer;
+            const nodeBuffer = Buffer.from(arrayBuffer);
+
+            file.save(nodeBuffer, {
+                contentType: "image/png",
+                metadata: {
+                    firebaseStorageDownloadTokens: rocketId,
+                },
+            })
+                .then(() => {
+                    // Handle successful upload
+                    console.log("Successfully uploaded!");
+                })
+                .catch((error: any) => {
+                    // Handle any errors
+                    console.error("Error uploading:", error);
+                });
+        }),
+    getRocketPreview: privateProcedure
+        .input(z.object({ rocketId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { rocketId } = input;
+
+            const rocket = db.rocket.findFirst({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+            });
+            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+
+            const bucket = admin
+                .storage()
+                .bucket("project-gemini-next.appspot.com");
+            const file = bucket.file(`rocket_previews/${rocketId}.png`);
+
+            // Check if the file exists
+            const [exists] = await file.exists();
+            if (!exists) {
+                throw new Error("Rocket preview not found");
+            }
+
+            // Generate a signed URL for the file
+            const [url] = await file.getSignedUrl({
+                action: "read",
+                expires: Date.now() + 1000 * 60 * 180,
+            });
+
+            return { url };
         }),
 });
 

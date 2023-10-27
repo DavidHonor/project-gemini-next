@@ -24,6 +24,8 @@
         "@trpc/react-query": "^10.40.0",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
+        "data-uri-to-buffer": "^6.0.1",
+        "firebase-admin": "^11.11.0",
         "html-to-image": "^1.11.11",
         "lucide-react": "^0.284.0",
         "next": "13.5.4",

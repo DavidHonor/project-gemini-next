@@ -1,7 +1,7 @@
 import { Rocket } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
 
-import React, { useContext, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import RocketPartComp from "./RocketPartComp";
 import { Grab, Loader2, MousePointerSquareDashed } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
@@ -26,8 +26,29 @@ interface RocketCanvasProps {
 const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     const ref = useRef<HTMLDivElement>(null);
 
-    const { setCursorMode, cursorMode, updateRocketScale } =
-        useContext(RocketContext);
+    const {
+        setCursorMode,
+        cursorMode,
+        updateRocketScale,
+        uploadRocketPreview,
+    } = useContext(RocketContext);
+
+    const captureRocketImage = async () => {
+        if (ref === null || ref.current === null) return;
+
+        const dataUrl = await toPng(ref.current, { cacheBust: true });
+        return dataUrl;
+    };
+
+    const onLoadCapture = async () => {
+        const img = await captureRocketImage();
+        console.log(img);
+        if (img !== undefined) uploadRocketPreview(img);
+    };
+
+    useEffect(() => {
+        if (rocket && rocket.stages) onLoadCapture();
+    }, [rocket]);
 
     if (!rocket || !rocket.stages)
         return (
@@ -38,22 +59,6 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                 <Loader2 className="ml-1 h-8 w-8 animate-spin text-zinc-800" />
             </div>
         );
-
-    const captureRocketImage = async () => {
-        if (ref === null || ref.current === null) return;
-
-        console.log(ref.current.offsetWidth);
-        toPng(ref.current, { cacheBust: true })
-            .then((dataUrl) => {
-                const link = document.createElement("a");
-                link.download = "my-image-name.png";
-                link.href = dataUrl;
-                link.click();
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    };
 
     return (
         <div className="h-full w-full relative">
