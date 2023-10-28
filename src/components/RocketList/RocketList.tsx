@@ -4,7 +4,7 @@ import { trpc } from "@/app/_trpc/client";
 import React, { useEffect } from "react";
 import Skeleton from "react-loading-skeleton";
 import RocketListItem from "./RocketListItem";
-import { Loader2, PlusSquareIcon } from "lucide-react";
+import { Ban, Loader2, PlusSquareIcon } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
@@ -35,6 +35,16 @@ const RocketList = () => {
                     </div>
                 ),
             });
+        } else if (status === "error") {
+            toast({
+                title: "Rocket creation error",
+                description: "An error has occured while creating your rocket",
+                action: (
+                    <div>
+                        <Ban className="h-8 w-8 text-red-800" />
+                    </div>
+                ),
+            });
         }
     }, [status]);
 
@@ -58,7 +68,7 @@ const RocketList = () => {
             {isLoading ? (
                 <Skeleton className="h-16" />
             ) : (
-                <div className="flex flex-col mt-5 gap-1">
+                <div className="flex mt-5 gap-3">
                     {rockets?.map((rocket) => (
                         <RocketListItem
                             key={rocket.createdAt}
