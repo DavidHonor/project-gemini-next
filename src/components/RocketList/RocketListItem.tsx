@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { trpc } from "@/app/_trpc/client";
 import Skeleton from "react-loading-skeleton";
+import { Card } from "../ui/card";
 
 interface RocketItemListProps {
     rocket: RocketName;
@@ -26,30 +27,33 @@ const RocketListItem = ({ rocket }: RocketItemListProps) => {
     const imageUrl = procImg();
 
     return (
-        <div className="flex flex-row w-full h-6">
-            <div className="flex">
-                <Icons.rocket className="w-5 h-5" />
-            </div>
-            <div className="flex flex-1 gap-1 hover:underline hover:cursor-pointer">
-                <Link href={`/dashboard/${rocket.id}`}>
-                    {new Date(rocket.createdAt).toLocaleTimeString() +
-                        " stages: " +
-                        rocket.stages.length}
-                    <div className="h-[100px] w-[100px]">
-                        {isLoading ? (
-                            <Skeleton height={100} />
-                        ) : (
-                            <Image
-                                alt={"rocket_" + rocket.id}
-                                src={imageUrl}
-                                width={100}
-                                height={100}
-                            />
-                        )}
-                    </div>
-                </Link>
-            </div>
-        </div>
+        <Card className="flex flex-col items-center p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 hover:cursor-pointer group w-[300px]">
+            <Link href={`/dashboard/${rocket.id}`}>
+                <div className="mb-2 text-center group-hover:underline text-zinc-700 font-semibold">
+                    {new Date(rocket.createdAt).toLocaleDateString()}
+                </div>
+                <div className="mb-2 text-sm text-center text-gray-500">
+                    Stages: {rocket.stages.length}
+                </div>
+
+                <div className="border border-zinc-200 p-2">
+                    {isLoading ? (
+                        <Skeleton
+                            height={100}
+                            width={100}
+                            className="rounded-full"
+                        />
+                    ) : (
+                        <Image
+                            alt={"rocket_" + rocket.id}
+                            src={imageUrl}
+                            width={100}
+                            height={100}
+                        />
+                    )}
+                </div>
+            </Link>
+        </Card>
     );
 };
 

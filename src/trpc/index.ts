@@ -16,6 +16,7 @@ import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
 import { dataUriToBuffer } from "data-uri-to-buffer";
 
 import { admin } from "@/firebase/firebase";
+import sharp from "sharp";
 
 const ExtendedRocketStageSchema = RocketStageSchema.extend({
     parts: z.array(RocketPartSchema),
@@ -292,27 +293,28 @@ export const appRouter = router({
             const bucket = admin
                 .storage()
                 .bucket("project-gemini-next.appspot.com");
-            console.log(bucket.name);
+
             const file = bucket.file(`rocket_previews/${rocketId}.png`);
-
-            // Upload the image to Firebase Storage
             const parsedData = dataUriToBuffer(image);
-            const mimetype = parsedData.type;
-            const arrayBuffer = parsedData.buffer;
-            const nodeBuffer = Buffer.from(arrayBuffer);
 
-            file.save(nodeBuffer, {
-                contentType: "image/png",
+            const trimmedBuffer = await sharp(parsedData.buffer)
+                .trim()
+                .toBuffer();
+
+            //const mimetype = parsedData.type;
+            //const arrayBuffer = parsedData.buffer;
+            //const nodeBuffer = Buffer.from(arrayBuffer);
+
+            file.save(trimmedBuffer, {
+                contentType: parsedData.type,
                 metadata: {
                     firebaseStorageDownloadTokens: rocketId,
                 },
             })
                 .then(() => {
-                    // Handle successful upload
                     console.log("Successfully uploaded!");
                 })
                 .catch((error: any) => {
-                    // Handle any errors
                     console.error("Error uploading:", error);
                 });
         }),
@@ -337,9 +339,7 @@ export const appRouter = router({
 
             // Check if the file exists
             const [exists] = await file.exists();
-            if (!exists) {
-                throw new Error("Rocket preview not found");
-            }
+            if (!exists) return new TRPCError({ code: "NOT_FOUND" });
 
             // Generate a signed URL for the file
             const [url] = await file.getSignedUrl({
@@ -349,6 +349,17 @@ export const appRouter = router({
 
             return { url };
         }),
+    createRocket: privateProcedure.mutation(async ({ ctx }) => {
+        const { userId } = ctx;
+
+        const rocket = await db.rocket.create({
+            data: {
+                userId,
+            },
+        });
+
+        return rocket;
+    }),
 });
 
 export type AppRouter = typeof appRouter;
