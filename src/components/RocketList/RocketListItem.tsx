@@ -17,20 +17,22 @@ const RocketListItem = ({ rocket }: RocketItemListProps) => {
         rocketId: rocket.id,
     });
 
-    function procImg() {
-        if (!imageResponse || imageResponse === undefined) return "";
-        if (!("url" in imageResponse)) return "";
+    const procImg = () => {
+        if (!imageResponse || !("url" in imageResponse)) {
+            return "/empty_rocket.png";
+        }
 
         return imageResponse.url;
-    }
-
-    const imageUrl = procImg();
+    };
 
     return (
-        <Card className="flex flex-col items-center p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 hover:cursor-pointer group w-[300px]">
+        <Card className="flex flex-col sm:w-[300px] w-full items-center p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 hover:cursor-pointer group">
             <Link href={`/dashboard/${rocket.id}`}>
                 <div className="mb-2 text-center group-hover:underline text-zinc-700 font-semibold">
                     {new Date(rocket.createdAt).toLocaleDateString()}
+                </div>
+                <div className="mb-2 text-center group-hover:underline text-zinc-700 font-semibold">
+                    {rocket.name}
                 </div>
                 <div className="mb-2 text-sm text-center text-gray-500">
                     Stages: {rocket.stages.length}
@@ -46,7 +48,7 @@ const RocketListItem = ({ rocket }: RocketItemListProps) => {
                     ) : (
                         <Image
                             alt={"rocket_" + rocket.id}
-                            src={imageUrl}
+                            src={procImg()}
                             width={100}
                             height={100}
                         />

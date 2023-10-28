@@ -337,11 +337,9 @@ export const appRouter = router({
                 .bucket("project-gemini-next.appspot.com");
             const file = bucket.file(`rocket_previews/${rocketId}.png`);
 
-            // Check if the file exists
             const [exists] = await file.exists();
             if (!exists) return new TRPCError({ code: "NOT_FOUND" });
 
-            // Generate a signed URL for the file
             const [url] = await file.getSignedUrl({
                 action: "read",
                 expires: Date.now() + 1000 * 60 * 180,
@@ -352,9 +350,16 @@ export const appRouter = router({
     createRocket: privateProcedure.mutation(async ({ ctx }) => {
         const { userId } = ctx;
 
+        const noRockets = await db.rocket.count({
+            where: {
+                userId,
+            },
+        });
+
         const rocket = await db.rocket.create({
             data: {
                 userId,
+                name: `Rocket ${noRockets + 1}`,
             },
         });
 

@@ -65,6 +65,7 @@ model Message{
 model Rocket {
     id String @id @default(cuid())
     createdAt DateTime @default(now())
+    name String?
 
     activeStage Int @default(0)
     activeChart String?

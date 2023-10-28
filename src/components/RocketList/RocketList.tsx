@@ -68,7 +68,7 @@ const RocketList = () => {
             {isLoading ? (
                 <Skeleton className="h-16" />
             ) : (
-                <div className="flex mt-5 gap-3">
+                <div className="flex flex-wrap mt-5 gap-3">
                     {rockets?.map((rocket) => (
                         <RocketListItem
                             key={rocket.createdAt}

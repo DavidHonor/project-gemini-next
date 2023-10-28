@@ -16,7 +16,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
     return (
         <div className="flex w-full justify-center max-h-[calc(100vh-3.5rem)] overflow-hidden">
             {/* mobile layout */}
-            <div className="md:hidden flex w-full h-full">
+            <div className="md:hidden flex w-full h-[calc(100vh-3.5rem)]">
                 <RocketCanvas rocket={rocket!} />
             </div>
 

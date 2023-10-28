@@ -18,7 +18,7 @@ export const FileScalarFieldEnumSchema = z.enum(['id','name','uploadStatus','url
 
 export const MessageScalarFieldEnumSchema = z.enum(['id','text','isUserMessage','createdAt','uploadedAt','userId','fileId']);
 
-export const RocketScalarFieldEnumSchema = z.enum(['id','createdAt','activeStage','activeChart','scaleSlider','userId']);
+export const RocketScalarFieldEnumSchema = z.enum(['id','createdAt','name','activeStage','activeChart','scaleSlider','userId']);
 
 export const RocketStageScalarFieldEnumSchema = z.enum(['id','createdAt','rocketId']);
 
@@ -91,6 +91,7 @@ export type Message = z.infer<typeof MessageSchema>
 export const RocketSchema = z.object({
   id: z.string().cuid(),
   createdAt: z.coerce.date(),
+  name: z.string().nullable(),
   activeStage: z.number().int(),
   activeChart: z.string().nullable(),
   scaleSlider: z.number(),
@@ -265,6 +266,7 @@ export const RocketCountOutputTypeSelectSchema: z.ZodType<Prisma.RocketCountOutp
 export const RocketSelectSchema: z.ZodType<Prisma.RocketSelect> = z.object({
   id: z.boolean().optional(),
   createdAt: z.boolean().optional(),
+  name: z.boolean().optional(),
   activeStage: z.boolean().optional(),
   activeChart: z.boolean().optional(),
   scaleSlider: z.boolean().optional(),
@@ -626,6 +628,7 @@ export const RocketWhereInputSchema: z.ZodType<Prisma.RocketWhereInput> = z.obje
   NOT: z.union([ z.lazy(() => RocketWhereInputSchema),z.lazy(() => RocketWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   activeStage: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
   activeChart: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   scaleSlider: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -637,6 +640,7 @@ export const RocketWhereInputSchema: z.ZodType<Prisma.RocketWhereInput> = z.obje
 export const RocketOrderByWithRelationInputSchema: z.ZodType<Prisma.RocketOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
+  name: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   activeStage: z.lazy(() => SortOrderSchema).optional(),
   activeChart: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   scaleSlider: z.lazy(() => SortOrderSchema).optional(),
@@ -654,6 +658,7 @@ export const RocketWhereUniqueInputSchema: z.ZodType<Prisma.RocketWhereUniqueInp
   OR: z.lazy(() => RocketWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => RocketWhereInputSchema),z.lazy(() => RocketWhereInputSchema).array() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   activeStage: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
   activeChart: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   scaleSlider: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -665,6 +670,7 @@ export const RocketWhereUniqueInputSchema: z.ZodType<Prisma.RocketWhereUniqueInp
 export const RocketOrderByWithAggregationInputSchema: z.ZodType<Prisma.RocketOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
+  name: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   activeStage: z.lazy(() => SortOrderSchema).optional(),
   activeChart: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   scaleSlider: z.lazy(() => SortOrderSchema).optional(),
@@ -682,6 +688,7 @@ export const RocketScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Rocket
   NOT: z.union([ z.lazy(() => RocketScalarWhereWithAggregatesInputSchema),z.lazy(() => RocketScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   activeStage: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
   activeChart: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   scaleSlider: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
@@ -1085,6 +1092,7 @@ export const MessageUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MessageUnch
 export const RocketCreateInputSchema: z.ZodType<Prisma.RocketCreateInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -1095,6 +1103,7 @@ export const RocketCreateInputSchema: z.ZodType<Prisma.RocketCreateInput> = z.ob
 export const RocketUncheckedCreateInputSchema: z.ZodType<Prisma.RocketUncheckedCreateInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -1105,6 +1114,7 @@ export const RocketUncheckedCreateInputSchema: z.ZodType<Prisma.RocketUncheckedC
 export const RocketUpdateInputSchema: z.ZodType<Prisma.RocketUpdateInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1115,6 +1125,7 @@ export const RocketUpdateInputSchema: z.ZodType<Prisma.RocketUpdateInput> = z.ob
 export const RocketUncheckedUpdateInputSchema: z.ZodType<Prisma.RocketUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1125,6 +1136,7 @@ export const RocketUncheckedUpdateInputSchema: z.ZodType<Prisma.RocketUncheckedU
 export const RocketCreateManyInputSchema: z.ZodType<Prisma.RocketCreateManyInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -1134,6 +1146,7 @@ export const RocketCreateManyInputSchema: z.ZodType<Prisma.RocketCreateManyInput
 export const RocketUpdateManyMutationInputSchema: z.ZodType<Prisma.RocketUpdateManyMutationInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1142,6 +1155,7 @@ export const RocketUpdateManyMutationInputSchema: z.ZodType<Prisma.RocketUpdateM
 export const RocketUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RocketUncheckedUpdateManyInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1644,6 +1658,7 @@ export const RocketStageOrderByRelationAggregateInputSchema: z.ZodType<Prisma.Ro
 export const RocketCountOrderByAggregateInputSchema: z.ZodType<Prisma.RocketCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   activeStage: z.lazy(() => SortOrderSchema).optional(),
   activeChart: z.lazy(() => SortOrderSchema).optional(),
   scaleSlider: z.lazy(() => SortOrderSchema).optional(),
@@ -1658,6 +1673,7 @@ export const RocketAvgOrderByAggregateInputSchema: z.ZodType<Prisma.RocketAvgOrd
 export const RocketMaxOrderByAggregateInputSchema: z.ZodType<Prisma.RocketMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   activeStage: z.lazy(() => SortOrderSchema).optional(),
   activeChart: z.lazy(() => SortOrderSchema).optional(),
   scaleSlider: z.lazy(() => SortOrderSchema).optional(),
@@ -1667,6 +1683,7 @@ export const RocketMaxOrderByAggregateInputSchema: z.ZodType<Prisma.RocketMaxOrd
 export const RocketMinOrderByAggregateInputSchema: z.ZodType<Prisma.RocketMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   activeStage: z.lazy(() => SortOrderSchema).optional(),
   activeChart: z.lazy(() => SortOrderSchema).optional(),
   scaleSlider: z.lazy(() => SortOrderSchema).optional(),
@@ -2556,6 +2573,7 @@ export const MessageCreateManyUserInputEnvelopeSchema: z.ZodType<Prisma.MessageC
 export const RocketCreateWithoutUserInputSchema: z.ZodType<Prisma.RocketCreateWithoutUserInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -2565,6 +2583,7 @@ export const RocketCreateWithoutUserInputSchema: z.ZodType<Prisma.RocketCreateWi
 export const RocketUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.RocketUncheckedCreateWithoutUserInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -2662,6 +2681,7 @@ export const RocketScalarWhereInputSchema: z.ZodType<Prisma.RocketScalarWhereInp
   NOT: z.union([ z.lazy(() => RocketScalarWhereInputSchema),z.lazy(() => RocketScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   activeStage: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
   activeChart: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   scaleSlider: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
@@ -3002,6 +3022,7 @@ export const UserUncheckedUpdateWithoutRocketInputSchema: z.ZodType<Prisma.UserU
 export const RocketCreateWithoutStagesInputSchema: z.ZodType<Prisma.RocketCreateWithoutStagesInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -3011,6 +3032,7 @@ export const RocketCreateWithoutStagesInputSchema: z.ZodType<Prisma.RocketCreate
 export const RocketUncheckedCreateWithoutStagesInputSchema: z.ZodType<Prisma.RocketUncheckedCreateWithoutStagesInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional(),
@@ -3084,6 +3106,7 @@ export const RocketUpdateToOneWithWhereWithoutStagesInputSchema: z.ZodType<Prism
 export const RocketUpdateWithoutStagesInputSchema: z.ZodType<Prisma.RocketUpdateWithoutStagesInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3093,6 +3116,7 @@ export const RocketUpdateWithoutStagesInputSchema: z.ZodType<Prisma.RocketUpdate
 export const RocketUncheckedUpdateWithoutStagesInputSchema: z.ZodType<Prisma.RocketUncheckedUpdateWithoutStagesInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3200,6 +3224,7 @@ export const MessageCreateManyUserInputSchema: z.ZodType<Prisma.MessageCreateMan
 export const RocketCreateManyUserInputSchema: z.ZodType<Prisma.RocketCreateManyUserInput> = z.object({
   id: z.string().cuid().optional(),
   createdAt: z.coerce.date().optional(),
+  name: z.string().optional().nullable(),
   activeStage: z.number().int().optional(),
   activeChart: z.string().optional().nullable(),
   scaleSlider: z.number().optional()
@@ -3267,6 +3292,7 @@ export const MessageUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Prisma.
 export const RocketUpdateWithoutUserInputSchema: z.ZodType<Prisma.RocketUpdateWithoutUserInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3276,6 +3302,7 @@ export const RocketUpdateWithoutUserInputSchema: z.ZodType<Prisma.RocketUpdateWi
 export const RocketUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.RocketUncheckedUpdateWithoutUserInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3285,6 +3312,7 @@ export const RocketUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.Rocke
 export const RocketUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Prisma.RocketUncheckedUpdateManyWithoutUserInput> = z.object({
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   activeStage: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   activeChart: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   scaleSlider: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
