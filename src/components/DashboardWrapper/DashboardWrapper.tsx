@@ -7,6 +7,7 @@ import RocketCanvas from "../RocketEditor/RocketCanvas";
 import RocketPartsList from "../RocketEditor/RocketPartsList";
 import { Button } from "../ui/button";
 import { EditorMenuOptions, cn } from "@/lib/utils";
+import RocketStages from "../RocketEditor/RocketStages";
 
 const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
     const { rocket, getRocket, menuOption, setMenuOption } =
@@ -25,8 +26,8 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
 
             {/* desktop layout */}
             <div className="hidden md:flex w-full h-full">
-                <div className="flex flex-col w-1/4 h-[calc(100vh-3.5rem)] ps-2 pe-2 border-r border-zinc-200">
-                    <div className="flex items-center gap-1 mt-5 mb-5">
+                <div className="flex flex-col w-1/4 h-[calc(100vh-3.5rem)] ps-1 pe-1 border-r border-zinc-200">
+                    <div className="flex items-center gap-0.5 mt-5 mb-5">
                         <Button
                             variant={"outline"}
                             className={cn("", {
@@ -37,8 +38,8 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                                 setMenuOption(EditorMenuOptions.PARTS)
                             }
                         >
-                            <span className="text-base">Parts</span>
-                            <Hammer className="text-base ml-1" />
+                            <span className="text-xs lg:text-base">Parts</span>
+                            <Hammer className="text-xs lg:text-base ml-1" />
                         </Button>
                         <Button
                             variant={"outline"}
@@ -50,12 +51,40 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                                 setMenuOption(EditorMenuOptions.STAGES)
                             }
                         >
-                            <span className="text-base">Stages</span>
-                            <Combine className="text-base ml-1" />
+                            <span className="text-xs lg:text-base">Stages</span>
+                            <Combine className="text-xs lg:text-base ml-1" />
                         </Button>
                     </div>
 
-                    <RocketPartsList />
+                    <div className="relative flex-grow overflow-hidden">
+                        <div
+                            className={cn(
+                                "absolute inset-y-0 left-0 w-full transition-all duration-300",
+                                {
+                                    "translate-x-0 opacity-100":
+                                        menuOption === EditorMenuOptions.PARTS,
+                                    "-translate-x-full opacity-0 pointer-events-none -z-10":
+                                        menuOption !== EditorMenuOptions.PARTS,
+                                }
+                            )}
+                        >
+                            <RocketPartsList />
+                        </div>
+
+                        <div
+                            className={cn(
+                                "absolute inset-y-0 left-0 w-full transition-all duration-300",
+                                {
+                                    "translate-x-0 opacity-100":
+                                        menuOption === EditorMenuOptions.STAGES,
+                                    "translate-x-full opacity-0 pointer-events-none -z-10":
+                                        menuOption !== EditorMenuOptions.STAGES,
+                                }
+                            )}
+                        >
+                            <RocketStages />
+                        </div>
+                    </div>
                 </div>
                 <div className="w-[75%] h-[calc(100vh-3.5rem)]">
                     <RocketCanvas rocket={rocket!} />
