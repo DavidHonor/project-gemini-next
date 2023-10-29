@@ -48,8 +48,6 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
 
     const deleteIconRef = useRef<HTMLDivElement>(null);
 
-    if (!rocketPart) return "";
-
     useEffect(() => {
         if (rocketPartIdDrag !== "" && rocketPartIdDrag === rocketPart.id) {
             setDrag({
@@ -78,6 +76,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             offset_y: 0,
         });
     }, [cursorMode]);
+
+    if (!rocketPart) return "";
 
     const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
         if (event.button === 0 && !isLoading) {
