@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client-js"
 }
 generator zod {
-  provider = "npx zod-prisma-types"
+  provider = "zod-prisma-types"
 }
 
 datasource db {
