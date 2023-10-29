@@ -2,7 +2,6 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import React from "react";
 
-import Canvas from "../../components/RocketEditor/Canvas";
 import { db } from "@/db";
 import RocketList from "@/components/RocketList/RocketList";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
