@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket } from "@/types/rocket";
-import { CursorOptions } from "@/lib/utils";
+import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
 import { rocketScaleChanged, partScaleChanged } from "@/lib/ship_functions";
 
 interface Props {
@@ -19,6 +19,7 @@ export const RocketContext = createContext({
     createRocketPart: (partName: string) => {},
     getRocket: (rocketId: string) => {},
     setCursorMode: (cursorMode: CursorOptions) => {},
+    setMenuOption: (menuOption: EditorMenuOptions) => {},
     updateRocketScale: (scale: number) => {},
     updatePartScale: (partScale: number, partId: string) => {},
     uploadRocketPreview: (image: string) => {},
@@ -27,6 +28,7 @@ export const RocketContext = createContext({
     isLoading: false,
     rocketPartIdDrag: "",
     cursorMode: CursorOptions.GRAB,
+    menuOption: EditorMenuOptions.PARTS,
 });
 
 export const RocketContextProvider = ({ rocketId, children }: Props) => {
@@ -35,6 +37,9 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const [rocketPartIdDrag, setRocketPartIdDrag] = useState("");
     const [cursorMode, setCursorMode_] = useState<CursorOptions>(
         CursorOptions.GRAB
+    );
+    const [menuOption, setMenuOption] = useState<EditorMenuOptions>(
+        EditorMenuOptions.PARTS
     );
 
     const utils = trpc.useContext();
@@ -186,6 +191,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 isLoading,
                 rocketPartIdDrag,
                 cursorMode,
+                menuOption,
                 updatePartPosition: updatePartPosition.mutate,
                 createRocketPart,
                 getRocket: getRocketMutation.mutate,
@@ -194,6 +200,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 updatePartScale,
                 uploadRocketPreview: uploadRocketPreview.mutate,
                 getRocketPreview: getRocketPreview.mutate,
+                setMenuOption,
             }}
         >
             {children}
