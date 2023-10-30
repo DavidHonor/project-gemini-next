@@ -52,7 +52,7 @@ export const appRouter = router({
 
         return { success: true };
     }),
-    getUserRocket: privateProcedure
+    getRocket: privateProcedure
         .input(
             z.object({
                 rocketId: z.string(),
@@ -69,6 +69,9 @@ export const appRouter = router({
                 },
                 include: {
                     stages: {
+                        orderBy: {
+                            createdAt: "asc",
+                        },
                         include: {
                             parts: true,
                         },
@@ -362,7 +365,7 @@ export const appRouter = router({
             const { userId } = ctx;
             const { rocketId } = input;
 
-            const rocket = db.rocket.findFirst({
+            const rocket = await db.rocket.findFirst({
                 where: {
                     userId,
                     id: rocketId,
@@ -403,13 +406,31 @@ export const appRouter = router({
 
         return rocket;
     }),
+    deleteRocket: privateProcedure
+        .input(z.object({ rocketId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { rocketId } = input;
+
+            await db.rocket.delete({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+            });
+
+            return {
+                status: "success",
+                message: "Rocket removed successfully",
+            };
+        }),
     addRocketStage: privateProcedure
         .input(z.object({ rocketId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
             const { rocketId } = input;
 
-            const rocket = db.rocket.findFirst({
+            const rocket = await db.rocket.findFirst({
                 where: {
                     userId,
                     id: rocketId,
@@ -417,7 +438,7 @@ export const appRouter = router({
             });
             if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
 
-            const stage = db.rocketStage.create({
+            const stage = await db.rocketStage.create({
                 data: {
                     rocketId,
                 },

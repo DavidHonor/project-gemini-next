@@ -22,9 +22,10 @@ export const RocketContext = createContext({
 
     addRocketStage: () => {},
 
-    updatePartPosition: (rocketPart: RocketPart) => {},
     createRocketPart: (partName: string) => {},
+    updatePartPosition: (rocketPart: RocketPart) => {},
     updatePartScale: (partScale: number, partId: string) => {},
+    updatePartStage: (partId: string) => {},
     deletePart: (rocketPart: RocketPart) => {},
 
     setCursorMode: (cursorMode: CursorOptions) => {},
@@ -59,7 +60,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         });
 
     const getRocketMutation = useMutation(async (rocketId: string) => {
-        const response = await utils.client.getUserRocket.query({ rocketId });
+        const response = await utils.client.getRocket.query({ rocketId });
         if (!response) {
             handleAPIError();
             return;
@@ -196,6 +197,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         setRocket(rocketCopy);
     });
 
+    const updatePartStage = useMutation(async (partId: string) => {});
+
     const { mutate: updatePartScale_ } = useMutation({
         mutationFn: async ({
             partScale,
@@ -242,6 +245,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 getRocketPreview: getRocketPreview.mutate,
                 setMenuOption,
                 addRocketStage: addRocketStage.mutate,
+                updatePartStage: updatePartStage.mutate,
             }}
         >
             {children}

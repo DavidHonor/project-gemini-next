@@ -14,7 +14,12 @@ import {
 import { useToast } from "../ui/use-toast";
 
 const RocketList = () => {
-    const { data: rockets, isLoading } = trpc.getUserRockets.useQuery();
+    const {
+        data: rockets,
+        isLoading,
+        refetch,
+    } = trpc.getUserRockets.useQuery();
+
     const {
         mutate,
         data: rocket,
@@ -45,6 +50,8 @@ const RocketList = () => {
                     </div>
                 ),
             });
+        } else if (status === "success") {
+            refetch();
         }
     }, [status]);
 
@@ -68,11 +75,12 @@ const RocketList = () => {
             {isLoading ? (
                 <Skeleton className="h-16" />
             ) : (
-                <div className="flex flex-wrap mt-5 gap-3">
+                <div className="flex flex-wrap justify-center md:justify-start mt-5 gap-3">
                     {rockets?.map((rocket) => (
                         <RocketListItem
                             key={rocket.createdAt}
                             rocket={rocket!}
+                            onRocketDeleted={refetch}
                         />
                     ))}
                 </div>

@@ -45,7 +45,9 @@ const Stage = ({
                 <h2 className="text-base font-medium ">
                     Stage {stageIndex + 1}
                 </h2>
-                <span className="text-xs">[{stage.parts.length}]</span>
+                <span className="text-xs" title="number of parts">
+                    [{stage.parts.length}]
+                </span>
             </div>
             <div className="flex flex-col">
                 {stage.parts.map((part) => (
@@ -64,16 +66,19 @@ const Part = ({ part }: { part: RocketPart }) => {
             </div>
 
             <div className="basis-2/6">
-                <span className="invisible lg:visible lg:text-xs">
+                <span
+                    className="invisible lg:visible lg:text-xs"
+                    title="part scale"
+                >
                     {roundToDecimalPlaces(part.scale * 100, 0)}%
                 </span>
             </div>
 
             <div className="flex basis-1/6">
-                <Button variant={"ghost"} className="p-1">
+                <Button variant={"ghost"} className="p-1" onClick={() => {}}>
                     <ChevronUp className="w-5 h-5" />
                 </Button>
-                <Button variant={"ghost"} className="p-1">
+                <Button variant={"ghost"} className="p-1" onClick={() => {}}>
                     <ChevronDown className="w-5 h-5" />
                 </Button>
             </div>
