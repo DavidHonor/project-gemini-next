@@ -84,7 +84,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             | React.MouseEvent<HTMLImageElement>
             | React.TouchEvent<HTMLImageElement>
             | MouseEvent
-            | TouchEvent
+            | TouchEvent,
+        isTouchEnd: boolean = false
     ) => {
         if (!forwardedRef.current) return;
         let x, y;
@@ -93,8 +94,13 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             x = event.clientX;
             y = event.clientY;
         } else if ("touches" in event) {
-            x = event.touches[0].clientX;
-            y = event.touches[0].clientY;
+            if (isTouchEnd) {
+                x = event.changedTouches[0].pageX;
+                y = event.changedTouches[0].pageY;
+            } else {
+                x = event.touches[0].clientX;
+                y = event.touches[0].clientY;
+            }
         } else return;
 
         const rect = forwardedRef.current.getBoundingClientRect();
@@ -141,7 +147,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
         if (cursorMode !== CursorOptions.GRAB || !deleteIconRef.current) return;
-        const coords = getEventCoords(event);
+        const coords = getEventCoords(event, true);
         if (!coords) return;
 
         const deleteArea = deleteIconRef.current.getBoundingClientRect();

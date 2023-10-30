@@ -48,7 +48,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     useEffect(() => {
         if (rocket && rocket.stages) onLoadCapture();
-    }, [rocket]);
+    }, []);
 
     if (!rocket || !rocket.stages)
         return (
