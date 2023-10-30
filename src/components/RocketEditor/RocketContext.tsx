@@ -15,16 +15,21 @@ interface Props {
 }
 
 export const RocketContext = createContext({
+    getRocket: (rocketId: string) => {},
+    getRocketPreview: () => {},
+    uploadRocketPreview: (image: string) => {},
+    updateRocketScale: (scale: number) => {},
+
+    addRocketStage: () => {},
+
     updatePartPosition: (rocketPart: RocketPart) => {},
     createRocketPart: (partName: string) => {},
-    getRocket: (rocketId: string) => {},
-    setCursorMode: (cursorMode: CursorOptions) => {},
-    setMenuOption: (menuOption: EditorMenuOptions) => {},
-    updateRocketScale: (scale: number) => {},
     updatePartScale: (partScale: number, partId: string) => {},
     deletePart: (rocketPart: RocketPart) => {},
-    uploadRocketPreview: (image: string) => {},
-    getRocketPreview: () => {},
+
+    setCursorMode: (cursorMode: CursorOptions) => {},
+    setMenuOption: (menuOption: EditorMenuOptions) => {},
+
     rocket: null as Rocket | null,
     isLoading: false,
     rocketPartIdDrag: "",
@@ -169,6 +174,28 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         utils.client.getRocketPreview.query({ rocketId });
     });
 
+    const addRocketStage = useMutation(async () => {
+        if (!rocketId) return handleAPIError();
+
+        const response = await utils.client.addRocketStage.mutate({
+            rocketId,
+        });
+
+        if (!("id" in response)) return handleAPIError();
+        const newStage = {
+            ...response,
+            createdAt: new Date(response.createdAt),
+            parts: response.parts.map((part) => ({
+                ...part,
+                createdAt: new Date(part.createdAt),
+            })),
+        };
+
+        const rocketCopy = structuredClone(rocket);
+        rocketCopy?.stages.push(newStage);
+        setRocket(rocketCopy);
+    });
+
     const { mutate: updatePartScale_ } = useMutation({
         mutationFn: async ({
             partScale,
@@ -214,6 +241,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 uploadRocketPreview: uploadRocketPreview.mutate,
                 getRocketPreview: getRocketPreview.mutate,
                 setMenuOption,
+                addRocketStage: addRocketStage.mutate,
             }}
         >
             {children}

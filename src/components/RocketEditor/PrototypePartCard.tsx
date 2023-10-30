@@ -23,8 +23,10 @@ const PrototypePartCard = ({ part }: PrototypePartCardProps) => {
                     <div className="flex items-center justify-center">
                         <Image
                             alt={part.name}
-                            width={100}
-                            height={100}
+                            width="0"
+                            height="0"
+                            sizes="100vw"
+                            className="w-auto h-[80px]"
                             src={`/rocket_parts/${part.image}`}
                         />
                     </div>

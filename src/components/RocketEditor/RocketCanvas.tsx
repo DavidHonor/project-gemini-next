@@ -78,51 +78,25 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
             {/* Canvas related controls */}
             <div className="absolute flex left-1 top-1 z-50 gap-1">
-                <Card
-                    className={cn(
-                        "flex items-center justify-center hover:cursor-pointer",
-                        {
-                            "bg-zinc-300": cursorMode === CursorOptions.GRAB,
-                        }
-                    )}
+                <Button
+                    variant={"outline"}
+                    className={cn("px-2", {
+                        "bg-zinc-300": cursorMode === CursorOptions.GRAB,
+                    })}
+                    onClick={() => setCursorMode(CursorOptions.GRAB)}
                 >
-                    <CardContent
-                        className="p-2"
-                        onClick={() => setCursorMode(CursorOptions.GRAB)}
-                    >
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <Grab className="w-5 h-5" />
-                                </TooltipTrigger>
-                                <TooltipContent>Dragging mode</TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </CardContent>
-                </Card>
+                    <Grab className="w-5 h-5" />
+                </Button>
 
-                <Card
-                    className={cn(
-                        "flex items-center justify-center hover:cursor-pointer",
-                        {
-                            "bg-zinc-300": cursorMode === CursorOptions.SELECT,
-                        }
-                    )}
+                <Button
+                    variant={"outline"}
+                    className={cn("px-2", {
+                        "bg-zinc-300": cursorMode === CursorOptions.SELECT,
+                    })}
+                    onClick={() => setCursorMode(CursorOptions.SELECT)}
                 >
-                    <CardContent
-                        className="p-2"
-                        onClick={() => setCursorMode(CursorOptions.SELECT)}
-                    >
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger style={{ padding: 0 }}>
-                                    <MousePointerSquareDashed className="w-5 h-5" />
-                                </TooltipTrigger>
-                                <TooltipContent>Select mode</TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </CardContent>
-                </Card>
+                    <MousePointerSquareDashed className="w-5 h-5" />
+                </Button>
 
                 <Card className="flex items-center justify-center">
                     <CardContent className="flex flex-row p-1 w-[170px]">

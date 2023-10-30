@@ -403,6 +403,31 @@ export const appRouter = router({
 
         return rocket;
     }),
+    addRocketStage: privateProcedure
+        .input(z.object({ rocketId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { rocketId } = input;
+
+            const rocket = db.rocket.findFirst({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+            });
+            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+
+            const stage = db.rocketStage.create({
+                data: {
+                    rocketId,
+                },
+                include: {
+                    parts: true,
+                },
+            });
+
+            return stage;
+        }),
 });
 
 export type AppRouter = typeof appRouter;

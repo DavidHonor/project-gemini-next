@@ -18,7 +18,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
     }, []);
 
     return (
-        <div className="flex w-full justify-center max-h-[calc(100vh-3.5rem)] overflow-hidden">
+        <div className="flex w-full justify-center max-h-[calc(100vh-3.5rem)] overflow-hidden overscroll-none">
             {/* mobile layout */}
             <div className="md:hidden flex w-full h-[calc(100vh-3.5rem)]">
                 <RocketCanvas rocket={rocket!} />
@@ -27,7 +27,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
             {/* desktop layout */}
             <div className="hidden md:flex w-full h-full">
                 <div className="flex flex-col w-1/4 h-[calc(100vh-3.5rem)] ps-1 pe-1 border-r border-zinc-200">
-                    <div className="flex items-center gap-0.5 mt-5 mb-5">
+                    <div className="flex items-center gap-0.5 mt-1">
                         <Button
                             variant={"outline"}
                             className={cn("", {
@@ -39,7 +39,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                             }
                         >
                             <span className="text-xs lg:text-base">Parts</span>
-                            <Hammer className="text-xs lg:text-base ml-1" />
+                            <Hammer className="h-5 w-5 ml-1" />
                         </Button>
                         <Button
                             variant={"outline"}
@@ -52,7 +52,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                             }
                         >
                             <span className="text-xs lg:text-base">Stages</span>
-                            <Combine className="text-xs lg:text-base ml-1" />
+                            <Combine className="h-5 w-5 ml-1" />
                         </Button>
                     </div>
 
@@ -73,7 +73,7 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
 
                         <div
                             className={cn(
-                                "absolute inset-y-0 left-0 w-full transition-all duration-300",
+                                "absolute inset-y-0 left-0 w-full h-full transition-all duration-300 overflow-y-auto scrollbar-w-2 scrollbar-track-blue-lighter scrollbar-thumb-blue scrollbar-thumb-rounded",
                                 {
                                     "translate-x-0 opacity-100":
                                         menuOption === EditorMenuOptions.STAGES,
@@ -86,10 +86,10 @@ const DashboardWrapper = ({ rocketId }: { rocketId: string }) => {
                         </div>
                     </div>
                 </div>
+
                 <div className="w-[75%] h-[calc(100vh-3.5rem)]">
                     <RocketCanvas rocket={rocket!} />
                 </div>
-                {/* <div className="w-1/4 h-[calc(100vh-3.5rem)] border-l border-zinc-200"></div> */}
             </div>
         </div>
     );
