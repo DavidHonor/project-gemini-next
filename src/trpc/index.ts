@@ -268,7 +268,7 @@ export const appRouter = router({
             }
 
             // If the user has permission, update the part
-            const updatedPart = await db.rocketPart.update({
+            await db.rocketPart.update({
                 where: { id: part.id },
                 data: {
                     scale: part.scale,
@@ -282,6 +282,44 @@ export const appRouter = router({
             return {
                 status: "success",
                 message: "Part scale updated successfully",
+            };
+        }),
+    deletePart: privateProcedure
+        .input(z.object({ partId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { partId } = input;
+
+            // Fetch the part with its associated rocket
+            const partWithRocket = await db.rocketPart.findUnique({
+                where: { id: partId },
+                include: { rocketStage: { include: { rocket: true } } },
+            });
+
+            if (
+                partWithRocket === null ||
+                partWithRocket.rocketStage === null ||
+                partWithRocket.rocketStage.rocket === null
+            )
+                return new TRPCError({ code: "NOT_FOUND" });
+
+            // Check if the part's rocket's userId matches the current user's userId
+            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
+            if (partRocketUserId !== userId) {
+                return new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You don't have permission to update this part.",
+                });
+            }
+
+            // If the user has permission, update the part
+            await db.rocketPart.delete({
+                where: { id: partId },
+            });
+
+            return {
+                status: "success",
+                message: "Part removed successfully",
             };
         }),
     uploadRocketPreview: privateProcedure

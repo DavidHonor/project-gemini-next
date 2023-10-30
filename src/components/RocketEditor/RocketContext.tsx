@@ -22,6 +22,7 @@ export const RocketContext = createContext({
     setMenuOption: (menuOption: EditorMenuOptions) => {},
     updateRocketScale: (scale: number) => {},
     updatePartScale: (partScale: number, partId: string) => {},
+    deletePart: (rocketPart: RocketPart) => {},
     uploadRocketPreview: (image: string) => {},
     getRocketPreview: () => {},
     rocket: null as Rocket | null,
@@ -134,8 +135,27 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             });
     });
 
+    const deletePart = useMutation(async (rocketPart: RocketPart) => {
+        if (!rocket) return handleAPIError();
+
+        const stageIndex = rocket.stages.findIndex(
+            (x) => x.id === rocketPart.stageId
+        );
+        const partIndex = rocket.stages[stageIndex].parts.findIndex(
+            (x) => x.id === rocketPart.id
+        );
+
+        const rocketCopy = structuredClone(rocket);
+        rocketCopy.stages[stageIndex].parts.splice(partIndex, 1);
+        setRocket(rocketCopy);
+
+        utils.client.deletePart.mutate({
+            partId: rocketPart.id,
+        });
+    });
+
     const uploadRocketPreview = useMutation(async (image: string) => {
-        if (rocket === null) return handleAPIError();
+        if (!rocket) return handleAPIError();
 
         utils.client.uploadRocketPreview.mutate({
             image: image,
@@ -144,7 +164,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     });
 
     const getRocketPreview = useMutation(async () => {
-        if (rocketId === null) return handleAPIError();
+        if (!rocketId) return handleAPIError();
 
         utils.client.getRocketPreview.query({ rocketId });
     });
@@ -190,6 +210,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 setCursorMode,
                 updateRocketScale: updateRocketScale.mutate,
                 updatePartScale,
+                deletePart: deletePart.mutate,
                 uploadRocketPreview: uploadRocketPreview.mutate,
                 getRocketPreview: getRocketPreview.mutate,
                 setMenuOption,

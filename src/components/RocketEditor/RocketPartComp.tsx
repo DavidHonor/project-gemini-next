@@ -29,6 +29,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         cursorMode,
         rocket,
         updatePartScale,
+        deletePart,
     } = useContext(RocketContext);
 
     const [drag, setDrag] = useState({
@@ -40,10 +41,6 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     const [partPosition, setPartPosition] = useState({
         left: rocketPart.x,
         top: rocketPart.y,
-    });
-    const finalPosition = useRef({
-        x: rocketPart.x,
-        y: rocketPart.y,
     });
 
     const deleteIconRef = useRef<HTMLDivElement>(null);
@@ -140,21 +137,35 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             left: coords.x + drag.offset_x,
             top: coords.y + drag.offset_y,
         });
-
-        finalPosition.current.x = coords.x + drag.offset_x;
-        finalPosition.current.y = coords.y + drag.offset_y;
     };
 
-    const handlePartMoveEnd = () => {
+    const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
         if (cursorMode !== CursorOptions.GRAB || !deleteIconRef.current) return;
+        const coords = getEventCoords(event);
+        if (!coords) return;
 
         const deleteArea = deleteIconRef.current.getBoundingClientRect();
 
+        //since the delete div is fixed positioned, the height of the top bar
+        //has to be taken into count
+        const topBarHeight = 56;
+        const halfPartHeight =
+            (rocketPart.height * rocket!.scaleSlider * rocketPart.scale) / 2;
+
+        if (
+            deleteArea.y - topBarHeight <
+            coords.y + drag.offset_y + halfPartHeight
+        ) {
+            deletePart(rocketPart);
+            return;
+        }
+
         updatePartPosition({
             ...rocketPart,
-            x: finalPosition.current.x,
-            y: finalPosition.current.y,
+            x: coords.x + drag.offset_x,
+            y: coords.y + drag.offset_y,
         });
+
         setDrag({
             enabled: false,
             offset_x: 0,
