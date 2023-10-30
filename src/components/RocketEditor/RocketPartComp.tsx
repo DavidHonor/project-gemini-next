@@ -64,8 +64,11 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
 
     useEffect(() => {
         if (drag.enabled) {
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
+            window.addEventListener("mousemove", handlePartMove);
+            window.addEventListener("touchmove", handlePartMove);
+
+            window.addEventListener("mouseup", handlePartMoveEnd);
+            window.addEventListener("touchend", handlePartMoveEnd);
         }
     }, [drag]);
 
@@ -79,45 +82,70 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
 
     if (!rocketPart) return "";
 
-    const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
-        if (event.button === 0 && !isLoading) {
-            const rect = forwardedRef.current.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+    const getEventCoords = (
+        event:
+            | React.MouseEvent<HTMLImageElement>
+            | React.TouchEvent<HTMLImageElement>
+            | MouseEvent
+            | TouchEvent
+    ) => {
+        if (!forwardedRef.current) return;
+        let x, y;
 
-            if (cursorMode === CursorOptions.GRAB)
-                setDrag({
-                    enabled: true,
-                    offset_x: rocketPart.x - x,
-                    offset_y: rocketPart.y - y,
-                });
-            else if (cursorMode === CursorOptions.SELECT) {
-                setDrag({
-                    enabled: !drag.enabled,
-                    offset_x: drag.enabled ? 0 : x,
-                    offset_y: drag.enabled ? 0 : y,
-                });
-            }
-        }
+        if ("clientX" in event && event.button === 0) {
+            x = event.clientX;
+            y = event.clientY;
+        } else if ("touches" in event) {
+            x = event.touches[0].clientX;
+            y = event.touches[0].clientY;
+        } else return;
+
+        const rect = forwardedRef.current.getBoundingClientRect();
+        x = x - rect.left;
+        y = y - rect.top;
+
+        return { x, y };
     };
 
-    const handleMouseMove = (event: MouseEvent) => {
-        if (forwardedRef.current && cursorMode === CursorOptions.GRAB) {
-            const rect = forwardedRef.current.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+    const handlePartMoveStart = (
+        event:
+            | React.MouseEvent<HTMLImageElement>
+            | React.TouchEvent<HTMLImageElement>
+    ) => {
+        if (isLoading) return;
+        const coords = getEventCoords(event);
+        if (!coords) return;
 
-            setPartPosition({
-                left: x + drag.offset_x,
-                top: y + drag.offset_y,
+        if (cursorMode === CursorOptions.GRAB)
+            setDrag({
+                enabled: true,
+                offset_x: rocketPart.x - coords.x,
+                offset_y: rocketPart.y - coords.y,
             });
-
-            finalPosition.current.x = x + drag.offset_x;
-            finalPosition.current.y = y + drag.offset_y;
+        else if (cursorMode === CursorOptions.SELECT) {
+            setDrag({
+                enabled: !drag.enabled,
+                offset_x: drag.enabled ? 0 : coords.x,
+                offset_y: drag.enabled ? 0 : coords.y,
+            });
         }
     };
 
-    const handleMouseUp = () => {
+    const handlePartMove = (event: MouseEvent | TouchEvent) => {
+        if (cursorMode !== CursorOptions.GRAB) return;
+        const coords = getEventCoords(event);
+        if (!coords) return;
+
+        setPartPosition({
+            left: coords.x + drag.offset_x,
+            top: coords.y + drag.offset_y,
+        });
+
+        finalPosition.current.x = coords.x + drag.offset_x;
+        finalPosition.current.y = coords.y + drag.offset_y;
+    };
+
+    const handlePartMoveEnd = () => {
         if (deleteIconRef.current)
             console.log(deleteIconRef.current.getBoundingClientRect());
 
@@ -134,8 +162,11 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             });
         }
 
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("mousemove", handlePartMove);
+        window.removeEventListener("touchmove", handlePartMove);
+
+        window.removeEventListener("mouseup", handlePartMoveEnd);
+        window.removeEventListener("touchend", handlePartMoveEnd);
     };
 
     const Cursor = () => {
@@ -169,7 +200,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     }
                     src={`/rocket_parts/${rocketPart.image}`}
                     draggable="false"
-                    onMouseDown={handleMouseDown}
+                    onMouseDown={handlePartMoveStart}
+                    onTouchStart={handlePartMoveStart}
                     className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out z-10"
                     style={{ maxWidth: "none" }}
                 />

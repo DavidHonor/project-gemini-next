@@ -78,35 +78,27 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
         if (!rocketPart) return handleAPIError();
 
-        setIsLoading(true);
-
-        const rawResponse = await utils.client.updatePartPosition.mutate({
-            rocketPart,
-        });
-        if (!rawResponse || !("id" in rawResponse)) {
-            setIsLoading(false);
-            handleAPIError();
-            return;
-        }
-
-        const response = {
-            ...rawResponse,
-            createdAt: new Date(rawResponse.createdAt),
-        };
-
-        //update rocket with part
         const rocketClone = structuredClone(rocket);
         const stageIndex = rocketClone?.stages.findIndex(
-            (x) => x.id === response.stageId
+            (x) => x.id === rocketPart.stageId
         );
         const partIndex = rocketClone?.stages[stageIndex!].parts.findIndex(
-            (x) => x.id === response.id
+            (x) => x.id === rocketPart.id
         );
 
-        rocketClone!.stages[stageIndex!].parts[partIndex!] = response;
-
+        rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
         setRocket(rocketClone);
-        setIsLoading(false);
+
+        utils.client.updatePartPosition
+            .mutate({
+                rocketPart,
+            })
+            .then((response) => {
+                if (!response || !("id" in response)) {
+                    handleAPIError();
+                }
+            })
+            .catch((err) => handleAPIError());
     });
 
     const { mutate: createRocketPart_ } = useMutation({
