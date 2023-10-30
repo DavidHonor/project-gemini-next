@@ -93,6 +93,17 @@
             rgba(255, 137, 119, 0.646) 90%,
             #0000 90%
         );
-    opacity: 0.2;
+    opacity: 0.5;
     text-align: center;
+}
+
+.slide-in {
+    transform: translateY(100%); /* Start from the bottom */
+    opacity: 0; /* Fully transparent */
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Transition effect */
+    z-index: 5;
+}
+.slide-in-active {
+    transform: translateY(0); /* End at its original position */
+    opacity: 1; /* Fully visible */
 }

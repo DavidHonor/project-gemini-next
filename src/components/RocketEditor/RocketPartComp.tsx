@@ -1,5 +1,5 @@
 import { trpc } from "@/app/_trpc/client";
-import { CursorOptions, getCursorPosition } from "@/lib/utils";
+import { CursorOptions, cn, getCursorPosition } from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -146,21 +146,20 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     };
 
     const handlePartMoveEnd = () => {
-        if (deleteIconRef.current)
-            console.log(deleteIconRef.current.getBoundingClientRect());
+        if (cursorMode !== CursorOptions.GRAB || !deleteIconRef.current) return;
 
-        if (cursorMode === CursorOptions.GRAB) {
-            updatePartPosition({
-                ...rocketPart,
-                x: finalPosition.current.x,
-                y: finalPosition.current.y,
-            });
-            setDrag({
-                enabled: false,
-                offset_x: 0,
-                offset_y: 0,
-            });
-        }
+        const deleteArea = deleteIconRef.current.getBoundingClientRect();
+
+        updatePartPosition({
+            ...rocketPart,
+            x: finalPosition.current.x,
+            y: finalPosition.current.y,
+        });
+        setDrag({
+            enabled: false,
+            offset_x: 0,
+            offset_y: 0,
+        });
 
         window.removeEventListener("mousemove", handlePartMove);
         window.removeEventListener("touchmove", handlePartMove);
@@ -171,9 +170,24 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
 
     const Cursor = () => {
         if (cursorMode === CursorOptions.GRAB) {
-            return drag ? "grabbing" : "grab";
+            return drag.enabled ? "grabbing" : "grab";
         }
         return "pointer";
+    };
+
+    const PartPopupPosition = () => {
+        const canvasBounds = forwardedRef.current.getBoundingClientRect();
+        const PART_POPUP_WIDTH = 200;
+
+        let xModif = 0;
+        if (canvasBounds.width < drag.offset_x + PART_POPUP_WIDTH) {
+            xModif = canvasBounds.width - (drag.offset_x + PART_POPUP_WIDTH);
+        }
+
+        return {
+            left: drag.offset_x + xModif,
+            top: drag.offset_y,
+        };
     };
 
     return (
@@ -206,21 +220,32 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     style={{ maxWidth: "none" }}
                 />
             </div>
+
+            {/* Part scale slider popup */}
             {drag.enabled && cursorMode === CursorOptions.SELECT ? (
                 <Card
                     className="absolute w-[200px] z-30"
-                    style={{ left: drag.offset_x, top: drag.offset_y }}
+                    style={{ ...PartPopupPosition() }}
                 >
-                    <CardHeader>
+                    <CardHeader className="p-2">
                         <CardTitle className="flex items-center justify-between">
-                            <span>Adjust size</span>
-                            <Scaling className="ml-1 w-5 h-5" />
+                            <span className="text-lg">Adjust size</span>
+                            <Scaling
+                                className="ml-1 text-lg cursor-pointer"
+                                onClick={() =>
+                                    setDrag({
+                                        enabled: false,
+                                        offset_x: 0,
+                                        offset_y: 0,
+                                    })
+                                }
+                            />
                         </CardTitle>
-                        <CardDescription className="flex">
-                            <span>{`Scale of part: ${rocketPart.name}`}</span>
+                        <CardDescription className="flex text-sm ">
+                            {`Scale of part: ${rocketPart.name}`}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-2">
                         <ControlledSlider
                             value={rocketPart.scale}
                             min={0.3}
@@ -233,15 +258,21 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     </CardContent>
                 </Card>
             ) : null}
-            {drag.enabled ? (
-                <div
-                    ref={deleteIconRef}
-                    className="group absolute bottom-5 left-1/2"
-                >
-                    <XCircle className="h-8 w-8 duration-300 ease-out text-red-300 hover:text-red-600 z-20" />
-                    <div className="fixed curve-effect bottom-0 left-0 right-0 h-16 z-10 pointer-events-none"></div>
+
+            <div
+                ref={deleteIconRef}
+                className={cn(
+                    "fixed flex items-center justify-center curve-effect bottom-0 left-0 right-0 h-16 pointer-events-none slide-in",
+                    {
+                        "slide-in-active":
+                            drag.enabled && cursorMode === CursorOptions.GRAB,
+                    }
+                )}
+            >
+                <div className="flex z-10">
+                    <XCircle className="text-red-600 h-8 w-8" />
                 </div>
-            ) : null}
+            </div>
         </>
     );
 };

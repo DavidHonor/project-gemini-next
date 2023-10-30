@@ -52,8 +52,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     if (!rocket || !rocket.stages)
         return (
-            <div className="flex items-center justify-center h-20">
-                <p className="text-zinc-700 font-semibold sm:text-lg">
+            <div className="flex items-center justify-center h-20 w-full">
+                <p className="text-zinc-700 font-semibold sm:text-base">
                     Loading rocket
                 </p>
                 <Loader2 className="ml-1 h-8 w-8 animate-spin text-zinc-800" />
@@ -115,7 +115,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                     >
                         <TooltipProvider>
                             <Tooltip>
-                                <TooltipTrigger>
+                                <TooltipTrigger style={{ padding: 0 }}>
                                     <MousePointerSquareDashed className="w-5 h-5" />
                                 </TooltipTrigger>
                                 <TooltipContent>Select mode</TooltipContent>
@@ -138,7 +138,14 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                     </CardContent>
                 </Card>
 
-                <Button onClick={() => captureRocketImage()}>Capture</Button>
+                <div className="flex">
+                    <Button
+                        className="h-full"
+                        onClick={() => captureRocketImage()}
+                    >
+                        Capture
+                    </Button>
+                </div>
             </div>
         </div>
     );
