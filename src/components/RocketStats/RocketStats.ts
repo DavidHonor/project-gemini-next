@@ -1,6 +1,6 @@
 import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
 import { fuelMassCalc } from "@/lib/ship_functions";
-import { Rocket } from "@/types/rocket"; // adjust the path
+import { Rocket } from "@/types/rocket";
 import { RocketStats, StageStats } from "@/types/rocket_stats";
 
 export function calculateRocketStats(rocket: Rocket): RocketStats {
@@ -9,13 +9,27 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         for (let stage of rocket.stages) {
             let stageSummary: StageStats = {
                 stageId: stage.id,
-                totalWeight: 0,
-                dryWeight: 0,
-                totalThrust: 0,
+
+                individual: {
+                    totalWeight: 0,
+                    dryWeight: 0,
+                    totalThrust: 0,
+                },
+
+                stacked: {
+                    totalWeight: 0,
+                    dryWeight: 0,
+                    totalThrust: 0,
+                },
             };
 
+            //Summerize stages individually
             for (let part of stage.parts) {
-                stageSummary.dryWeight += part.weight;
+                stageSummary.individual.dryWeight += part.weight;
+                stageSummary.stacked.dryWeight += part.weight;
+
+                stageSummary.individual.totalWeight += part.weight;
+                stageSummary.stacked.totalWeight += part.weight;
 
                 const protPart = RocketPartPrototypes.find(
                     (x) => x.name === part.name
@@ -30,7 +44,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                             "thrust_sl is not defined for the given part"
                         );
 
-                    stageSummary.totalThrust += protPart.thrust_sl;
+                    stageSummary.individual.totalThrust += protPart.thrust_sl;
+                    stageSummary.stacked.totalThrust += protPart.thrust_sl;
                 } else if (part.part_type === PartTypes.FUELTANK) {
                     if (!protPart)
                         throw new Error(
@@ -44,11 +59,25 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                             "diameter or length is not defined for the given part"
                         );
 
-                    stageSummary.totalWeight += fuelMassCalc(protPart);
+                    stageSummary.individual.totalWeight +=
+                        fuelMassCalc(protPart);
+                    stageSummary.stacked.totalWeight =
+                        stageSummary.individual.totalWeight;
                 }
             }
 
             results.push(stageSummary);
+        }
+
+        //Summerize stages stacked
+        for (let i = results.length - 1; i > 0; i--) {
+            results[i - 1].stacked.dryWeight += results[i].stacked.dryWeight;
+
+            results[i - 1].stacked.totalWeight +=
+                results[i].stacked.totalWeight;
+
+            results[i - 1].stacked.totalThrust +=
+                results[i].stacked.totalThrust;
         }
 
         return results;

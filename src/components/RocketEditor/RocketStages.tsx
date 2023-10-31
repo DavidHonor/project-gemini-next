@@ -52,7 +52,11 @@ const Stage = ({
                     Stage {stageIndex + 1}
                 </h2>
                 <span className="text-xs" title="total weight">
-                    {roundToDecimalPlaces(stageStats!.totalWeight, 0)} kg
+                    {roundToDecimalPlaces(
+                        stageStats!.individual.totalWeight,
+                        0
+                    )}{" "}
+                    kg
                 </span>
                 <span className="text-xs" title="number of parts">
                     [{stage.parts.length}]
@@ -68,6 +72,8 @@ const Stage = ({
 };
 
 const Part = ({ part }: { part: RocketPart }) => {
+    const { updatePartStage } = useContext(RocketContext);
+
     return (
         <div className="flex items-center justify-between pl-4 border-t text-sm">
             <div className="basis-3/6">
@@ -84,10 +90,18 @@ const Part = ({ part }: { part: RocketPart }) => {
             </div>
 
             <div className="flex basis-1/6">
-                <Button variant={"ghost"} className="p-1" onClick={() => {}}>
+                <Button
+                    variant={"ghost"}
+                    className="p-1"
+                    onClick={() => updatePartStage({ part, moveDirection: -1 })}
+                >
                     <ChevronUp className="w-5 h-5" />
                 </Button>
-                <Button variant={"ghost"} className="p-1" onClick={() => {}}>
+                <Button
+                    variant={"ghost"}
+                    className="p-1"
+                    onClick={() => updatePartStage({ part, moveDirection: 1 })}
+                >
                     <ChevronDown className="w-5 h-5" />
                 </Button>
             </div>

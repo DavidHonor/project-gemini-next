@@ -7,7 +7,16 @@ export type RocketStats = {
 
 export type StageStats = {
     stageId: string;
-    totalWeight: number;
-    dryWeight: number;
-    totalThrust: number;
+
+    individual: {
+        totalWeight: number;
+        dryWeight: number;
+        totalThrust: number;
+    };
+
+    stacked: {
+        totalWeight: number;
+        dryWeight: number;
+        totalThrust: number;
+    };
 };

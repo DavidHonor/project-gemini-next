@@ -33,7 +33,13 @@ export const RocketContext = createContext({
         partScale: number;
         partId: string;
     }) => {},
-    updatePartStage: (partId: string) => {},
+    updatePartStage: ({
+        part,
+        moveDirection,
+    }: {
+        part: RocketPart;
+        moveDirection: number;
+    }) => {},
     deletePart: (rocketPart: RocketPart) => {},
 
     setCursorMode: (cursorMode: CursorOptions) => {},
@@ -69,7 +75,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const { toast } = useToast();
 
     useEffect(() => {
-        if (rocket) setStats(calculateRocketStats(rocket));
+        if (rocket) {
+            const result = calculateRocketStats(rocket);
+            setStats(result);
+        }
     }, [rocket]);
 
     const handleAPIError = () =>
@@ -166,6 +175,34 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         setRocket(rocketCopy);
     });
 
+    const updatePartStage = useMutation(
+        async ({
+            part,
+            moveDirection,
+        }: {
+            part: RocketPart;
+            moveDirection: number;
+        }) => {
+            if (!rocket) return handleAPIError();
+
+            const stageIndex = rocket.stages.findIndex(
+                (x) => x.id === part.stageId
+            );
+            console.log(moveDirection, stageIndex);
+            if (moveDirection === -1 && stageIndex < 1) return;
+
+            const response = await utils.client.stage.updatePartStage.mutate({
+                rocketId,
+                partId: part.id,
+                moveDir: moveDirection,
+            });
+
+            if (!("status" in response)) return handleAPIError();
+
+            getRocketMutation.mutate(rocketId);
+        }
+    );
+
     //========================================
     //=========== Part mutations ===========
     //========================================
@@ -227,8 +264,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             })
             .catch((err) => handleAPIError());
     });
-
-    const updatePartStage = useMutation(async (partId: string) => {});
 
     const updatePartScale = useMutation(
         async ({
