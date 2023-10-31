@@ -18,6 +18,6 @@ type Rocket = RocketZodType & { stages: RocketStage[] };
 // type RocketPart = RouterOutput3["getRocketPart"];
 
 type RouterOutput2 = inferRouterOutputs<AppRouter>;
-type RocketName = RouterOutput2["getUserRockets"][0];
+type RocketName = RouterOutput2["rocket"]["getUserRockets"][0];
 
 export type { Rocket, RocketStage, RocketName };
