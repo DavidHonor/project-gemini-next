@@ -105,3 +105,12 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
     }
     return shipCopy;
 }
+
+export function fuelMassCalc(object: { diameter: number; length: number }) {
+    const volume = Math.PI * Math.pow(object.diameter / 2, 2) * object.length;
+    const density_fuel = 422;
+    const density_oxygen = 1141;
+    const weight =
+        volume * 0.65 * density_oxygen + volume * 0.35 * density_fuel;
+    return weight;
+}

@@ -5,11 +5,12 @@ import { RocketPart } from "../../../prisma/generated/zod";
 import { ChevronDown, ChevronUp, PlusIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { roundToDecimalPlaces } from "@/lib/utils";
+import { RocketStats } from "@/types/rocket_stats";
 
 const RocketStages = () => {
-    const { rocket, addRocketStage } = useContext(RocketContext);
+    const { rocket, stats, addRocketStage } = useContext(RocketContext);
 
-    if (!rocket) return "";
+    if (!rocket || !stats) return "";
 
     return (
         <div className="flex flex-col w-full">
@@ -19,6 +20,7 @@ const RocketStages = () => {
                         key={stage.id}
                         stage={stage}
                         stageIndex={stageIndex}
+                        stats={stats}
                     />
                 ))}
             </div>
@@ -35,16 +37,23 @@ const RocketStages = () => {
 const Stage = ({
     stage,
     stageIndex,
+    stats,
 }: {
     stage: RocketStage;
     stageIndex: number;
+    stats: RocketStats;
 }) => {
+    const stageStats = stats.stageStats.find((x) => x.stageId === stage.id);
+
     return (
         <div className="flex flex-col w-full py-1 border-b-2">
             <div className="flex items-center justify-between py-1">
                 <h2 className="text-base font-medium ">
                     Stage {stageIndex + 1}
                 </h2>
+                <span className="text-xs" title="total weight">
+                    {roundToDecimalPlaces(stageStats!.totalWeight, 0)} kg
+                </span>
                 <span className="text-xs" title="number of parts">
                     [{stage.parts.length}]
                 </span>

@@ -282,7 +282,10 @@ const RocketPartComp = ({
                             max={1.5}
                             step={0.1}
                             onValueCommit={(values) =>
-                                updatePartScale(values[0], rocketPart.id)
+                                updatePartScale({
+                                    partScale: values[0],
+                                    partId: rocketPart.id,
+                                })
                             }
                         />
                     </CardContent>
