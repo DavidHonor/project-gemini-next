@@ -30,6 +30,7 @@ export const RocketContext = createContext({
 
     setCursorMode: (cursorMode: CursorOptions) => {},
     setMenuOption: (menuOption: EditorMenuOptions) => {},
+    setRocketPartIdDrag: (partId: string) => {},
 
     rocket: null as Rocket | null,
     isLoading: false,
@@ -41,7 +42,12 @@ export const RocketContext = createContext({
 export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const [rocket, setRocket] = useState<Rocket | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    //rocketPartIdDrag stores a partId which was selected from the next parts list
+    //to enable the dragging effect after the it was created on the server
+    //should be cleared after the desired effect, as it is blocking functinality
     const [rocketPartIdDrag, setRocketPartIdDrag] = useState("");
+
     const [cursorMode, setCursorMode_] = useState<CursorOptions>(
         CursorOptions.GRAB
     );
@@ -108,20 +114,17 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             .catch((err) => handleAPIError());
     });
 
-    const { mutate: createRocketPart_ } = useMutation({
-        mutationFn: async ({ partName }: { partName: string }) => {
-            if (!rocket || !rocket.id) return handleAPIError();
+    const createRocketPart = useMutation(async (partName: string) => {
+        if (!rocket) return handleAPIError();
 
-            const response = await utils.client.createRocketPart.mutate({
-                rocketId: rocket.id,
-                partName,
-            });
+        const response = await utils.client.createRocketPart.mutate({
+            rocketId: rocket.id,
+            partName,
+        });
+        if (!response || !("id" in response)) return handleAPIError();
 
-            if (!response || !("id" in response)) return handleAPIError();
-
-            setRocketPartIdDrag(response.id);
-            getRocketMutation.mutate(rocketId);
-        },
+        setRocketPartIdDrag(response.id);
+        getRocketMutation.mutate(rocketId);
     });
 
     const updateRocketScale = useMutation(async (scale: number) => {
@@ -217,9 +220,6 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             });
         },
     });
-
-    const createRocketPart = (partName: string) =>
-        createRocketPart_({ partName });
     const setCursorMode = (newCursorMode: CursorOptions) =>
         setCursorMode_(newCursorMode);
 
@@ -235,7 +235,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 cursorMode,
                 menuOption,
                 updatePartPosition: updatePartPosition.mutate,
-                createRocketPart,
+                createRocketPart: createRocketPart.mutate,
                 getRocket: getRocketMutation.mutate,
                 setCursorMode,
                 updateRocketScale: updateRocketScale.mutate,
@@ -246,6 +246,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 setMenuOption,
                 addRocketStage: addRocketStage.mutate,
                 updatePartStage: updatePartStage.mutate,
+                setRocketPartIdDrag,
             }}
         >
             {children}

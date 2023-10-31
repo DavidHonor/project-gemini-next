@@ -7,12 +7,6 @@ import { Grab, Loader2, MousePointerSquareDashed } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { RocketContext } from "./RocketContext";
 import { CursorOptions, cn } from "@/lib/utils";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "../ui/tooltip";
 
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
@@ -25,6 +19,7 @@ interface RocketCanvasProps {
 
 const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     const ref = useRef<HTMLDivElement>(null);
+    const deleteAreaRef = useRef<HTMLDivElement>(null);
 
     const {
         setCursorMode,
@@ -40,15 +35,15 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
         return dataUrl;
     };
 
-    const onLoadCapture = async () => {
+    const uploadRocketImage = async () => {
         const img = await captureRocketImage();
-        if (img !== undefined && img.includes("data:image/png;base64"))
+        if (img && img.includes("data:image/png;base64"))
             uploadRocketPreview(img);
     };
 
     useEffect(() => {
-        if (rocket && rocket.stages) onLoadCapture();
-    }, []);
+        //uploadRocketImage();
+    }, [rocket]);
 
     if (!rocket || !rocket.stages)
         return (
@@ -69,7 +64,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                             <RocketPartComp
                                 key={"rp_" + part?.id}
                                 rocketPart={part}
-                                forwardedRef={ref}
+                                editorAreaRef={ref}
+                                deleteAreaRef={deleteAreaRef}
                             />
                         );
                     });
@@ -111,16 +107,13 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                         />
                     </CardContent>
                 </Card>
-
-                <div className="flex">
-                    <Button
-                        className="h-full"
-                        onClick={() => captureRocketImage()}
-                    >
-                        Capture
-                    </Button>
-                </div>
             </div>
+
+            {/* delete parts area */}
+            <div
+                ref={deleteAreaRef}
+                className="fixed bottom-0 left-0 right-0 h-16 pointer-events-none"
+            />
         </div>
     );
 };

@@ -18,10 +18,15 @@ import {
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
-    forwardedRef: React.RefObject<any>;
+    editorAreaRef: React.RefObject<HTMLDivElement>;
+    deleteAreaRef: React.RefObject<any>;
 }
 
-const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
+const RocketPartComp = ({
+    rocketPart,
+    editorAreaRef,
+    deleteAreaRef,
+}: RocketPartCompProps) => {
     const {
         updatePartPosition,
         rocketPartIdDrag,
@@ -30,6 +35,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         rocket,
         updatePartScale,
         deletePart,
+        setRocketPartIdDrag,
     } = useContext(RocketContext);
 
     const [drag, setDrag] = useState({
@@ -43,14 +49,13 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
         top: rocketPart.y,
     });
 
-    const deleteIconRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
-        if (rocketPartIdDrag !== "" && rocketPartIdDrag === rocketPart.id) {
+        //simulate the drag start on the dynamically created part
+        if (rocketPartIdDrag === rocketPart.id) {
             setDrag({
                 enabled: true,
-                offset_x: 0,
-                offset_y: 0,
+                offset_x: -(rocketPart.width * rocketPart.scale) / 2,
+                offset_y: -(rocketPart.height * rocketPart.scale) / 2,
             });
         }
     }, [rocketPartIdDrag]);
@@ -70,6 +75,9 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     }, [drag]);
 
     useEffect(() => {
+        //do not cancel the drag if a dynamic part is being dragged
+        if (rocketPartIdDrag) return;
+
         setDrag({
             enabled: false,
             offset_x: 0,
@@ -87,7 +95,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             | TouchEvent,
         isTouchEnd: boolean = false
     ) => {
-        if (!forwardedRef.current) return;
+        if (!editorAreaRef.current) return;
         let x, y;
 
         if ("clientX" in event && event.button === 0) {
@@ -103,7 +111,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             }
         } else return;
 
-        const rect = forwardedRef.current.getBoundingClientRect();
+        const rect = editorAreaRef.current.getBoundingClientRect();
         x = x - rect.left;
         y = y - rect.top;
 
@@ -115,17 +123,17 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             | React.MouseEvent<HTMLImageElement>
             | React.TouchEvent<HTMLImageElement>
     ) => {
-        if (isLoading) return;
+        if (rocketPartIdDrag) return;
         const coords = getEventCoords(event);
         if (!coords) return;
 
-        if (cursorMode === CursorOptions.GRAB)
+        if (cursorMode === CursorOptions.GRAB) {
             setDrag({
                 enabled: true,
                 offset_x: rocketPart.x - coords.x,
                 offset_y: rocketPart.y - coords.y,
             });
-        else if (cursorMode === CursorOptions.SELECT) {
+        } else if (cursorMode === CursorOptions.SELECT) {
             setDrag({
                 enabled: !drag.enabled,
                 offset_x: drag.enabled ? 0 : coords.x,
@@ -146,11 +154,12 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     };
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
-        if (cursorMode !== CursorOptions.GRAB || !deleteIconRef.current) return;
+        if (cursorMode !== CursorOptions.GRAB || !deleteAreaRef.current) return;
         const coords = getEventCoords(event, true);
         if (!coords) return;
 
-        const deleteArea = deleteIconRef.current.getBoundingClientRect();
+        const deleteArea = deleteAreaRef.current.getBoundingClientRect();
+        if (!deleteArea.y) return;
 
         //since the delete div is fixed positioned, the height of the top bar
         //has to be taken into count
@@ -171,6 +180,10 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
             x: coords.x + drag.offset_x,
             y: coords.y + drag.offset_y,
         });
+
+        //Clear the dynamically returned dragging part id
+        //to clear the blocking
+        if (rocketPartIdDrag) setRocketPartIdDrag("");
 
         setDrag({
             enabled: false,
@@ -193,7 +206,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
     };
 
     const PartPopupPosition = () => {
-        const canvasBounds = forwardedRef.current.getBoundingClientRect();
+        const canvasBounds = deleteAreaRef.current.getBoundingClientRect();
         const PART_POPUP_WIDTH = 200;
 
         let xModif = 0;
@@ -215,6 +228,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     ...partPosition,
                     cursor: Cursor(),
                 }}
+                className="hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none"
             >
                 <Image
                     key={`part_img_${rocketPart.id}`}
@@ -233,8 +247,7 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                     draggable="false"
                     onMouseDown={handlePartMoveStart}
                     onTouchStart={handlePartMoveStart}
-                    className="hover:opacity-75 hover:shadow-sm transition duration-300 ease-in-out z-10"
-                    style={{ maxWidth: "none" }}
+                    className="z-10"
                 />
             </div>
 
@@ -276,8 +289,8 @@ const RocketPartComp = ({ rocketPart, forwardedRef }: RocketPartCompProps) => {
                 </Card>
             ) : null}
 
+            {/* animated div for effect of deleting parts, no functinality here */}
             <div
-                ref={deleteIconRef}
                 className={cn(
                     "fixed flex items-center justify-center curve-effect bottom-0 left-0 right-0 h-16 pointer-events-none slide-in",
                     {

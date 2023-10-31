@@ -3,7 +3,7 @@ import RocketPartImg from "./RocketPartImg";
 
 const RocketSample = () => {
     return (
-        <div className="flex flex-col pt-40 space-y-60 pb-40">
+        <div className="flex flex-col pt-40 space-y-60 pb-20">
             <RocketPartImg
                 imageSource={"/rocket_parts/gemini.png"}
                 alt="command pod"

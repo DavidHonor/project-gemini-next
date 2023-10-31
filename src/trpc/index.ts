@@ -156,10 +156,9 @@ export const appRouter = router({
             const prototypePart = RocketPartPrototypes.find(
                 (x) => x.name === partName
             );
-
             if (!prototypePart) return new TRPCError({ code: "NOT_FOUND" });
 
-            const rocket = await db.rocket.findFirst({
+            let rocket = await db.rocket.findFirst({
                 where: {
                     userId,
                     id: rocketId,
@@ -168,7 +167,6 @@ export const appRouter = router({
                     stages: true,
                 },
             });
-
             if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
 
             // =====================================
@@ -180,6 +178,20 @@ export const appRouter = router({
                         rocketId,
                     },
                 });
+                rocket = await db.rocket.findFirst({
+                    where: {
+                        userId,
+                        id: rocketId,
+                    },
+                    include: {
+                        stages: true,
+                    },
+                });
+                if (!rocket)
+                    return new TRPCError({
+                        code: "NOT_FOUND",
+                        message: "Creating stage failed",
+                    });
             }
 
             const latestStage = rocket.stages[rocket.stages.length - 1];
