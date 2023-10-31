@@ -18,14 +18,14 @@ const RocketList = () => {
         data: rockets,
         isLoading,
         refetch,
-    } = trpc.getUserRockets.useQuery();
+    } = trpc.rocket.getUserRockets.useQuery();
 
     const {
         mutate,
         data: rocket,
         isLoading: isRocketLoading,
         status,
-    } = trpc.createRocket.useMutation();
+    } = trpc.rocket.createRocket.useMutation();
 
     const { toast } = useToast();
 

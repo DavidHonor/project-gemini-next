@@ -23,12 +23,13 @@ interface RocketItemListProps {
 }
 
 const RocketListItem = ({ rocket, onRocketDeleted }: RocketItemListProps) => {
-    const { data: imageResponse, isLoading } = trpc.getRocketPreview.useQuery({
-        rocketId: rocket.id,
-    });
+    const { data: imageResponse, isLoading } =
+        trpc.rocket.getRocketPreview.useQuery({
+            rocketId: rocket.id,
+        });
 
     const { mutate: deleteRocket, status: deleteRocketStatus } =
-        trpc.deleteRocket.useMutation();
+        trpc.rocket.deleteRocket.useMutation();
 
     useEffect(() => {
         if (deleteRocketStatus === "loading") {

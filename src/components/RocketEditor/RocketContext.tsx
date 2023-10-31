@@ -66,7 +66,9 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         });
 
     const getRocketMutation = useMutation(async (rocketId: string) => {
-        const response = await utils.client.getRocket.query({ rocketId });
+        const response = await utils.client.rocket.getRocket.query({
+            rocketId,
+        });
         if (!response) {
             handleAPIError();
             return;
@@ -102,7 +104,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
         setRocket(rocketClone);
 
-        utils.client.updatePartPosition
+        utils.client.part.updatePartPosition
             .mutate({
                 rocketPart,
             })
@@ -117,7 +119,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const createRocketPart = useMutation(async (partName: string) => {
         if (!rocket) return handleAPIError();
 
-        const response = await utils.client.createRocketPart.mutate({
+        const response = await utils.client.part.createRocketPart.mutate({
             rocketId: rocket.id,
             partName,
         });
@@ -134,7 +136,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
         setRocket(rocketCopy);
 
-        utils.client.updateRocketScale
+        utils.client.rocket.updateRocketScale
             .mutate({
                 rocket: rocketCopy,
                 scaleSlider: scale,
@@ -158,7 +160,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         rocketCopy.stages[stageIndex].parts.splice(partIndex, 1);
         setRocket(rocketCopy);
 
-        utils.client.deletePart.mutate({
+        utils.client.part.deletePart.mutate({
             partId: rocketPart.id,
         });
     });
@@ -166,7 +168,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const uploadRocketPreview = useMutation(async (image: string) => {
         if (!rocket) return handleAPIError();
 
-        utils.client.uploadRocketPreview.mutate({
+        utils.client.rocket.uploadRocketPreview.mutate({
             image: image,
             rocketId: rocket.id,
         });
@@ -175,13 +177,13 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const getRocketPreview = useMutation(async () => {
         if (!rocketId) return handleAPIError();
 
-        utils.client.getRocketPreview.query({ rocketId });
+        utils.client.rocket.getRocketPreview.query({ rocketId });
     });
 
     const addRocketStage = useMutation(async () => {
         if (!rocketId) return handleAPIError();
 
-        const response = await utils.client.addRocketStage.mutate({
+        const response = await utils.client.stage.addRocketStage.mutate({
             rocketId,
         });
 
@@ -215,7 +217,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             const partScaleResult = partScaleChanged(rocket, partScale, partId);
             setRocket(partScaleResult.updatedRocket);
 
-            const response = await utils.client.updatePartScale.mutate({
+            const response = await utils.client.part.updatePartScale.mutate({
                 part: partScaleResult.updatedPart,
             });
         },
