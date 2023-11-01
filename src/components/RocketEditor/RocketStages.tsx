@@ -2,10 +2,14 @@ import React, { useContext } from "react";
 import { RocketContext } from "./RocketContext";
 import { RocketStage } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
-import { ChevronDown, ChevronUp, PlusIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, CogIcon, PlusIcon, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { roundToDecimalPlaces } from "@/lib/utils";
 import { RocketStats } from "@/types/rocket_stats";
+import { RocketPartPrototypes } from "@/config/rocket_parts";
+
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Separator } from "../ui/separator";
 
 const RocketStages = () => {
     const { rocket, stats, addRocketStage } = useContext(RocketContext);
@@ -72,7 +76,8 @@ const Stage = ({
 };
 
 const Part = ({ part }: { part: RocketPart }) => {
-    const { updatePartStage } = useContext(RocketContext);
+    const protPart = RocketPartPrototypes.find((x) => x.name === part.name);
+    if (!protPart) return "Part details not found: " + part.name;
 
     return (
         <div className="flex items-center justify-between pl-4 border-t text-sm">
@@ -89,23 +94,58 @@ const Part = ({ part }: { part: RocketPart }) => {
                 </span>
             </div>
 
-            <div className="flex basis-1/6">
-                <Button
-                    variant={"ghost"}
-                    className="p-1"
-                    onClick={() => updatePartStage({ part, moveDirection: -1 })}
-                >
-                    <ChevronUp className="w-5 h-5" />
-                </Button>
-                <Button
-                    variant={"ghost"}
-                    className="p-1"
-                    onClick={() => updatePartStage({ part, moveDirection: 1 })}
-                >
-                    <ChevronDown className="w-5 h-5" />
-                </Button>
+            <div className="flex justify-end basis-1/6">
+                <PartActionsPopover part={part} />
             </div>
         </div>
+    );
+};
+
+const PartActionsPopover = ({ part }: { part: RocketPart }) => {
+    const { updatePartStage } = useContext(RocketContext);
+
+    return (
+        <Popover>
+            <PopoverTrigger>
+                <CogIcon className="w-5 h-5 text-gray-400" />
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col p-2 w-[220px] gap-1">
+                <div className="flex flex-col relative">
+                    <span className="text-md">{part.name}</span>
+                    <span className="text-xs">{part.part_type}</span>
+                    <span className="text-xs">{part.weight} kg</span>
+                </div>
+
+                <Separator decorative />
+
+                <div className="flex items-center justify-between">
+                    <span className="text-sm">Move to previous stage</span>
+                    <Button
+                        title="move to previous stage"
+                        variant={"ghost"}
+                        className="p-1 h-5"
+                        onClick={() =>
+                            updatePartStage({ part, moveDirection: -1 })
+                        }
+                    >
+                        <ChevronUp className="w-5 h-5" />
+                    </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-sm">Move to next stage</span>
+                    <Button
+                        title="move to next stage"
+                        variant={"ghost"}
+                        className="p-1 h-5"
+                        onClick={() =>
+                            updatePartStage({ part, moveDirection: 1 })
+                        }
+                    >
+                        <ChevronDown className="w-5 h-5" />
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
     );
 };
 
