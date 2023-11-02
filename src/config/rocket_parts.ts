@@ -1,3 +1,7 @@
+export const GRAVITY_SOURCE = {
+    EARTH: 9.81,
+};
+
 export enum PartTypes {
     ENGINE = "Engine",
     FUELTANK = "Fuel tank",
@@ -31,8 +35,8 @@ export const RocketPartPrototypes = [
         isp_vc: 311,
         weight: 470,
         scale: 0.4,
-        width: 187,
-        height: 323,
+        width: 183,
+        height: 320,
     },
     {
         part_type: PartTypes.ENGINE,
@@ -111,8 +115,8 @@ export const RocketPartPrototypes = [
         image: "gemini.png",
         weight: 3700,
         scale: 0.7,
-        width: 300,
-        height: 300,
+        width: 157,
+        height: 298,
     },
     {
         part_type: PartTypes.COMMANDPOD,

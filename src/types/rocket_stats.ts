@@ -11,12 +11,20 @@ export type StageStats = {
     individual: {
         totalWeight: number;
         dryWeight: number;
+
         totalThrust: number;
+        totalIsp: number;
+
+        deltaV: number;
     };
 
     stacked: {
         totalWeight: number;
         dryWeight: number;
+
         totalThrust: number;
+        totalIsp: number;
+
+        deltaV: number;
     };
 };

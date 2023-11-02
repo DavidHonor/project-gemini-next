@@ -1,29 +1,48 @@
-import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
-import { fuelMassCalc } from "@/lib/ship_functions";
+import {
+    GRAVITY_SOURCE,
+    PartTypes,
+    RocketPartPrototypes,
+} from "@/config/rocket_parts";
+import { fuelMassCalc, getDeltaV } from "@/lib/ship_functions";
+import { roundToDecimalPlaces } from "@/lib/utils";
 import { Rocket } from "@/types/rocket";
 import { RocketStats, StageStats } from "@/types/rocket_stats";
+
+function initStageSummary(stageId: string) {
+    return {
+        stageId: stageId,
+
+        individual: {
+            totalWeight: 0,
+            dryWeight: 0,
+
+            totalThrust: 0,
+            totalIsp: 0,
+
+            deltaV: 0,
+        },
+
+        stacked: {
+            totalWeight: 0,
+            dryWeight: 0,
+
+            totalThrust: 0,
+            totalIsp: 0,
+
+            deltaV: 0,
+        },
+    };
+}
 
 export function calculateRocketStats(rocket: Rocket): RocketStats {
     const stageStats = (() => {
         let results: StageStats[] = [];
         for (let stage of rocket.stages) {
-            let stageSummary: StageStats = {
-                stageId: stage.id,
+            let stageSummary: StageStats = initStageSummary(stage.id);
+            let ispThrustSum = 0;
 
-                individual: {
-                    totalWeight: 0,
-                    dryWeight: 0,
-                    totalThrust: 0,
-                },
-
-                stacked: {
-                    totalWeight: 0,
-                    dryWeight: 0,
-                    totalThrust: 0,
-                },
-            };
-
-            //Summerize stages individually
+            //====== Summerize stages individually ======
+            //=== dryWeight, totalWeight, totalThrust ===
             for (let part of stage.parts) {
                 stageSummary.individual.dryWeight += part.weight;
                 stageSummary.stacked.dryWeight += part.weight;
@@ -46,6 +65,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
 
                     stageSummary.individual.totalThrust += protPart.thrust_sl;
                     stageSummary.stacked.totalThrust += protPart.thrust_sl;
+
+                    ispThrustSum += protPart.thrust_sl * protPart.isp_sl;
                 } else if (part.part_type === PartTypes.FUELTANK) {
                     if (!protPart)
                         throw new Error(
@@ -66,18 +87,43 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 }
             }
 
+            //=== calculate individual stage deltaV ===
+            if (stageSummary.individual.totalThrust !== 0) {
+                stageSummary.individual.totalIsp =
+                    ispThrustSum / stageSummary.individual.totalThrust;
+                //stacked is the same
+                stageSummary.stacked.totalIsp =
+                    ispThrustSum / stageSummary.stacked.totalThrust;
+            }
+
+            stageSummary.individual.deltaV = getDeltaV(
+                stageSummary.individual.totalWeight,
+                stageSummary.individual.dryWeight,
+                stageSummary.individual.totalIsp,
+                GRAVITY_SOURCE.EARTH
+            );
+
             results.push(stageSummary);
         }
 
-        //Summerize stages stacked
+        //=== Stacked stages performace ===
+        //deltaV of the uppermost stacked stage is equal to the individual
+        if (results.length) {
+            results[results.length - 1].stacked.deltaV =
+                results[results.length - 1].individual.deltaV;
+        }
         for (let i = results.length - 1; i > 0; i--) {
             results[i - 1].stacked.dryWeight += results[i].stacked.dryWeight;
 
             results[i - 1].stacked.totalWeight +=
                 results[i].stacked.totalWeight;
 
-            results[i - 1].stacked.totalThrust +=
-                results[i].stacked.totalThrust;
+            results[i - 1].stacked.deltaV = getDeltaV(
+                results[i - 1].stacked.totalWeight,
+                results[i - 1].stacked.dryWeight,
+                results[i - 1].stacked.totalIsp,
+                GRAVITY_SOURCE.EARTH
+            );
         }
 
         return results;

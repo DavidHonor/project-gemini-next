@@ -1,4 +1,7 @@
-import { Rocket } from "@/types/rocket";
+import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
+import { Rocket, RocketStage } from "@/types/rocket";
+import { RocketPart } from "@prisma/client";
+import { roundToDecimalPlaces } from "./utils";
 
 export function partScaleChanged(
     ship: Rocket,
@@ -113,4 +116,16 @@ export function fuelMassCalc(object: { diameter: number; length: number }) {
     const weight =
         volume * 0.65 * density_oxygen + volume * 0.35 * density_fuel;
     return weight;
+}
+
+export function getDeltaV(
+    totalWeight: number,
+    dryWeight: number,
+    totalIsp: number,
+    gravity: number
+) {
+    const exhaustRatio = totalWeight / dryWeight;
+    const exhaustVelocity = totalIsp * gravity;
+    const deltaV = exhaustVelocity * Math.log(exhaustRatio);
+    return roundToDecimalPlaces(deltaV, 0);
 }
