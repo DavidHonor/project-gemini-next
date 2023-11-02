@@ -73,7 +73,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
             </div>
 
             {/* Canvas related controls */}
-            <div className="absolute flex left-1 top-1 z-50 gap-1">
+            <div className="absolute flex left-1 top-1 z-30 gap-1">
                 <Button
                     variant={"outline"}
                     className={cn("px-2", {

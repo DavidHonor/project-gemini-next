@@ -188,7 +188,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             const stageIndex = rocket.stages.findIndex(
                 (x) => x.id === part.stageId
             );
-            console.log(moveDirection, stageIndex);
+
             if (moveDirection === -1 && stageIndex < 1) return;
 
             const response = await utils.client.stage.updatePartStage.mutate({
