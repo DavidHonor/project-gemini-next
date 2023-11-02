@@ -48,6 +48,7 @@ const Stage = ({
     stats: RocketStats;
 }) => {
     const stageStats = stats.stageStats.find((x) => x.stageId === stage.id);
+    if (!stageStats) return "performance unavailable";
 
     return (
         <div className="flex flex-col w-full py-1 border-b-2">
@@ -56,10 +57,7 @@ const Stage = ({
                     Stage {stageIndex + 1}
                 </h2>
                 <span className="text-xs" title="total weight">
-                    {roundToDecimalPlaces(
-                        stageStats!.individual.totalWeight,
-                        0
-                    )}{" "}
+                    {roundToDecimalPlaces(stageStats.individual.totalWeight, 0)}
                     kg
                 </span>
                 <span className="text-xs" title="number of parts">

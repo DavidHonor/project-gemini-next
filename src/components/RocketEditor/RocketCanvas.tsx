@@ -42,7 +42,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     };
 
     useEffect(() => {
-        //uploadRocketImage();
+        if (rocket && rocket.stages) uploadRocketImage();
     }, [rocket]);
 
     if (!rocket || !rocket.stages)

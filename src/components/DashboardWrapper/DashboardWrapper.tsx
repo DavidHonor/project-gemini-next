@@ -4,7 +4,7 @@ import { Combine, Hammer, Loader2 } from "lucide-react";
 import { RocketContext } from "../RocketEditor/RocketContext";
 import React, { useContext, useEffect } from "react";
 import RocketCanvas from "../RocketEditor/RocketCanvas";
-import RocketPartsList from "../RocketEditor/RocketPartsList";
+import RocketPartsList from "../RocketPartList/RocketPartsList";
 import { Button } from "../ui/button";
 import { EditorMenuOptions, cn } from "@/lib/utils";
 import RocketStages from "../RocketEditor/RocketStages";
