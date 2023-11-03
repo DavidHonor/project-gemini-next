@@ -136,3 +136,20 @@ export function massFlowRate(isp: number, thrust: number, gravity: number) {
 
     return roundToDecimalPlaces(massFlowRate, 1);
 }
+
+export function calculateDrag(diameter: number, velocity: number): number {
+    const AIR_DENSITY_SEA_LEVEL = 1.225; // kg/m^3
+    const DRAG_COEFFICIENT = 0.75; // A rough estimate for a cylinder
+
+    const area = Math.PI * Math.pow(diameter / 2, 2);
+
+    // Drag force (N)
+    const dragForce =
+        0.5 *
+        AIR_DENSITY_SEA_LEVEL *
+        Math.pow(velocity, 2) *
+        DRAG_COEFFICIENT *
+        area;
+
+    return dragForce;
+}

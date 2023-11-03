@@ -3,7 +3,12 @@ import {
     PartTypes,
     RocketPartPrototypes,
 } from "@/config/rocket_parts";
-import { fuelMassCalc, getDeltaV, massFlowRate } from "@/lib/ship_functions";
+import {
+    calculateDrag,
+    fuelMassCalc,
+    getDeltaV,
+    massFlowRate,
+} from "@/lib/ship_functions";
 import { roundToDecimalPlaces } from "@/lib/utils";
 import { Rocket } from "@/types/rocket";
 import {
@@ -43,6 +48,18 @@ function initStageSummary(stageId: string) {
 }
 
 export function calculateRocketStats(rocket: Rocket): RocketStats {
+    const largestSection = (() => {
+        let max = 0;
+        for (let stage of rocket.stages) {
+            for (let part of stage.parts) {
+                if (part.part_type !== PartTypes.FUELTANK || !part.diameter)
+                    continue;
+                if (max < part.diameter) max = part.diameter;
+            }
+        }
+        return max;
+    })();
+
     const stageStats = (() => {
         let results: StageStats[] = [];
         for (let stage of rocket.stages) {
@@ -166,11 +183,16 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         if (!stageStats) return { records: flightRecords };
 
         let prevSecond = 0;
+
+        let altitude = 0;
+        let velocity = 0;
+
+        const TIMESTEP = 1;
         for (let stageStat of stageStats) {
             for (
                 let second = 0;
                 second <= stageStat.stacked.burnTime;
-                second++
+                second += TIMESTEP
             ) {
                 let currentMass =
                     stageStat.stacked.totalMass -
@@ -184,10 +206,23 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     currentTwr = 0;
                 }
 
+                const drag = calculateDrag(largestSection, velocity);
+                const acceleration =
+                    (stageStat.individual.totalThrust * 1000 -
+                        currentMass * GRAVITY_SOURCE.EARTH -
+                        drag) /
+                    currentMass;
+                velocity += acceleration * TIMESTEP;
+                altitude +=
+                    velocity * TIMESTEP +
+                    0.5 * acceleration * Math.pow(TIMESTEP, 2);
+
                 flightRecords.push({
                     timeElapsed: second + prevSecond,
                     twr: currentTwr,
                     mass: currentMass,
+                    velocity: velocity,
+                    altitude: altitude,
                     stageId: stageStat.stageId,
                 });
             }
@@ -198,6 +233,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     };
 
     return {
+        largestSection,
         stageStats,
         getFlightData,
     };

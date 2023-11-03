@@ -65,6 +65,18 @@ const FlightPerformance = () => {
                                     >
                                         Twr over time
                                     </SelectItem>
+                                    <SelectItem
+                                        key={"altitudeOverTime"}
+                                        value={"altitudeOverTime"}
+                                    >
+                                        Altitude over time
+                                    </SelectItem>
+                                    <SelectItem
+                                        key={"velocityOverTime"}
+                                        value={"velocityOverTime"}
+                                    >
+                                        Velocity over time
+                                    </SelectItem>
                                 </Select>
                             </ModalHeader>
                             <ModalBody>

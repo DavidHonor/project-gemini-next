@@ -1,4 +1,5 @@
 export type RocketStats = {
+    largestSection: number;
     stageStats: StageStats[];
     getFlightData: () => FlightData;
 };
@@ -38,5 +39,7 @@ export type FlightRecord = {
     timeElapsed: number;
     twr: number;
     mass: number;
+    velocity: number;
+    altitude: number;
     stageId: string;
 };

@@ -62,6 +62,26 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
                     })),
                 })
             );
+        } else if (selectedChart === "altitudeOverTime") {
+            return Object.entries(groupedByStageId).map(
+                ([stageId, records]) => ({
+                    label: `Altitude - Stage ${findStageNmb(stageId)}`,
+                    data: records.map((record) => ({
+                        primary: record.timeElapsed,
+                        secondary: record.altitude,
+                    })),
+                })
+            );
+        } else if (selectedChart === "velocityOverTime") {
+            return Object.entries(groupedByStageId).map(
+                ([stageId, records]) => ({
+                    label: `Velocity - Stage ${findStageNmb(stageId)}`,
+                    data: records.map((record) => ({
+                        primary: record.timeElapsed,
+                        secondary: record.velocity,
+                    })),
+                })
+            );
         } else throw new Error("Provide a valid selectedChart prop");
     }, [flightData, selectedChart]);
 
