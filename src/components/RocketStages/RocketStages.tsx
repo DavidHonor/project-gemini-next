@@ -56,10 +56,6 @@ const Stage = ({
                 <h2 className="text-base font-medium">
                     Stage {stageIndex + 1}
                 </h2>
-                <span className="text-xs" title="total weight">
-                    {roundToDecimalPlaces(stageStats.individual.totalMass, 0)}
-                    kg
-                </span>
                 <span className="text-xs" title="number of parts">
                     [{stage.parts.length}]
                 </span>

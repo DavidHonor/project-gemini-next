@@ -1,4 +1,3 @@
-import { trpc } from "@/app/_trpc/client";
 import { CursorOptions, cn, getCursorPosition } from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -6,7 +5,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import type { RocketPart } from "@prisma/client";
 import { RocketContext } from "./RocketContext";
 
-import { Scaling, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
 import {
     Card,
@@ -15,6 +14,7 @@ import {
     CardHeader,
     CardTitle,
 } from "../ui/card";
+import { Button } from "../ui/button";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
@@ -259,9 +259,12 @@ const RocketPartComp = ({
                 >
                     <CardHeader className="p-2">
                         <CardTitle className="flex items-center justify-between">
-                            <span className="text-lg">Adjust size</span>
-                            <Scaling
-                                className="ml-1 text-lg cursor-pointer"
+                            <span className="text-base font-bold">
+                                Adjust size
+                            </span>
+                            <Button
+                                className="p-1 h-6 flex"
+                                variant={"ghost"}
                                 onClick={() =>
                                     setDrag({
                                         enabled: false,
@@ -269,9 +272,11 @@ const RocketPartComp = ({
                                         offset_y: 0,
                                     })
                                 }
-                            />
+                            >
+                                <XCircle className="w-5 h-5 cursor-pointer" />
+                            </Button>
                         </CardTitle>
-                        <CardDescription className="flex text-sm ">
+                        <CardDescription className="flex text-sm">
                             {`Scale of part: ${rocketPart.name}`}
                         </CardDescription>
                     </CardHeader>
