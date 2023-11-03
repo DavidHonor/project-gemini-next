@@ -1,4 +1,8 @@
-import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
+import {
+    AIR_DENSITY_SEA_LEVEL,
+    PartTypes,
+    RocketPartPrototypes,
+} from "@/config/rocket_parts";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { RocketPart } from "@prisma/client";
 import { roundToDecimalPlaces } from "./utils";
@@ -137,19 +141,22 @@ export function massFlowRate(isp: number, thrust: number, gravity: number) {
     return roundToDecimalPlaces(massFlowRate, 1);
 }
 
-export function calculateDrag(diameter: number, velocity: number): number {
-    const AIR_DENSITY_SEA_LEVEL = 1.225; // kg/m^3
-    const DRAG_COEFFICIENT = 0.75; // A rough estimate for a cylinder
+function getAirDensity(altitude: number): number {
+    const scaleHeight = 8500; // Scale height for Earth's atmosphere in meters
+    return AIR_DENSITY_SEA_LEVEL * Math.exp(-altitude / scaleHeight);
+}
+export function calculateDrag(
+    diameter: number,
+    velocity: number,
+    altitude: number
+): number {
+    const airDensity = getAirDensity(altitude);
+    const DRAG_COEFFICIENT = 0.75;
 
     const area = Math.PI * Math.pow(diameter / 2, 2);
 
-    // Drag force (N)
     const dragForce =
-        0.5 *
-        AIR_DENSITY_SEA_LEVEL *
-        Math.pow(velocity, 2) *
-        DRAG_COEFFICIENT *
-        area;
+        0.5 * airDensity * Math.pow(velocity, 2) * DRAG_COEFFICIENT * area;
 
     return dragForce;
 }

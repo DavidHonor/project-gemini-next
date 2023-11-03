@@ -206,12 +206,13 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     currentTwr = 0;
                 }
 
-                const drag = calculateDrag(largestSection, velocity);
-                const acceleration =
-                    (stageStat.individual.totalThrust * 1000 -
-                        currentMass * GRAVITY_SOURCE.EARTH -
-                        drag) /
-                    currentMass;
+                const drag = calculateDrag(largestSection, velocity, altitude);
+                const gravityForce = currentMass * GRAVITY_SOURCE.EARTH;
+                const thrust = stageStat.individual.totalThrust * 1000;
+
+                const netForce = thrust - drag - gravityForce;
+                const acceleration = netForce / currentMass;
+
                 velocity += acceleration * TIMESTEP;
                 altitude +=
                     velocity * TIMESTEP +
