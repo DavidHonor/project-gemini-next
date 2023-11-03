@@ -1,7 +1,8 @@
-import { FlightData } from "@/types/rocket_stats";
-import React from "react";
+import { FlightData, FlightRecord } from "@/types/rocket_stats";
+import React, { useContext } from "react";
 
 import { AxisOptions, Chart } from "react-charts";
+import { RocketContext } from "../RocketEditor/RocketContext";
 
 type LineChartProps = {
     flightData: FlightData;
@@ -13,28 +14,55 @@ type ChartDataPoint = {
 };
 
 const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
+    const { rocket } = useContext(RocketContext);
+
+    const findStageNmb = (stageId: string): number => {
+        if (!rocket) throw new Error("Chart, no rocket");
+        const result = rocket.stages.findIndex((x) => x.id === stageId);
+        if (result === -1) throw new Error("Chart, stage not found");
+        return result + 1;
+    };
+
     const data = React.useMemo(() => {
-        if (selectedChart === "twrOverTime")
-            return [
-                {
-                    label: "TWR",
-                    data: flightData.records.map((record) => ({
+        // Shape of the grouped data
+        type GroupedByStageId = {
+            [key: string]: FlightRecord[];
+        };
+
+        const groupedByStageId = flightData.records.reduce<GroupedByStageId>(
+            (acc, record) => {
+                if (!acc[record.stageId]) {
+                    acc[record.stageId] = [];
+                }
+                acc[record.stageId].push(record);
+                return acc;
+            },
+            {}
+        );
+
+        if (selectedChart === "twrOverTime") {
+            // Map each stage group to a series for the chart
+            return Object.entries(groupedByStageId).map(
+                ([stageId, records]) => ({
+                    label: `TWR - Stage ${findStageNmb(stageId)}`,
+                    data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.twr,
                     })),
-                },
-            ];
-        else if (selectedChart === "massOverTime")
-            return [
-                {
-                    label: "Mass",
-                    data: flightData.records.map((record) => ({
+                })
+            );
+        } else if (selectedChart === "massOverTime") {
+            // Map each stage group to a series for the chart
+            return Object.entries(groupedByStageId).map(
+                ([stageId, records]) => ({
+                    label: `Mass - Stage ${findStageNmb(stageId)}`,
+                    data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.mass,
                     })),
-                },
-            ];
-        else throw new Error("Provide a selectedChart prop");
+                })
+            );
+        } else throw new Error("Provide a valid selectedChart prop");
     }, [flightData, selectedChart]);
 
     const primaryAxis = React.useMemo(
