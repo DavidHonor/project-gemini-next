@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
     Modal,
@@ -7,43 +7,73 @@ import {
     ModalBody,
     ModalFooter,
     useDisclosure,
+    Select,
+    SelectItem,
 } from "@nextui-org/react";
 
 import { Button } from "@/components/ui/button";
 import { RocketContext } from "@/components/RocketEditor/RocketContext";
+import LineChart from "@/components/LineChart/LineChart";
+import { FlightData } from "@/types/rocket_stats";
 
 const FlightPerformance = () => {
     const { stats } = useContext(RocketContext);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-    if (!stats) return "";
+    const [flightData, setData] = useState<FlightData>();
+    const [selectedChart, setSelected] = useState("massOverTime");
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && stats) {
             const flightStats = stats.getFlightData();
-            console.log(flightStats);
+            setData(flightStats);
         }
     }, [isOpen]);
 
     return (
         <>
             <Button variant={"ghost"} onClick={onOpen}>
-                Open Modal
+                Open flight stats
             </Button>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <Modal
+                placement="center"
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+            >
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1">
-                                Modal Title
+                            <ModalHeader className="flex flex-col justify-between">
+                                Flight stats
+                                <Select
+                                    label="Select a chart"
+                                    className="max-w-xs"
+                                    defaultSelectedKeys={[selectedChart]}
+                                    onChange={(e) =>
+                                        setSelected(e.target.value)
+                                    }
+                                >
+                                    <SelectItem
+                                        key={"massOverTime"}
+                                        value={"massOverTime"}
+                                    >
+                                        Mass over time
+                                    </SelectItem>
+                                    <SelectItem
+                                        key={"twrOverTime"}
+                                        value={"twrOverTime"}
+                                    >
+                                        Twr over time
+                                    </SelectItem>
+                                </Select>
                             </ModalHeader>
                             <ModalBody>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur
-                                    adipiscing elit. Nullam pulvinar risus non
-                                    risus hendrerit venenatis. Pellentesque sit
-                                    amet hendrerit risus, sed porttitor quam.
-                                </p>
+                                {flightData ? (
+                                    <LineChart
+                                        flightData={flightData}
+                                        selectedChart={selectedChart}
+                                    />
+                                ) : null}
                             </ModalBody>
                             <ModalFooter>
                                 <Button
