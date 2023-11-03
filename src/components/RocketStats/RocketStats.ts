@@ -6,7 +6,12 @@ import {
 import { fuelMassCalc, getDeltaV, massFlowRate } from "@/lib/ship_functions";
 import { roundToDecimalPlaces } from "@/lib/utils";
 import { Rocket } from "@/types/rocket";
-import { RocketStats, StageStats } from "@/types/rocket_stats";
+import {
+    FlightData,
+    FlightRecord,
+    RocketStats,
+    StageStats,
+} from "@/types/rocket_stats";
 
 function initStageSummary(stageId: string) {
     return {
@@ -156,23 +161,44 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         return results;
     })();
 
-    const totalMass = (() => {
-        let weight = 0;
-        for (let stage of rocket.stages) {
-            for (let part of stage.parts) {
-                weight += part.weight;
-            }
-        }
-        return weight;
-    })();
+    const getFlightData = (): FlightData => {
+        let flightRecords: FlightRecord[] = [];
+        if (!stageStats) return { records: flightRecords };
 
-    const totalThrust = 0;
-    const fuelCapacity = 0;
+        let prevSecond = 0;
+        for (let stageStat of stageStats) {
+            for (
+                let second = 0;
+                second <= stageStat.stacked.burnTime;
+                second++
+            ) {
+                let currentMass =
+                    stageStat.stacked.totalMass -
+                    stageStat.individual.totalMassFlowRate * second;
+                let currentTwr =
+                    (stageStat.individual.totalThrust * 1000) /
+                    (currentMass * GRAVITY_SOURCE.EARTH);
+
+                if (currentMass < stageStat.stacked.dryMass) {
+                    currentMass = stageStat.stacked.dryMass;
+                    currentTwr = 0;
+                }
+
+                flightRecords.push({
+                    timeElapsed: second + prevSecond,
+                    twr: currentTwr,
+                    mass: currentMass,
+                    stageId: stageStat.stageId,
+                });
+            }
+            prevSecond = stageStat.stacked.burnTime;
+        }
+
+        return { records: flightRecords };
+    };
 
     return {
-        totalMass,
-        totalThrust,
-        fuelCapacity,
         stageStats,
+        getFlightData,
     };
 }

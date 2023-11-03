@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@kinde-oss/kinde-auth-nextjs": "^1.8.22",
+        "@nextui-org/react": "^2.1.13",
         "@prisma/client": "^5.4.2",
         "@radix-ui/react-accordion": "^1.1.2",
         "@radix-ui/react-avatar": "^1.0.4",
@@ -28,6 +29,7 @@
         "clsx": "^2.0.0",
         "data-uri-to-buffer": "^6.0.1",
         "firebase-admin": "^11.11.0",
+        "framer-motion": "^10.16.4",
         "html-to-image": "^1.11.11",
         "lucide-react": "^0.284.0",
         "next": "^13.5.5",

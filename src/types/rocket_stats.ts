@@ -1,8 +1,6 @@
 export type RocketStats = {
-    totalMass: number;
-    totalThrust: number;
-    fuelCapacity: number;
     stageStats: StageStats[];
+    getFlightData: () => FlightData;
 };
 
 export type StageStats = {
@@ -30,4 +28,15 @@ export type StageStats = {
 
         deltaV: number;
     };
+};
+
+export type FlightData = {
+    records: FlightRecord[];
+};
+
+export type FlightRecord = {
+    timeElapsed: number;
+    twr: number;
+    mass: number;
+    stageId: string;
 };
