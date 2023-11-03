@@ -4,7 +4,7 @@ import { RocketStage } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
 import { ChevronDown, ChevronUp, CogIcon, PlusIcon, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import { roundToDecimalPlaces } from "@/lib/utils";
+import { cn, roundToDecimalPlaces } from "@/lib/utils";
 import { RocketStats } from "@/types/rocket_stats";
 import { RocketPartPrototypes } from "@/config/rocket_parts";
 
@@ -70,11 +70,19 @@ const Stage = ({
 };
 
 const Part = ({ part }: { part: RocketPart }) => {
+    const { highlightPartId } = useContext(RocketContext);
     const protPart = RocketPartPrototypes.find((x) => x.name === part.name);
     if (!protPart) return "Part details not found: " + part.name;
 
     return (
-        <div className="flex items-center justify-between pl-4 border-t text-sm">
+        <div
+            className={cn(
+                "flex items-center justify-between pl-4 border-t text-sm transition-colors",
+                {
+                    "bg-zinc-300 rounded-lg": highlightPartId === part.id,
+                }
+            )}
+        >
             <div className="basis-3/6">
                 <span>{part.name}</span>
             </div>
@@ -96,6 +104,7 @@ const Part = ({ part }: { part: RocketPart }) => {
 };
 
 const PartActionsPopover = ({ part }: { part: RocketPart }) => {
+    const { highlightPartId, setHighLightPartId } = useContext(RocketContext);
     const { updatePartStage } = useContext(RocketContext);
 
     return (
@@ -108,6 +117,18 @@ const PartActionsPopover = ({ part }: { part: RocketPart }) => {
                     <span className="text-md">{part.name}</span>
                     <span className="text-xs">{part.part_type}</span>
                     <span className="text-xs">{part.weight} kg</span>
+
+                    <Button
+                        variant={"outline"}
+                        className="absolute right-0 h-5 p-1"
+                        onClick={() => {
+                            highlightPartId === part.id
+                                ? setHighLightPartId("")
+                                : setHighLightPartId(part.id);
+                        }}
+                    >
+                        {part.id === highlightPartId ? "Hide" : "Show"}
+                    </Button>
                 </div>
 
                 <Separator decorative />

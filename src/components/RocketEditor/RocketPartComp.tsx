@@ -30,7 +30,7 @@ const RocketPartComp = ({
     const {
         updatePartPosition,
         rocketPartIdDrag,
-        isLoading,
+        highlightPartId,
         cursorMode,
         rocket,
         updatePartScale,
@@ -228,7 +228,12 @@ const RocketPartComp = ({
                     ...partPosition,
                     cursor: Cursor(),
                 }}
-                className="hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none"
+                className={cn(
+                    "hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none",
+                    {
+                        "after:opacity-30": rocketPart.id === highlightPartId,
+                    }
+                )}
             >
                 <Image
                     key={`part_img_${rocketPart.id}`}
