@@ -119,13 +119,20 @@ export function fuelMassCalc(object: { diameter: number; length: number }) {
 }
 
 export function getDeltaV(
-    totalWeight: number,
-    dryWeight: number,
+    totalMass: number,
+    dryMass: number,
     totalIsp: number,
     gravity: number
 ) {
-    const exhaustRatio = totalWeight / dryWeight;
+    const exhaustRatio = totalMass / dryMass;
     const exhaustVelocity = totalIsp * gravity;
     const deltaV = exhaustVelocity * Math.log(exhaustRatio);
-    return roundToDecimalPlaces(deltaV, 0);
+    return roundToDecimalPlaces(deltaV, 1);
+}
+
+export function massFlowRate(isp: number, thrust: number, gravity: number) {
+    const exhaustVelocity = isp * gravity;
+    const massFlowRate = (thrust * 1000) / exhaustVelocity;
+
+    return roundToDecimalPlaces(massFlowRate, 1);
 }

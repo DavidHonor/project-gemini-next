@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Combine, Gauge, Hammer } from "lucide-react";
 import { EditorMenuOptions, cn } from "@/lib/utils";
 import RocketPartsList from "../RocketPartList/RocketPartsList";
-import RocketStages from "../RocketEditor/RocketStages";
+import RocketStages from "../RocketStages/RocketStages";
 import { RocketContext } from "../RocketEditor/RocketContext";
 import RocketPerformance from "../RocketPerformance/RocketPerformance";
 

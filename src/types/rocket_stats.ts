@@ -1,5 +1,5 @@
 export type RocketStats = {
-    totalWeight: number;
+    totalMass: number;
     totalThrust: number;
     fuelCapacity: number;
     stageStats: StageStats[];
@@ -9,21 +9,24 @@ export type StageStats = {
     stageId: string;
 
     individual: {
-        totalWeight: number;
-        dryWeight: number;
+        totalMass: number;
+        dryMass: number;
 
         totalThrust: number;
         totalIsp: number;
+        totalMassFlowRate: number;
+        burnTime: number;
 
         deltaV: number;
     };
 
     stacked: {
-        totalWeight: number;
-        dryWeight: number;
+        totalMass: number;
+        dryMass: number;
 
         totalThrust: number;
         totalIsp: number;
+        burnTime: number;
 
         deltaV: number;
     };

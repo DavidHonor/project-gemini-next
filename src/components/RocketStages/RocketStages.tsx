@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { RocketContext } from "./RocketContext";
+import { RocketContext } from "../RocketEditor/RocketContext";
 import { RocketStage } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
 import { ChevronDown, ChevronUp, CogIcon, PlusIcon, XIcon } from "lucide-react";
@@ -53,11 +53,11 @@ const Stage = ({
     return (
         <div className="flex flex-col w-full py-1 border-b-2">
             <div className="flex items-center justify-between py-1">
-                <h2 className="text-base font-medium ">
+                <h2 className="text-base font-medium">
                     Stage {stageIndex + 1}
                 </h2>
                 <span className="text-xs" title="total weight">
-                    {roundToDecimalPlaces(stageStats.individual.totalWeight, 0)}
+                    {roundToDecimalPlaces(stageStats.individual.totalMass, 0)}
                     kg
                 </span>
                 <span className="text-xs" title="number of parts">

@@ -80,7 +80,7 @@ export enum EditorMenuOptions {
     PERFORMANCE,
 }
 
-export function roundToDecimalPlaces(num: number, places: number): number {
+export function roundToDecimalPlaces(num: number, places: number = 0): number {
     const factor = Math.pow(10, places);
     return Math.round(num * factor) / factor;
 }

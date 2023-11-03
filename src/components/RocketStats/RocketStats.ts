@@ -3,7 +3,7 @@ import {
     PartTypes,
     RocketPartPrototypes,
 } from "@/config/rocket_parts";
-import { fuelMassCalc, getDeltaV } from "@/lib/ship_functions";
+import { fuelMassCalc, getDeltaV, massFlowRate } from "@/lib/ship_functions";
 import { roundToDecimalPlaces } from "@/lib/utils";
 import { Rocket } from "@/types/rocket";
 import { RocketStats, StageStats } from "@/types/rocket_stats";
@@ -13,21 +13,24 @@ function initStageSummary(stageId: string) {
         stageId: stageId,
 
         individual: {
-            totalWeight: 0,
-            dryWeight: 0,
+            totalMass: 0,
+            dryMass: 0,
 
             totalThrust: 0,
             totalIsp: 0,
+            totalMassFlowRate: 0,
+            burnTime: 0,
 
             deltaV: 0,
         },
 
         stacked: {
-            totalWeight: 0,
-            dryWeight: 0,
+            totalMass: 0,
+            dryMass: 0,
 
             totalThrust: 0,
             totalIsp: 0,
+            burnTime: 0,
 
             deltaV: 0,
         },
@@ -41,14 +44,12 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             let stageSummary: StageStats = initStageSummary(stage.id);
             let ispThrustSum = 0;
 
-            //====== Summerize stages individually ======
-            //=== dryWeight, totalWeight, totalThrust ===
             for (let part of stage.parts) {
-                stageSummary.individual.dryWeight += part.weight;
-                stageSummary.stacked.dryWeight += part.weight;
+                stageSummary.individual.dryMass += part.weight;
+                stageSummary.stacked.dryMass += part.weight;
 
-                stageSummary.individual.totalWeight += part.weight;
-                stageSummary.stacked.totalWeight += part.weight;
+                stageSummary.individual.totalMass += part.weight;
+                stageSummary.stacked.totalMass += part.weight;
 
                 const protPart = RocketPartPrototypes.find(
                     (x) => x.name === part.name
@@ -67,6 +68,11 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     stageSummary.stacked.totalThrust += protPart.thrust_sl;
 
                     ispThrustSum += protPart.thrust_sl * protPart.isp_sl;
+                    stageSummary.individual.totalMassFlowRate += massFlowRate(
+                        protPart.isp_sl,
+                        protPart.thrust_sl,
+                        GRAVITY_SOURCE.EARTH
+                    );
                 } else if (part.part_type === PartTypes.FUELTANK) {
                     if (!protPart)
                         throw new Error(
@@ -80,28 +86,37 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                             "diameter or length is not defined for the given part"
                         );
 
-                    stageSummary.individual.totalWeight +=
-                        fuelMassCalc(protPart);
-                    stageSummary.stacked.totalWeight =
-                        stageSummary.individual.totalWeight;
+                    stageSummary.individual.totalMass += fuelMassCalc(protPart);
+                    stageSummary.stacked.totalMass =
+                        stageSummary.individual.totalMass;
                 }
             }
 
-            //=== calculate individual stage deltaV ===
+            //=== Individual stage total ISP ===
             if (stageSummary.individual.totalThrust !== 0) {
                 stageSummary.individual.totalIsp =
                     ispThrustSum / stageSummary.individual.totalThrust;
-                //stacked is the same
                 stageSummary.stacked.totalIsp =
                     ispThrustSum / stageSummary.stacked.totalThrust;
             }
 
+            //=== Individual stage deltaV ===
             stageSummary.individual.deltaV = getDeltaV(
-                stageSummary.individual.totalWeight,
-                stageSummary.individual.dryWeight,
+                stageSummary.individual.totalMass,
+                stageSummary.individual.dryMass,
                 stageSummary.individual.totalIsp,
                 GRAVITY_SOURCE.EARTH
             );
+
+            //=== Individual stage burnTime ===
+            if (stageSummary.individual.totalMassFlowRate !== 0) {
+                const totalFuelMass =
+                    stageSummary.individual.totalMass -
+                    stageSummary.individual.dryMass;
+                stageSummary.individual.burnTime = roundToDecimalPlaces(
+                    totalFuelMass / stageSummary.individual.totalMassFlowRate
+                );
+            }
 
             results.push(stageSummary);
         }
@@ -111,25 +126,37 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         if (results.length) {
             results[results.length - 1].stacked.deltaV =
                 results[results.length - 1].individual.deltaV;
+            results[results.length - 1].stacked.burnTime = roundToDecimalPlaces(
+                results[results.length - 1].individual.burnTime
+            );
         }
         for (let i = results.length - 1; i > 0; i--) {
-            results[i - 1].stacked.dryWeight += results[i].stacked.dryWeight;
+            results[i - 1].stacked.dryMass +=
+                results[i].stacked.dryMass + results[i].stacked.totalMass;
 
-            results[i - 1].stacked.totalWeight +=
-                results[i].stacked.totalWeight;
+            results[i - 1].stacked.totalMass += results[i].stacked.totalMass;
 
             results[i - 1].stacked.deltaV = getDeltaV(
-                results[i - 1].stacked.totalWeight,
-                results[i - 1].stacked.dryWeight,
+                results[i - 1].stacked.totalMass,
+                results[i - 1].stacked.dryMass,
                 results[i - 1].stacked.totalIsp,
                 GRAVITY_SOURCE.EARTH
+            );
+
+            //burn time
+            const totalFuelMass =
+                results[i - 1].stacked.totalMass -
+                results[i - 1].stacked.dryMass;
+            results[i - 1].stacked.burnTime = roundToDecimalPlaces(
+                totalFuelMass / results[i - 1].individual.totalMassFlowRate,
+                1
             );
         }
 
         return results;
     })();
 
-    const totalWeight = (() => {
+    const totalMass = (() => {
         let weight = 0;
         for (let stage of rocket.stages) {
             for (let part of stage.parts) {
@@ -143,7 +170,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const fuelCapacity = 0;
 
     return {
-        totalWeight,
+        totalMass,
         totalThrust,
         fuelCapacity,
         stageStats,
