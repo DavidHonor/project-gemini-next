@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { RocketContext } from "../RocketEditor/RocketContext";
-import { RocketStage } from "@/types/rocket";
+import { Rocket, RocketStage } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
 import { ChevronDown, ChevronUp, CogIcon, PlusIcon, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
@@ -25,11 +25,12 @@ const RocketStages = () => {
                         stage={stage}
                         stageIndex={stageIndex}
                         stats={stats}
+                        rocket={rocket}
                     />
                 ))}
             </div>
             <div className="flex justify-center w-full py-2">
-                <Button variant={"outline"} onClick={() => addRocketStage()}>
+                <Button variant={"ghost"} onClick={() => addRocketStage()}>
                     <span className="text-xs lg:text-base">Add</span>
                     <PlusIcon className="w-4 h-4 ml-1" />
                 </Button>
@@ -42,13 +43,74 @@ const Stage = ({
     stage,
     stageIndex,
     stats,
+    rocket,
 }: {
     stage: RocketStage;
     stageIndex: number;
     stats: RocketStats;
+    rocket: Rocket;
 }) => {
+    const { updateStageIndex } = useContext(RocketContext);
     const stageStats = stats.stageStats.find((x) => x.stageId === stage.id);
     if (!stageStats) return "performance unavailable";
+
+    const stageActions = () => {
+        if (
+            stage.stageIndex !== 0 &&
+            stage.stageIndex !== rocket.stages.length - 1
+        ) {
+            return (
+                <>
+                    <Button
+                        title="move stage up"
+                        variant={"ghost"}
+                        className="p-1 h-5"
+                        onClick={() =>
+                            updateStageIndex({ stage, moveDirection: 1 })
+                        }
+                    >
+                        <ChevronDown className="w-5 h-5" />
+                    </Button>
+                    <Button
+                        title="move stage down"
+                        variant={"ghost"}
+                        className="p-1 h-5"
+                        onClick={() =>
+                            updateStageIndex({ stage, moveDirection: -1 })
+                        }
+                    >
+                        <ChevronUp className="w-5 h-5" />
+                    </Button>
+                </>
+            );
+        } else if (stage.stageIndex === 0) {
+            return (
+                <Button
+                    title="move stage up"
+                    variant={"ghost"}
+                    className="p-1 h-5"
+                    onClick={() =>
+                        updateStageIndex({ stage, moveDirection: 1 })
+                    }
+                >
+                    <ChevronDown className="w-5 h-5" />
+                </Button>
+            );
+        } else {
+            return (
+                <Button
+                    title="move stage down"
+                    variant={"ghost"}
+                    className="p-1 h-5"
+                    onClick={() =>
+                        updateStageIndex({ stage, moveDirection: -1 })
+                    }
+                >
+                    <ChevronUp className="w-5 h-5" />
+                </Button>
+            );
+        }
+    };
 
     return (
         <div className="flex flex-col w-full py-1 border-b-2">
@@ -56,6 +118,7 @@ const Stage = ({
                 <h2 className="text-base font-medium">
                     Stage {stageIndex + 1}
                 </h2>
+                <div className="flex">{stageActions()}</div>
                 <span className="text-xs" title="number of parts">
                     [{stage.parts.length}]
                 </span>

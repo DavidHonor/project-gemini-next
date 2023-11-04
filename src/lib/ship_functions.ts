@@ -129,6 +129,8 @@ export function getDeltaV(
     totalIsp: number,
     gravity: number
 ) {
+    if (!totalMass || !dryMass) return 0;
+
     const exhaustRatio = totalMass / dryMass;
     const exhaustVelocity = totalIsp * gravity;
     const deltaV = exhaustVelocity * Math.log(exhaustRatio);
@@ -174,4 +176,15 @@ export function calculateGravitationalForce(mass: number, altitude: number) {
     const gravity = calculateGravityAtAltitude(altitude);
     const gravityForce = mass * gravity;
     return gravityForce;
+}
+
+export function twr(thrust_in_kN: number, mass: number) {
+    if (!mass) return 0;
+    return (thrust_in_kN * 1000) / (mass * GRAVITY_SOURCE.EARTH);
+}
+
+export function burnTime(propellant_mass: number, mass_flow_rate: number) {
+    if (!propellant_mass || !massFlowRate) return 0;
+
+    return propellant_mass / mass_flow_rate;
 }

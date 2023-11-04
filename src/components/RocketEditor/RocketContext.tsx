@@ -5,7 +5,7 @@ import { ReactNode, createContext, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
-import { Rocket } from "@/types/rocket";
+import { Rocket, RocketStage } from "@/types/rocket";
 import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
 import { rocketScaleChanged, partScaleChanged } from "@/lib/ship_functions";
 import { RocketStats } from "@/types/rocket_stats";
@@ -23,6 +23,20 @@ export const RocketContext = createContext({
     updateRocketScale: (scale: number) => {},
 
     addRocketStage: () => {},
+    updatePartStage: ({
+        part,
+        moveDirection,
+    }: {
+        part: RocketPart;
+        moveDirection: number;
+    }) => {},
+    updateStageIndex: ({
+        stage,
+        moveDirection,
+    }: {
+        stage: RocketStage;
+        moveDirection: number;
+    }) => {},
 
     createRocketPart: (partName: string) => {},
     updatePartPosition: (rocketPart: RocketPart) => {},
@@ -32,13 +46,6 @@ export const RocketContext = createContext({
     }: {
         partScale: number;
         partId: string;
-    }) => {},
-    updatePartStage: ({
-        part,
-        moveDirection,
-    }: {
-        part: RocketPart;
-        moveDirection: number;
     }) => {},
     deletePart: (rocketPart: RocketPart) => {},
 
@@ -207,6 +214,29 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }
     );
 
+    const updateStageIndex = useMutation(
+        async ({
+            stage,
+            moveDirection,
+        }: {
+            stage: RocketStage;
+            moveDirection: number;
+        }) => {
+            if (stage.stageIndex + moveDirection < 0)
+                throw new Error("cant move stage index below zero");
+
+            const response = await utils.client.stage.updateStageIndex.mutate({
+                rocketId,
+                stageId: stage.id,
+                moveDir: moveDirection,
+            });
+
+            if (!("status" in response)) return handleAPIError();
+
+            getRocketMutation.mutate(rocketId);
+        }
+    );
+
     //========================================
     //=========== Part mutations ===========
     //========================================
@@ -298,19 +328,23 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 highlightPartId,
                 cursorMode,
                 menuOption,
-                updatePartPosition: updatePartPosition.mutate,
-                createRocketPart: createRocketPart.mutate,
+
                 getRocket: getRocketMutation.mutate,
-                setCursorMode,
                 updateRocketScale: updateRocketScale.mutate,
+                getRocketPreview: getRocketPreview.mutate,
+
+                addRocketStage: addRocketStage.mutate,
+                updateStageIndex: updateStageIndex.mutate,
+                updatePartStage: updatePartStage.mutate,
+
                 updatePartScale: updatePartScale.mutate,
                 deletePart: deletePart.mutate,
                 uploadRocketPreview: uploadRocketPreview.mutate,
-                getRocketPreview: getRocketPreview.mutate,
-                setMenuOption,
-                addRocketStage: addRocketStage.mutate,
-                updatePartStage: updatePartStage.mutate,
+                createRocketPart: createRocketPart.mutate,
+                updatePartPosition: updatePartPosition.mutate,
 
+                setMenuOption,
+                setCursorMode,
                 setRocketPartIdDrag,
                 setHighLightPartId,
             }}

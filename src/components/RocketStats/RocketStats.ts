@@ -4,6 +4,7 @@ import {
     RocketPartPrototypes,
 } from "@/config/rocket_parts";
 import {
+    burnTime,
     calculateDrag,
     calculateGravitationalForce,
     fuelMassCalc,
@@ -137,7 +138,10 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     stageSummary.individual.totalMass -
                     stageSummary.individual.dryMass;
                 stageSummary.individual.burnTime = roundToDecimalPlaces(
-                    totalFuelMass / stageSummary.individual.totalMassFlowRate
+                    burnTime(
+                        totalFuelMass,
+                        stageSummary.individual.totalMassFlowRate
+                    )
                 );
             }
 
@@ -149,9 +153,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         if (results.length) {
             results[results.length - 1].stacked.deltaV =
                 results[results.length - 1].individual.deltaV;
-            results[results.length - 1].stacked.burnTime = roundToDecimalPlaces(
-                results[results.length - 1].individual.burnTime
-            );
+            results[results.length - 1].stacked.burnTime =
+                results[results.length - 1].individual.burnTime;
         }
         for (let i = results.length - 1; i > 0; i--) {
             results[i - 1].stacked.dryMass += results[i].stacked.totalMass;
@@ -170,7 +173,10 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 results[i - 1].stacked.totalMass -
                 results[i - 1].stacked.dryMass;
             results[i - 1].stacked.burnTime = roundToDecimalPlaces(
-                totalFuelMass / results[i - 1].individual.totalMassFlowRate,
+                burnTime(
+                    totalFuelMass,
+                    results[i - 1].individual.totalMassFlowRate
+                ),
                 1
             );
         }

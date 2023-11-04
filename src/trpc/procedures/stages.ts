@@ -15,12 +15,16 @@ export const stageRouter = router({
                     userId,
                     id: rocketId,
                 },
+                include: {
+                    stages: true,
+                },
             });
             if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
 
             const stage = await db.rocketStage.create({
                 data: {
                     rocketId,
+                    stageIndex: rocket.stages.length,
                 },
                 include: {
                     parts: true,
@@ -59,19 +63,18 @@ export const stageRouter = router({
             });
             if (!part) return new TRPCError({ code: "NOT_FOUND" });
 
-            const stageIndex = rocket.stages.findIndex(
-                (x) => x.id === part.stageId
-            );
-            if (stageIndex === -1) return new TRPCError({ code: "NOT_FOUND" });
+            const oldStage = rocket.stages.find((x) => x.id === part.stageId);
+            if (!oldStage) return new TRPCError({ code: "NOT_FOUND" });
 
-            if (moveDir === -1 && stageIndex === 0)
+            if (moveDir === -1 && oldStage.stageIndex === 0)
                 return new TRPCError({ code: "FORBIDDEN" });
 
             //stage does yet exist (up direction)
-            if (stageIndex + moveDir > rocket.stages.length - 1) {
+            if (oldStage.stageIndex + moveDir > rocket.stages.length - 1) {
                 const stage = await db.rocketStage.create({
                     data: {
                         rocketId: rocket.id,
+                        stageIndex: rocket.stages.length,
                     },
                 });
                 await db.rocketPart.update({
@@ -89,19 +92,85 @@ export const stageRouter = router({
                 };
             }
 
-            const stage = rocket.stages[stageIndex + moveDir];
+            const newStage = rocket.stages.find(
+                (x) => x.stageIndex === oldStage.stageIndex + moveDir
+            );
+            if (!newStage) return new TRPCError({ code: "NOT_FOUND" });
+
             await db.rocketPart.update({
                 where: {
                     id: partId,
                 },
                 data: {
-                    stageId: stage.id,
+                    stageId: newStage.id,
                 },
             });
 
             return {
                 status: "success",
                 message: "Stages with parts updated successfully",
+            };
+        }),
+    updateStageIndex: privateProcedure
+        .input(
+            z.object({
+                rocketId: z.string(),
+                stageId: z.string(),
+                moveDir: z.number(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { rocketId, stageId, moveDir } = input;
+
+            const rocket = await db.rocket.findFirst({
+                where: {
+                    userId,
+                    id: rocketId,
+                },
+                include: {
+                    stages: true,
+                },
+            });
+            if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
+
+            const stage = rocket.stages.find((x) => x.id === stageId);
+            if (!stage) return new TRPCError({ code: "NOT_FOUND" });
+
+            const newStageIndex = stage.stageIndex + moveDir;
+            if (newStageIndex < 0 || newStageIndex >= rocket.stages.length) {
+                return new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid move direction",
+                });
+            }
+
+            const swapStage = rocket.stages.find(
+                (x) => x.stageIndex === newStageIndex
+            );
+            if (!swapStage) return new TRPCError({ code: "NOT_FOUND" });
+
+            await db.rocketStage.update({
+                where: {
+                    id: swapStage.id,
+                },
+                data: {
+                    stageIndex: stage.stageIndex,
+                },
+            });
+
+            await db.rocketStage.update({
+                where: {
+                    id: stage.id,
+                },
+                data: {
+                    stageIndex: newStageIndex,
+                },
+            });
+
+            return {
+                status: "success",
+                message: "Stage index updated",
             };
         }),
 });

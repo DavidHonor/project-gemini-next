@@ -80,6 +80,8 @@ model RocketStage {
     id String @id @default(cuid())
     createdAt DateTime @default(now())
 
+    stageIndex Int
+
     rocket Rocket? @relation(fields: [rocketId], references: [id])
     rocketId String?
 

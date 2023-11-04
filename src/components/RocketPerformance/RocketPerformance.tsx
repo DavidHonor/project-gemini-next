@@ -5,6 +5,7 @@ import { roundToDecimalPlaces } from "@/lib/utils";
 import { GRAVITY_SOURCE } from "@/config/rocket_parts";
 import { Button } from "../ui/button";
 import FlightPerformance from "./FlightPerformance/FlightPerformance";
+import { twr } from "@/lib/ship_functions";
 
 const RocketPerformance = () => {
     const { stats } = useContext(RocketContext);
@@ -59,7 +60,10 @@ const RocketPerformance = () => {
                                 Mass flow rate
                             </span>
                             <span className="flex-1 text-xs">
-                                {stageStat.individual.totalMassFlowRate} kg/s
+                                {roundToDecimalPlaces(
+                                    stageStat.individual.totalMassFlowRate,
+                                    1
+                                ) + "  kg/s"}
                             </span>
                             <span className="flex-1 text-xs">-</span>
                         </div>
@@ -132,17 +136,19 @@ const RocketPerformance = () => {
                             </span>
                             <span className="flex-1 text-xs">
                                 {roundToDecimalPlaces(
-                                    (stageStat.individual.totalThrust * 1000) /
-                                        (stageStat.individual.totalMass *
-                                            GRAVITY_SOURCE.EARTH),
+                                    twr(
+                                        stageStat.individual.totalThrust,
+                                        stageStat.individual.totalMass
+                                    ),
                                     1
                                 )}
                             </span>
                             <span className="flex-1 text-xs">
                                 {roundToDecimalPlaces(
-                                    (stageStat.stacked.totalThrust * 1000) /
-                                        (stageStat.stacked.totalMass *
-                                            GRAVITY_SOURCE.EARTH),
+                                    twr(
+                                        stageStat.stacked.totalThrust,
+                                        stageStat.stacked.totalMass
+                                    ),
                                     1
                                 )}
                             </span>

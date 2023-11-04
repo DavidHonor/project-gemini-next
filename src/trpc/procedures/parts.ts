@@ -90,12 +90,13 @@ export const partRouter = router({
             if (!rocket) return new TRPCError({ code: "NOT_FOUND" });
 
             // =====================================
-            // = Create rocket stages if neccecary =
+            // = Create rocket stage if neccecary =
             // =====================================
             if (!rocket.stages.length) {
                 await db.rocketStage.create({
                     data: {
                         rocketId,
+                        stageIndex: 0,
                     },
                 });
                 rocket = await db.rocket.findFirst({
@@ -114,7 +115,15 @@ export const partRouter = router({
                     });
             }
 
-            const latestStage = rocket.stages[rocket.stages.length - 1];
+            const latestStage = await db.rocketStage.findFirst({
+                where: {
+                    rocketId,
+                },
+                orderBy: {
+                    stageIndex: "desc",
+                },
+            });
+            if (!latestStage) return new TRPCError({ code: "NOT_FOUND" });
 
             const newPart = await db.rocketPart.create({
                 data: {

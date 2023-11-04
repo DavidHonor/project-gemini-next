@@ -42,7 +42,7 @@ export const rocketRouter = router({
                 include: {
                     stages: {
                         orderBy: {
-                            createdAt: "asc",
+                            stageIndex: "asc",
                         },
                         include: {
                             parts: true,

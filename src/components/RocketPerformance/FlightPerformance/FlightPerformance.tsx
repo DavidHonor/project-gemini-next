@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { RocketContext } from "@/components/RocketEditor/RocketContext";
 import LineChart from "@/components/LineChart/LineChart";
 import { FlightData } from "@/types/rocket_stats";
+import { BarChart } from "lucide-react";
 
 const FlightPerformance = () => {
     const { stats } = useContext(RocketContext);
@@ -32,8 +33,9 @@ const FlightPerformance = () => {
 
     return (
         <>
-            <Button variant={"ghost"} onClick={onOpen}>
-                Open flight stats
+            <Button variant={"outline"} onClick={onOpen}>
+                <span className="text-xs lg:text-base">Show charts</span>
+                <BarChart className="w-4 h-4 ml-1" />
             </Button>
             <Modal
                 placement="center"
