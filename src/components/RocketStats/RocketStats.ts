@@ -154,8 +154,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             );
         }
         for (let i = results.length - 1; i > 0; i--) {
-            results[i - 1].stacked.dryMass +=
-                results[i].stacked.dryMass + results[i].stacked.totalMass;
+            results[i - 1].stacked.dryMass += results[i].stacked.totalMass;
 
             results[i - 1].stacked.totalMass += results[i].stacked.totalMass;
 
@@ -234,7 +233,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     gravityForce: gravityForce,
                 });
             }
-            prevSecond = stageStat.stacked.burnTime;
+            prevSecond += stageStat.stacked.burnTime;
         }
 
         return { records: flightRecords };
