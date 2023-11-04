@@ -77,6 +77,24 @@ const FlightPerformance = () => {
                                     >
                                         Velocity over time
                                     </SelectItem>
+                                    <SelectItem
+                                        key={"dragOverTime"}
+                                        value={"dragOverTime"}
+                                    >
+                                        Drag over time
+                                    </SelectItem>
+                                    <SelectItem
+                                        key={"dragOverAltitude"}
+                                        value={"dragOverAltitude"}
+                                    >
+                                        Drag over altitude
+                                    </SelectItem>
+                                    <SelectItem
+                                        key={"gravityForceOverAltitude"}
+                                        value={"gravityForceOverAltitude"}
+                                    >
+                                        Gravity force over altitude
+                                    </SelectItem>
                                 </Select>
                             </ModalHeader>
                             <ModalBody>

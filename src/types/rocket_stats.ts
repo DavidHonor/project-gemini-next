@@ -36,10 +36,13 @@ export type FlightData = {
 };
 
 export type FlightRecord = {
+    stageId: string;
+
     timeElapsed: number;
     twr: number;
     mass: number;
     velocity: number;
     altitude: number;
-    stageId: string;
+    drag: number;
+    gravityForce: number;
 };

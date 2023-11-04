@@ -5,6 +5,7 @@ import {
 } from "@/config/rocket_parts";
 import {
     calculateDrag,
+    calculateGravitationalForce,
     fuelMassCalc,
     getDeltaV,
     massFlowRate,
@@ -207,7 +208,10 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 }
 
                 const drag = calculateDrag(largestSection, velocity, altitude);
-                const gravityForce = currentMass * GRAVITY_SOURCE.EARTH;
+                const gravityForce = calculateGravitationalForce(
+                    currentMass,
+                    altitude
+                );
                 const thrust = stageStat.individual.totalThrust * 1000;
 
                 const netForce = thrust - drag - gravityForce;
@@ -219,12 +223,15 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     0.5 * acceleration * Math.pow(TIMESTEP, 2);
 
                 flightRecords.push({
+                    stageId: stageStat.stageId,
+
                     timeElapsed: second + prevSecond,
                     twr: currentTwr,
                     mass: currentMass,
                     velocity: velocity,
                     altitude: altitude,
-                    stageId: stageStat.stageId,
+                    drag: drag,
+                    gravityForce: gravityForce,
                 });
             }
             prevSecond = stageStat.stacked.burnTime;
