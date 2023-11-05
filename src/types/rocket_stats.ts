@@ -63,3 +63,14 @@ export type Point = {
     lng: number;
     alt: number;
 };
+
+export type GlobeLabel = {
+    lat: number;
+    lng: number;
+    alt?: number;
+    text: string;
+
+    color?: string;
+    labelRotation?: number;
+    labelSize?: number;
+};
