@@ -3,14 +3,21 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import Globe from "react-globe.gl";
 import { RocketContext } from "../RocketEditor/RocketContext";
 
-const RocketFlightPath = () => {
+interface RocketFlightPathProps {
+    globeImage: string;
+}
+
+const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
+    const wrapperDiv = useRef<any>(null);
     const globeEl = useRef<any>(null);
+
     const [labels, setLabels] = useState<GlobeLabel[]>();
 
     const { stats } = useContext(RocketContext);
 
     const trajectories = useMemo(() => {
         if (stats) {
+            console.log("RELOAD");
             //const traj = stats.simulateTrajectory();
             const rk4 = stats.trajectoryRK4();
             return [...rk4];
@@ -82,27 +89,33 @@ const RocketFlightPath = () => {
     if (!trajectories) return "";
 
     return (
-        <div>
-            <Globe
-                ref={globeEl}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-                pathsData={trajectories}
-                pathPoints={(d: any) => d.points}
-                pathPointLat={(p) => p.lat}
-                pathPointLng={(p) => p.lng}
-                pathPointAlt={(p) => p.alt}
-                pathColor={(p: any) => p.pathColor}
-                pathStroke={(p: any) => p.pathStroke}
-                labelsData={labels}
-                labelColor={(p: any) => p.color}
-                labelAltitude={(p: any) => (p.alt !== undefined ? p.alt : 0)}
-                labelRotation={(p: any) =>
-                    p.labelRotation !== undefined ? p.labelRotation : 45
-                }
-                labelSize={(p: any) =>
-                    p.labelSize !== undefined ? p.labelSize : 0.5
-                }
-            />
+        <div ref={wrapperDiv} style={{ width: "95vw", height: "100%" }}>
+            {wrapperDiv.current ? (
+                <Globe
+                    ref={globeEl}
+                    globeImageUrl={globeImage}
+                    pathsData={trajectories}
+                    pathPoints={(d: any) => d.points}
+                    pathPointLat={(p) => p.lat}
+                    pathPointLng={(p) => p.lng}
+                    pathPointAlt={(p) => p.alt}
+                    pathColor={(p: any) => p.pathColor}
+                    pathStroke={(p: any) => p.pathStroke}
+                    labelsData={labels}
+                    labelColor={(p: any) => p.color}
+                    labelAltitude={(p: any) =>
+                        p.alt !== undefined ? p.alt : 0
+                    }
+                    labelRotation={(p: any) =>
+                        p.labelRotation !== undefined ? p.labelRotation : 45
+                    }
+                    labelSize={(p: any) =>
+                        p.labelSize !== undefined ? p.labelSize : 0.5
+                    }
+                    width={wrapperDiv.current.clientWidth}
+                    height={wrapperDiv.current.clientHeight}
+                />
+            ) : null}
         </div>
     );
 };

@@ -10,9 +10,25 @@ import {
     useDisclosure,
 } from "@nextui-org/react";
 import RocketFlightPath from "./FlightPath";
+import { toast } from "../ui/use-toast";
 
 const FlightPathWrapper = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [globeImage, setGlobeImage] = useState("/world_small.jpg");
+
+    function loadHighRes() {
+        const highResImage = new Image();
+        highResImage.src = "/world_large.jpg";
+        highResImage.onload = () => {
+            console.log("HIGH RES LOADED");
+            setGlobeImage(highResImage.src);
+        };
+        highResImage.onerror = () => {
+            toast({
+                title: "could not load texture",
+            });
+        };
+    }
 
     return (
         <>
@@ -29,9 +45,16 @@ const FlightPathWrapper = () => {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col justify-between"></ModalHeader>
-                            <ModalBody>
-                                <RocketFlightPath />
+                            <ModalHeader className="flex">
+                                <Button
+                                    variant={"ghost"}
+                                    onClick={() => loadHighRes()}
+                                >
+                                    Load highres texture
+                                </Button>
+                            </ModalHeader>
+                            <ModalBody className="flex items-center justify-center">
+                                <RocketFlightPath globeImage={globeImage} />
                             </ModalBody>
                             <ModalFooter>
                                 <Button
