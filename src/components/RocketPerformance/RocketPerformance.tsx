@@ -2,10 +2,11 @@ import React, { useContext } from "react";
 import { RocketContext } from "../RocketEditor/RocketContext";
 import { Separator } from "../ui/separator";
 import { roundToDecimalPlaces } from "@/lib/utils";
-import { GRAVITY_SOURCE } from "@/config/rocket_parts";
-import { Button } from "../ui/button";
-import FlightPerformance from "./FlightPerformance/FlightPerformance";
 import { twr } from "@/lib/ship_functions";
+
+import FlightPerformance from "./FlightPerformance/FlightPerformance";
+
+import FlightPathWrapper from "../RocketFlightPath/FlightPathWrapper";
 
 const RocketPerformance = () => {
     const { stats } = useContext(RocketContext);
@@ -160,6 +161,10 @@ const RocketPerformance = () => {
 
             <div className="flex justify-center mt-3">
                 <FlightPerformance />
+            </div>
+
+            <div className="flex justify-center mt-3">
+                <FlightPathWrapper />
             </div>
         </div>
     );

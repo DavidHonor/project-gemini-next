@@ -2,6 +2,7 @@ export type RocketStats = {
     largestSection: number;
     stageStats: StageStats[];
     getFlightData: () => FlightData;
+    simulateTrajectory: () => Trajectory[];
 };
 
 export type StageStats = {
@@ -45,4 +46,19 @@ export type FlightRecord = {
     altitude: number;
     drag: number;
     gravityForce: number;
+};
+
+export type Trajectory = {
+    stageId: string;
+
+    points: Point[];
+    label: string;
+    pathColor: string;
+    pathStroke: string;
+};
+
+export type Point = {
+    lat: number;
+    lng: number;
+    alt: number;
 };

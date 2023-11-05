@@ -16,8 +16,10 @@ import { Rocket } from "@/types/rocket";
 import {
     FlightData,
     FlightRecord,
+    Point,
     RocketStats,
     StageStats,
+    Trajectory,
 } from "@/types/rocket_stats";
 
 function initStageSummary(stageId: string) {
@@ -245,9 +247,183 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         return { records: flightRecords };
     };
 
+    const simulateTrajectory = (): Trajectory[] => {
+        const LAUNCH_LAT = 28.608389; // Launch latitude
+        const LAUNCH_LNG = -80.604333; // Launch longitude
+
+        const TURN_START_ALT = 7000; // Altitude where turn starts, in meters
+        const TURN_END_ALT = TURN_START_ALT + 120000; // Example altitude where the turn ends, in meters
+        const TURN_RATE = Math.PI / 2 / (TURN_END_ALT - TURN_START_ALT); // Rate of the turn, radians per meter
+
+        enum oriantation {
+            VERTICAL,
+            TURNING,
+            EASTWARD,
+        }
+        let turn = oriantation.VERTICAL;
+
+        const EARTH_RADIUS = 6371000; // Average radius of Earth, in meters
+        const COLORS = ["red", "blue", "green", "yellow", "gray"];
+
+        const pathPoints: Point[] = [];
+        let trajectories: Trajectory[] = [];
+        let trajIndex = 0;
+
+        let prevSecond = 0;
+
+        let altitude = 0;
+        let east = 0;
+
+        let verticalVelocity = 0;
+        let eastVelocity = 0;
+
+        const TIMESTEP = 1;
+        for (let stageStat of stageStats) {
+            let stageTraj: Trajectory = {
+                stageId: stageStat.stageId,
+                points: [],
+                label: `stage: ${trajIndex + 1}`,
+                pathColor: COLORS[trajIndex],
+                pathStroke: "2px",
+            };
+
+            if (!trajIndex && !stageTraj.points.length) {
+                //add starting point (launchpad)
+                stageTraj.points.push({
+                    lat: LAUNCH_LAT,
+                    lng: LAUNCH_LNG,
+                    alt: 0,
+                });
+            }
+
+            for (
+                let second = 0;
+                second <= stageStat.stacked.burnTime;
+                second += TIMESTEP
+            ) {
+                let currentMass =
+                    stageStat.stacked.totalMass -
+                    stageStat.individual.totalMassFlowRate * second;
+
+                const drag = calculateDrag(
+                    largestSection,
+                    verticalVelocity + eastVelocity,
+                    altitude
+                );
+                const gravityForce = calculateGravitationalForce(
+                    currentMass,
+                    altitude
+                );
+
+                let thrust = stageStat.individual.totalThrust * 1000;
+                if (currentMass <= stageStat.stacked.dryMass) {
+                    thrust *= 0;
+                    currentMass = stageStat.stacked.dryMass;
+                    console.log("THRUST ZERO");
+                }
+
+                const netForce = thrust - drag - gravityForce;
+                const acceleration = netForce / currentMass;
+
+                // Turning logic
+                let eastStep = 0;
+                let altitudeStep = 0;
+                if (
+                    turn === oriantation.VERTICAL &&
+                    altitude > TURN_START_ALT
+                ) {
+                    turn = oriantation.TURNING;
+                }
+
+                if (turn === oriantation.VERTICAL) {
+                    verticalVelocity += acceleration * TIMESTEP;
+                    altitudeStep =
+                        verticalVelocity * TIMESTEP +
+                        0.5 * acceleration * Math.pow(TIMESTEP, 2);
+                } else if (turn === oriantation.TURNING) {
+                    //turn logic here
+                    // Calculate the turn angle based on the current altitude
+                    let turnAngle =
+                        Math.max(0, altitude - TURN_START_ALT) * TURN_RATE;
+                    turnAngle = Math.min(turnAngle, Math.PI / 2); // Clamp the angle to a maximum of 90 degrees (PI/2 radians)
+
+                    // Calculate the proportion of the force that goes into the eastward and vertical components
+                    let eastwardForceProportion = Math.sin(turnAngle);
+                    let verticalForceProportion = Math.cos(turnAngle);
+
+                    // Calculate the net forces for each direction
+                    let verticalNetForce =
+                        thrust * verticalForceProportion -
+                        gravityForce -
+                        drag * verticalForceProportion;
+                    let eastwardNetForce =
+                        thrust * eastwardForceProportion -
+                        drag * eastwardForceProportion;
+
+                    // Calculate the accelerations for each direction
+                    let verticalAcceleration = verticalNetForce / currentMass;
+                    let eastwardAcceleration = eastwardNetForce / currentMass;
+
+                    // Calculate the new velocities and steps
+                    verticalVelocity += verticalAcceleration * TIMESTEP;
+                    eastVelocity += eastwardAcceleration * TIMESTEP;
+
+                    altitudeStep =
+                        verticalVelocity * TIMESTEP +
+                        0.5 * verticalAcceleration * Math.pow(TIMESTEP, 2);
+                    eastStep =
+                        eastVelocity * TIMESTEP +
+                        0.5 * eastwardAcceleration * Math.pow(TIMESTEP, 2);
+
+                    // Check if the turn is complete
+                    if (altitude >= TURN_END_ALT) {
+                        turn = oriantation.EASTWARD;
+                    }
+                } else if (turn === oriantation.EASTWARD) {
+                    let eastwardNetForce = thrust - drag;
+
+                    // Acceleration in the eastward direction
+                    let eastwardAcceleration = eastwardNetForce / currentMass;
+
+                    eastVelocity += eastwardAcceleration * TIMESTEP;
+                    eastStep =
+                        eastVelocity * TIMESTEP +
+                        0.5 * eastwardAcceleration * Math.pow(TIMESTEP, 2);
+
+                    verticalVelocity -= (gravityForce / currentMass) * TIMESTEP;
+                    altitudeStep = verticalVelocity * TIMESTEP;
+                }
+
+                altitude += altitudeStep;
+                east += eastStep;
+                console.log(
+                    prevSecond + second,
+                    verticalVelocity,
+                    eastVelocity
+                );
+
+                let point: Point = {
+                    lat: LAUNCH_LAT,
+                    lng:
+                        LAUNCH_LNG +
+                        eastStep / ((Math.PI * EARTH_RADIUS) / 180),
+                    alt: altitude / EARTH_RADIUS,
+                };
+
+                stageTraj.points.push(point);
+            }
+            prevSecond += stageStat.stacked.burnTime;
+            trajectories.push(stageTraj);
+            trajIndex++;
+        }
+
+        return trajectories;
+    };
+
     return {
         largestSection,
         stageStats,
         getFlightData,
+        simulateTrajectory,
     };
 }
