@@ -2,6 +2,7 @@ import {
     calculateDrag,
     calculateGravitationalForce,
 } from "@/lib/ship_functions";
+import { degreesToRadians } from "@/lib/utils";
 
 interface State {
     altitude: number;
@@ -28,6 +29,7 @@ let stageVars: rk4Vars = {
     thrust: 0,
     massFlowRate: 0,
     largestSection: 0,
+
     TIMESTEP: 0,
     TURN_START_ALT: 0,
     TURN_END_ALT: 0,
@@ -61,7 +63,12 @@ function derivative(state: State, t: number): Derivative {
             Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
             stageVars.TURN_RATE;
     } else if (state.altitude > stageVars.TURN_END_ALT) {
-        turnAngle = Math.PI / 2;
+        turnAngle = degreesToRadians(90);
+
+        //after engine cutoff
+        //90degrees -> altitude: 189276 east: 191332
+        //85degrees -> altitude: 197149 east: 190988
+        //80degrees -> altitude: 204962 east: 189961
     }
 
     // Calculate force components based on the turn angle

@@ -39,10 +39,14 @@ const RocketPerformance = () => {
                                 DeltaV
                             </span>
                             <span className="flex-1 text-xs">
-                                {stageStat.individual.deltaV}m/s
+                                {roundToDecimalPlaces(
+                                    stageStat.individual.deltaV
+                                ) + " m/s"}
                             </span>
                             <span className="flex-1 text-xs">
-                                {stageStat.stacked.deltaV}m/s
+                                {roundToDecimalPlaces(
+                                    stageStat.stacked.deltaV
+                                ) + " m/s"}
                             </span>
                         </div>
 
@@ -64,7 +68,7 @@ const RocketPerformance = () => {
                                 {roundToDecimalPlaces(
                                     stageStat.individual.totalMassFlowRate,
                                     1
-                                ) + "  kg/s"}
+                                ) + " kg/s"}
                             </span>
                             <span className="flex-1 text-xs">-</span>
                         </div>
@@ -74,10 +78,16 @@ const RocketPerformance = () => {
                                 Burn time
                             </span>
                             <span className="flex-1 text-xs">
-                                {stageStat.individual.burnTime}s
+                                {roundToDecimalPlaces(
+                                    stageStat.individual.burnTime,
+                                    1
+                                ) + " s"}
                             </span>
                             <span className="flex-1 text-xs">
-                                {stageStat.stacked.burnTime}s
+                                {roundToDecimalPlaces(
+                                    stageStat.stacked.burnTime,
+                                    1
+                                ) + " s"}
                             </span>
                         </div>
 

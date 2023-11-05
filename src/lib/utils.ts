@@ -84,3 +84,7 @@ export function roundToDecimalPlaces(num: number, places: number = 0): number {
     const factor = Math.pow(10, places);
     return Math.round(num * factor) / factor;
 }
+
+export function degreesToRadians(degrees: number) {
+    return degrees * (Math.PI / 180);
+}
