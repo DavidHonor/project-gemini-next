@@ -36,11 +36,16 @@ let stageVars: rk4Vars = {
 
 function derivative(state: State, t: number): Derivative {
     const thrust = stageVars.thrust;
+    const velocityMagnitude = Math.sqrt(
+        state.verticalVelocity ** 2 + state.eastVelocity ** 2
+    );
+
     const drag = calculateDrag(
         stageVars.largestSection,
-        state.verticalVelocity + state.eastVelocity,
+        velocityMagnitude,
         state.altitude
     );
+
     const gravityForce = calculateGravitationalForce(
         state.mass,
         state.altitude
@@ -53,30 +58,32 @@ function derivative(state: State, t: number): Derivative {
         state.altitude < stageVars.TURN_END_ALT
     ) {
         turnAngle =
-            (Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
-                stageVars.TURN_RATE) %
-            (Math.PI / 2);
+            Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
+            stageVars.TURN_RATE;
     } else if (state.altitude > stageVars.TURN_END_ALT) {
-        turnAngle = 1.5708;
+        turnAngle = Math.PI / 2;
     }
 
-    let eastwardAcceleration = 0;
-    let verticalAcceleration = thrust / state.mass - gravityForce / state.mass;
+    // Calculate force components based on the turn angle
+    const eastwardForceProportion = turnAngle > 0 ? Math.sin(turnAngle) : 0;
+    const verticalForceProportion = turnAngle > 0 ? Math.cos(turnAngle) : 1;
 
-    if (turnAngle > 0) {
-        const eastwardForceProportion = Math.sin(turnAngle);
-        const verticalForceProportion = Math.cos(turnAngle);
-
-        const verticalNetForce =
-            thrust * verticalForceProportion -
-            gravityForce -
-            drag * verticalForceProportion;
-        const eastwardNetForce =
-            thrust * eastwardForceProportion - drag * eastwardForceProportion;
-
-        verticalAcceleration = verticalNetForce / state.mass;
-        eastwardAcceleration = eastwardNetForce / state.mass;
+    // Drag forces proportionally
+    let verticalDrag = 0;
+    let eastwardDrag = 0;
+    if (velocityMagnitude !== 0) {
+        verticalDrag = drag * (state.verticalVelocity / velocityMagnitude);
+        eastwardDrag = drag * (state.eastVelocity / velocityMagnitude);
     }
+
+    //Calculate the net forces
+    const verticalNetForce =
+        thrust * verticalForceProportion - gravityForce - verticalDrag;
+    const eastwardNetForce = thrust * eastwardForceProportion - eastwardDrag;
+
+    // Compute accelerations
+    let verticalAcceleration = verticalNetForce / state.mass;
+    let eastwardAcceleration = eastwardNetForce / state.mass;
 
     //Check if the rocket is coasting
     const massRateOfChange = thrust > 0 ? -stageVars.massFlowRate : 0;

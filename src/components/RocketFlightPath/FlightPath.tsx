@@ -14,7 +14,6 @@ const RocketFligtPath = () => {
             const traj = stats.simulateTrajectory();
             const rk4 = stats.trajectoryRK4();
 
-            console.log(rk4);
             setTrajectory([...traj, ...rk4]);
         }
     }, [stats]);

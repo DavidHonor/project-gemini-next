@@ -475,7 +475,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             pathColor: "gray",
             pathStroke: "1px",
         };
-        while (state.altitude > 0 || second > 60 * 5) {
+        while (state.altitude > 0 && second < 60 * 10) {
             let vars: rk4Vars = {
                 thrust: 0,
                 massFlowRate: 0,
@@ -493,6 +493,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 alt: state.altitude / EARTH_RADIUS,
             };
             coastingTraj.points.push(point);
+            console.log(state);
 
             second++;
         }
