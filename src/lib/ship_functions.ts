@@ -6,7 +6,6 @@ import {
 } from "@/config/rocket_parts";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { RocketPart } from "@prisma/client";
-import { roundToDecimalPlaces } from "./utils";
 
 export function partScaleChanged(
     ship: Rocket,
@@ -134,14 +133,14 @@ export function getDeltaV(
     const exhaustRatio = totalMass / dryMass;
     const exhaustVelocity = totalIsp * gravity;
     const deltaV = exhaustVelocity * Math.log(exhaustRatio);
-    return roundToDecimalPlaces(deltaV, 1);
+    return deltaV;
 }
 
 export function massFlowRate(isp: number, thrust: number, gravity: number) {
     const exhaustVelocity = isp * gravity;
     const massFlowRate = (thrust * 1000) / exhaustVelocity;
 
-    return roundToDecimalPlaces(massFlowRate, 1);
+    return massFlowRate;
 }
 
 function getAirDensity(altitude: number): number {

@@ -3,6 +3,7 @@ export type RocketStats = {
     stageStats: StageStats[];
     getFlightData: () => FlightData;
     simulateTrajectory: () => Trajectory[];
+    trajectoryRK4: () => Trajectory[];
 };
 
 export type StageStats = {

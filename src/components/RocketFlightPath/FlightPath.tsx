@@ -12,7 +12,10 @@ const RocketFligtPath = () => {
     useEffect(() => {
         if (stats) {
             const traj = stats.simulateTrajectory();
-            setTrajectory(traj);
+            const rk4 = stats.trajectoryRK4();
+
+            console.log(rk4);
+            setTrajectory([...traj, ...rk4]);
         }
     }, [stats]);
 
