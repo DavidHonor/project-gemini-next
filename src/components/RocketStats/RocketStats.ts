@@ -10,6 +10,7 @@ import {
     fuelMassCalc,
     getDeltaV,
     massFlowRate,
+    twr,
 } from "@/lib/ship_functions";
 
 import { Rocket } from "@/types/rocket";
@@ -192,56 +193,93 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
 
         let prevSecond = 0;
 
-        let altitude = 0;
-        let velocity = 0;
+        let state: Derivative = {
+            altitude: 0,
+            east: 0,
+            eastVelocity: 0,
+            verticalVelocity: 0,
+            mass: 0,
+        };
 
-        const TIMESTEP = 1;
         for (let stageStat of stageStats) {
+            //next stage so initilize with stage mass
+            state.mass = stageStat.stacked.totalMass;
+            let vars: rk4Vars = {
+                thrust: stageStat.individual.totalThrust * 1000,
+                massFlowRate: stageStat.individual.totalMassFlowRate,
+                largestSection,
+                TIMESTEP,
+                TURN_START_ALT,
+                TURN_END_ALT,
+                TURN_RATE,
+            };
+
             for (
                 let second = 0;
                 second <= stageStat.stacked.burnTime;
                 second += TIMESTEP
             ) {
-                let currentMass =
-                    stageStat.stacked.totalMass -
-                    stageStat.individual.totalMassFlowRate * second;
-                let currentTwr =
-                    (stageStat.individual.totalThrust * 1000) /
-                    (currentMass * GRAVITY_SOURCE.EARTH);
+                state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
-                if (currentMass < stageStat.stacked.dryMass) {
-                    currentMass = stageStat.stacked.dryMass;
-                    currentTwr = 0;
-                }
-
-                const drag = calculateDrag(largestSection, velocity, altitude);
-                const gravityForce = calculateGravitationalForce(
-                    currentMass,
-                    altitude
+                const velocity = Math.sqrt(
+                    state.verticalVelocity ** 2 + state.eastVelocity ** 2
                 );
-                const thrust = stageStat.individual.totalThrust * 1000;
-
-                const netForce = thrust - drag - gravityForce;
-                const acceleration = netForce / currentMass;
-
-                velocity += acceleration * TIMESTEP;
-                altitude +=
-                    velocity * TIMESTEP +
-                    0.5 * acceleration * Math.pow(TIMESTEP, 2);
-
                 flightRecords.push({
                     stageId: stageStat.stageId,
 
                     timeElapsed: second + prevSecond,
-                    twr: currentTwr,
-                    mass: currentMass,
+                    twr: twr(stageStat.individual.totalThrust, state.mass),
+                    mass: state.mass,
                     velocity: velocity,
-                    altitude: altitude,
-                    drag: drag,
-                    gravityForce: gravityForce,
+                    altitude: state.altitude,
+                    east: state.east,
+                    drag: calculateDrag(
+                        largestSection,
+                        velocity,
+                        state.altitude
+                    ),
+                    gravityForce: calculateGravitationalForce(
+                        state.mass,
+                        state.altitude
+                    ),
                 });
             }
+
             prevSecond += stageStat.stacked.burnTime;
+        }
+
+        //Coasting
+        let second = 0;
+        while (state.altitude > 0 && second < 60 * COASTING_MINUTES) {
+            let vars: rk4Vars = {
+                thrust: 0,
+                massFlowRate: 0,
+                largestSection,
+                TIMESTEP,
+                TURN_START_ALT,
+                TURN_END_ALT,
+                TURN_RATE,
+            };
+            state = rk4(state, vars, prevSecond + second, TIMESTEP);
+            const velocity = Math.sqrt(
+                state.verticalVelocity ** 2 + state.eastVelocity ** 2
+            );
+            flightRecords.push({
+                stageId: "",
+
+                timeElapsed: second + prevSecond,
+                twr: 0,
+                mass: state.mass,
+                velocity: velocity,
+                altitude: state.altitude,
+                east: state.east,
+                drag: calculateDrag(largestSection, velocity, state.altitude),
+                gravityForce: calculateGravitationalForce(
+                    state.mass,
+                    state.altitude
+                ),
+            });
+            second++;
         }
 
         return { records: flightRecords };

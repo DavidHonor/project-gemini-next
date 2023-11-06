@@ -44,7 +44,10 @@ export type FlightRecord = {
     twr: number;
     mass: number;
     velocity: number;
+
     altitude: number;
+    east: number;
+
     drag: number;
     gravityForce: number;
 };

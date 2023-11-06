@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 import {
     Modal,
@@ -20,16 +20,14 @@ import { BarChart } from "lucide-react";
 const FlightPerformance = () => {
     const { stats } = useContext(RocketContext);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-    const [flightData, setData] = useState<FlightData>();
     const [selectedChart, setSelected] = useState("massOverTime");
 
-    useEffect(() => {
+    const flightData = useMemo(() => {
         if (isOpen && stats) {
             const flightStats = stats.getFlightData();
-            setData(flightStats);
+            return flightStats;
         }
-    }, [isOpen]);
+    }, [isOpen, stats]);
 
     return (
         <>
@@ -72,6 +70,12 @@ const FlightPerformance = () => {
                                         value={"altitudeOverTime"}
                                     >
                                         Altitude over time
+                                    </SelectItem>
+                                    <SelectItem
+                                        key={"altitudeOverDistance"}
+                                        value={"altitudeOverDistance"}
+                                    >
+                                        Altitude over distance
                                     </SelectItem>
                                     <SelectItem
                                         key={"velocityOverTime"}

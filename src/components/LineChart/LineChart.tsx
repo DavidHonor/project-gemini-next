@@ -18,11 +18,13 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
     const { rocket } = useContext(RocketContext);
     const [description, setDesc] = useState("");
 
-    const findStageNmb = (stageId: string): number => {
+    const findStageNmb = (stageId: string): string => {
         if (!rocket) throw new Error("Chart, no rocket");
+
         const result = rocket.stages.findIndex((x) => x.id === stageId);
-        if (result === -1) throw new Error("Chart, stage not found");
-        return result + 1;
+        if (result === -1) return "Coasting";
+
+        return `Stage ${result + 1}`;
     };
 
     const data = React.useMemo(() => {
@@ -44,13 +46,12 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
 
         setDesc("");
         if (selectedChart === "twrOverTime") {
-            // Map each stage group to a series for the chart
             setDesc(
                 "*Thrust to weight ratio of the rocket over time, as it burns propellant"
             );
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `TWR - Stage ${findStageNmb(stageId)}`,
+                    label: `TWR - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.twr,
@@ -58,10 +59,9 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
                 })
             );
         } else if (selectedChart === "massOverTime") {
-            // Map each stage group to a series for the chart
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Mass - Stage ${findStageNmb(stageId)}`,
+                    label: `Mass - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.mass,
@@ -71,9 +71,20 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
         } else if (selectedChart === "altitudeOverTime") {
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Altitude - Stage ${findStageNmb(stageId)}`,
+                    label: `Altitude - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.timeElapsed,
+                        secondary: record.altitude,
+                    })),
+                })
+            );
+        } else if (selectedChart === "altitudeOverDistance") {
+            setDesc("*y-axis: altitude; x-axis: distance");
+            return Object.entries(groupedByStageId).map(
+                ([stageId, records]) => ({
+                    label: `Altitude - ${findStageNmb(stageId)}`,
+                    data: records.map((record) => ({
+                        primary: record.east,
                         secondary: record.altitude,
                     })),
                 })
@@ -81,7 +92,7 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
         } else if (selectedChart === "velocityOverTime") {
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Velocity - Stage ${findStageNmb(stageId)}`,
+                    label: `Velocity - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.velocity,
@@ -91,7 +102,7 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
         } else if (selectedChart === "dragOverTime") {
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Drag - Stage ${findStageNmb(stageId)}`,
+                    label: `Drag - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.timeElapsed,
                         secondary: record.drag,
@@ -101,7 +112,7 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
         } else if (selectedChart === "dragOverAltitude") {
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Drag - Stage ${findStageNmb(stageId)}`,
+                    label: `Drag - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.altitude,
                         secondary: record.drag,
@@ -114,7 +125,7 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
             );
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
-                    label: `Gravity force - Stage ${findStageNmb(stageId)}`,
+                    label: `Gravity force - ${findStageNmb(stageId)}`,
                     data: records.map((record) => ({
                         primary: record.altitude,
                         secondary: record.gravityForce,
