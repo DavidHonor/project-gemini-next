@@ -1,7 +1,9 @@
 import { GlobeLabel, Trajectory } from "@/types/rocket_stats";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import Globe from "react-globe.gl";
+
 import { RocketContext } from "../RocketEditor/RocketContext";
+
+import Globe from "react-globe.gl";
 
 interface RocketFlightPathProps {
     globeImage: string;
@@ -12,12 +14,12 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
     const globeEl = useRef<any>(null);
 
     const [labels, setLabels] = useState<GlobeLabel[]>();
+    const [size, setSize] = useState({ width: 1240, height: 800 });
 
     const { stats } = useContext(RocketContext);
 
     const trajectories = useMemo(() => {
         if (stats) {
-            console.log("RELOAD");
             //const traj = stats.simulateTrajectory();
             const rk4 = stats.trajectoryRK4();
             return [...rk4];
@@ -69,11 +71,20 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
     }, [trajectories]);
 
     useEffect(() => {
+        if (globeEl.current && size.width !== wrapperDiv.current.clientWidth) {
+            setSize({
+                height: globeEl.current.clientHeight,
+                width: wrapperDiv.current.clientWidth,
+            });
+        }
+    }, [globeEl.current]);
+
+    useEffect(() => {
         if (globeEl.current && trajectories) {
             const currentStage =
-                trajectories[Math.floor(trajectories.length / 2)]; // for example, focusing on the second stage
+                trajectories[Math.floor(trajectories.length / 2)];
             const midPoint =
-                currentStage.points[Math.floor(currentStage.points.length / 2)]; // taking a middle point
+                currentStage.points[Math.floor(currentStage.points.length / 2)];
 
             globeEl.current.pointOfView(
                 {
@@ -83,6 +94,39 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
                 },
                 2000
             );
+
+            //globeEl.current.controls().target
+
+            // const handleKeyDown = (event: any) => {
+            //     switch (event.key) {
+            //         case "ArrowLeft":
+            //             //globeEl.current.controls().object.position.x -= 5;
+            //             globeEl.current.controls().object.rotateX(0.1);
+            //             break;
+            //         case "ArrowRight":
+            //             globeEl.current.controls().object.position.x += 5;
+            //             break;
+            //         case "ArrowUp":
+            //             globeEl.current.controls().object.position.y += 5;
+            //             break;
+            //         case "ArrowDown":
+            //             globeEl.current.controls().object.position.y -= 5;
+            //             break;
+            //         default:
+            //             break;
+            //     }
+            //     globeEl.current.camera().updateProjectionMatrix();
+            //     globeEl.current.camera().updateWorldMatrix(true);
+
+            //     if (globeEl.current.controls().update) {
+            //         globeEl.current.controls().update();
+            //     }
+            // };
+
+            // window.addEventListener("keydown", handleKeyDown);
+            // return () => {
+            //     window.removeEventListener("keydown", handleKeyDown);
+            // };
         }
     }, [trajectories]);
 
@@ -90,32 +134,28 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
 
     return (
         <div ref={wrapperDiv} style={{ width: "95vw", height: "100%" }}>
-            {wrapperDiv.current ? (
-                <Globe
-                    ref={globeEl}
-                    globeImageUrl={globeImage}
-                    pathsData={trajectories}
-                    pathPoints={(d: any) => d.points}
-                    pathPointLat={(p) => p.lat}
-                    pathPointLng={(p) => p.lng}
-                    pathPointAlt={(p) => p.alt}
-                    pathColor={(p: any) => p.pathColor}
-                    pathStroke={(p: any) => p.pathStroke}
-                    labelsData={labels}
-                    labelColor={(p: any) => p.color}
-                    labelAltitude={(p: any) =>
-                        p.alt !== undefined ? p.alt : 0
-                    }
-                    labelRotation={(p: any) =>
-                        p.labelRotation !== undefined ? p.labelRotation : 45
-                    }
-                    labelSize={(p: any) =>
-                        p.labelSize !== undefined ? p.labelSize : 0.5
-                    }
-                    width={wrapperDiv.current.clientWidth}
-                    height={wrapperDiv.current.clientHeight}
-                />
-            ) : null}
+            <Globe
+                ref={globeEl}
+                globeImageUrl={globeImage}
+                pathsData={trajectories}
+                pathPoints={(d: any) => d.points}
+                pathPointLat={(p) => p.lat}
+                pathPointLng={(p) => p.lng}
+                pathPointAlt={(p) => p.alt}
+                pathColor={(p: any) => p.pathColor}
+                pathStroke={(p: any) => p.pathStroke}
+                labelsData={labels}
+                labelColor={(p: any) => p.color}
+                labelAltitude={(p: any) => (p.alt !== undefined ? p.alt : 0)}
+                labelRotation={(p: any) =>
+                    p.labelRotation !== undefined ? p.labelRotation : 45
+                }
+                labelSize={(p: any) =>
+                    p.labelSize !== undefined ? p.labelSize : 0.5
+                }
+                width={size.width}
+                height={size.height}
+            />
         </div>
     );
 };

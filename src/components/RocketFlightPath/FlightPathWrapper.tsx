@@ -9,7 +9,14 @@ import {
     ModalHeader,
     useDisclosure,
 } from "@nextui-org/react";
-import RocketFlightPath from "./FlightPath";
+
+//import RocketFlightPath from "./FlightPath";
+
+import dynamic from "next/dynamic";
+const FlightPathNoSSR = dynamic(() => import("./FlightPath"), {
+    ssr: false,
+});
+
 import { toast } from "../ui/use-toast";
 
 const FlightPathWrapper = () => {
@@ -20,12 +27,12 @@ const FlightPathWrapper = () => {
         const highResImage = new Image();
         highResImage.src = "/world_large.jpg";
         highResImage.onload = () => {
-            console.log("HIGH RES LOADED");
+            toast({ title: "Textures loaded" });
             setGlobeImage(highResImage.src);
         };
         highResImage.onerror = () => {
             toast({
-                title: "could not load texture",
+                title: "Could not load textures",
             });
         };
     }
@@ -47,14 +54,14 @@ const FlightPathWrapper = () => {
                         <>
                             <ModalHeader className="flex">
                                 <Button
-                                    variant={"ghost"}
+                                    variant={"outline"}
                                     onClick={() => loadHighRes()}
                                 >
-                                    Load highres texture
+                                    Load highres textures
                                 </Button>
                             </ModalHeader>
                             <ModalBody className="flex items-center justify-center">
-                                <RocketFlightPath globeImage={globeImage} />
+                                <FlightPathNoSSR globeImage={globeImage} />
                             </ModalBody>
                             <ModalFooter>
                                 <Button
