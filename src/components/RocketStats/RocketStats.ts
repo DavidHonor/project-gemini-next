@@ -25,6 +25,8 @@ import {
 import { Derivative, rk4, rk4Vars } from "./RugenKutta";
 import { degreesToRadians } from "@/lib/utils";
 
+import { computeDestinationPoint } from "geolib";
+
 function initStageSummary(stageId: string) {
     return {
         stageId: stageId,
@@ -248,8 +250,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const LAUNCH_LAT = 28.608389;
     const LAUNCH_LNG = -80.604333;
 
-    const TURN_START_ALT = 17000;
-    const TURN_END_ALT = 100000;
+    const TURN_START_ALT = 7000;
+    const TURN_END_ALT = 80000;
     const TURN_RATE = Math.PI / 2 / (TURN_END_ALT - TURN_START_ALT); // Rate of the turn, radians per meter
 
     const TIMESTEP = 1;
@@ -427,11 +429,19 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 second += TIMESTEP
             ) {
                 state = rk4(state, vars, prevSecond + second, TIMESTEP);
+
+                const geoidPoint = computeDestinationPoint(
+                    {
+                        latitude: LAUNCH_LAT,
+                        longitude: LAUNCH_LNG,
+                    },
+                    state.east,
+                    90
+                );
+
                 let point: Point = {
-                    lat: LAUNCH_LAT,
-                    lng:
-                        LAUNCH_LNG +
-                        state.east / ((Math.PI * EARTH_RADIUS) / 180),
+                    lat: geoidPoint.latitude,
+                    lng: geoidPoint.longitude,
                     alt: state.altitude / EARTH_RADIUS,
                 };
 
@@ -464,9 +474,18 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             };
             state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
+            const geoidPoint = computeDestinationPoint(
+                {
+                    latitude: LAUNCH_LAT,
+                    longitude: LAUNCH_LNG,
+                },
+                state.east,
+                90
+            );
+
             let point: Point = {
-                lat: LAUNCH_LAT,
-                lng: LAUNCH_LNG + state.east / ((Math.PI * EARTH_RADIUS) / 180),
+                lat: geoidPoint.latitude,
+                lng: geoidPoint.longitude,
                 alt: state.altitude / EARTH_RADIUS,
             };
             coastingTraj.points.push(point);

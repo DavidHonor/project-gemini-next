@@ -88,3 +88,7 @@ export function roundToDecimalPlaces(num: number, places: number = 0): number {
 export function degreesToRadians(degrees: number) {
     return degrees * (Math.PI / 180);
 }
+
+export function radiansToDegrees(radians: number) {
+    return radians * (180 / Math.PI);
+}

@@ -31,6 +31,7 @@
         "data-uri-to-buffer": "^6.0.1",
         "firebase-admin": "^11.11.0",
         "framer-motion": "^10.16.4",
+        "geolib": "^3.3.4",
         "html-to-image": "^1.11.11",
         "lucide-react": "^0.284.0",
         "next": "^13.5.5",

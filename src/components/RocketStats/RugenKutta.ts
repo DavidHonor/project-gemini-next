@@ -2,7 +2,7 @@ import {
     calculateDrag,
     calculateGravitationalForce,
 } from "@/lib/ship_functions";
-import { degreesToRadians } from "@/lib/utils";
+import { degreesToRadians, radiansToDegrees } from "@/lib/utils";
 
 interface State {
     altitude: number;

@@ -144,7 +144,7 @@ export function massFlowRate(isp: number, thrust: number, gravity: number) {
 }
 
 function getAirDensity(altitude: number): number {
-    const scaleHeight = 8500; // Scale height for Earth's atmosphere in meters
+    const scaleHeight = 8500; // Scale height for Earth's atmosphere in meters 1.225
     return AIR_DENSITY_SEA_LEVEL * Math.exp(-altitude / scaleHeight);
 }
 export function calculateDrag(
