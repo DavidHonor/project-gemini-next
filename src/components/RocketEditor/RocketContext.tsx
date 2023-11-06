@@ -24,18 +24,18 @@ export const RocketContext = createContext({
 
     addRocketStage: () => {},
     updatePartStage: ({
-        part,
-        moveDirection,
+        partId,
+        stageIndex,
     }: {
-        part: RocketPart;
-        moveDirection: number;
+        partId: string;
+        stageIndex: number;
     }) => {},
     updateStageIndex: ({
-        stage,
-        moveDirection,
+        stageId,
+        index,
     }: {
-        stage: RocketStage;
-        moveDirection: number;
+        stageId: string;
+        index: number;
     }) => {},
 
     createRocketPart: (partName: string) => {},
@@ -188,24 +188,18 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const updatePartStage = useMutation(
         async ({
-            part,
-            moveDirection,
+            partId,
+            stageIndex,
         }: {
-            part: RocketPart;
-            moveDirection: number;
+            partId: string;
+            stageIndex: number;
         }) => {
             if (!rocket) return handleAPIError();
 
-            const stageIndex = rocket.stages.findIndex(
-                (x) => x.id === part.stageId
-            );
-
-            if (moveDirection === -1 && stageIndex < 1) return;
-
             const response = await utils.client.stage.updatePartStage.mutate({
                 rocketId,
-                partId: part.id,
-                moveDir: moveDirection,
+                partId,
+                stageIndex,
             });
 
             if (!("status" in response)) return handleAPIError();
@@ -215,20 +209,13 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     );
 
     const updateStageIndex = useMutation(
-        async ({
-            stage,
-            moveDirection,
-        }: {
-            stage: RocketStage;
-            moveDirection: number;
-        }) => {
-            if (stage.stageIndex + moveDirection < 0)
-                throw new Error("cant move stage index below zero");
+        async ({ stageId, index }: { stageId: string; index: number }) => {
+            if (index < 0) throw new Error("cant move stage index below zero");
 
             const response = await utils.client.stage.updateStageIndex.mutate({
                 rocketId,
-                stageId: stage.id,
-                moveDir: moveDirection,
+                stageId,
+                index,
             });
 
             if (!("status" in response)) return handleAPIError();

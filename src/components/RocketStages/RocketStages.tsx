@@ -1,12 +1,20 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { RocketContext } from "../RocketEditor/RocketContext";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
-import { ChevronDown, ChevronUp, CogIcon, PlusIcon, XIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, CogIcon, PlusIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn, roundToDecimalPlaces } from "@/lib/utils";
 import { RocketStats } from "@/types/rocket_stats";
 import { RocketPartPrototypes } from "@/config/rocket_parts";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -19,11 +27,10 @@ const RocketStages = () => {
     return (
         <div className="flex flex-col w-full">
             <div className="flex flex-col w-full">
-                {rocket.stages.map((stage, stageIndex) => (
+                {rocket.stages.map((stage) => (
                     <Stage
                         key={stage.id}
                         stage={stage}
-                        stageIndex={stageIndex}
                         stats={stats}
                         rocket={rocket}
                     />
@@ -41,98 +48,54 @@ const RocketStages = () => {
 
 const Stage = ({
     stage,
-    stageIndex,
     stats,
     rocket,
 }: {
     stage: RocketStage;
-    stageIndex: number;
     stats: RocketStats;
     rocket: Rocket;
 }) => {
-    const { updateStageIndex } = useContext(RocketContext);
     const stageStats = stats.stageStats.find((x) => x.stageId === stage.id);
     if (!stageStats) return "performance unavailable";
-
-    const stageActions = () => {
-        if (
-            stage.stageIndex !== 0 &&
-            stage.stageIndex !== rocket.stages.length - 1
-        ) {
-            return (
-                <>
-                    <Button
-                        title="move stage up"
-                        variant={"ghost"}
-                        className="p-1 h-5"
-                        onClick={() =>
-                            updateStageIndex({ stage, moveDirection: 1 })
-                        }
-                    >
-                        <ChevronDown className="w-5 h-5" />
-                    </Button>
-                    <Button
-                        title="move stage down"
-                        variant={"ghost"}
-                        className="p-1 h-5"
-                        onClick={() =>
-                            updateStageIndex({ stage, moveDirection: -1 })
-                        }
-                    >
-                        <ChevronUp className="w-5 h-5" />
-                    </Button>
-                </>
-            );
-        } else if (stage.stageIndex === 0) {
-            return (
-                <Button
-                    title="move stage up"
-                    variant={"ghost"}
-                    className="p-1 h-5"
-                    onClick={() =>
-                        updateStageIndex({ stage, moveDirection: 1 })
-                    }
-                >
-                    <ChevronDown className="w-5 h-5" />
-                </Button>
-            );
-        } else {
-            return (
-                <Button
-                    title="move stage down"
-                    variant={"ghost"}
-                    className="p-1 h-5"
-                    onClick={() =>
-                        updateStageIndex({ stage, moveDirection: -1 })
-                    }
-                >
-                    <ChevronUp className="w-5 h-5" />
-                </Button>
-            );
-        }
-    };
 
     return (
         <div className="flex flex-col w-full py-1 border-b-2">
             <div className="flex items-center justify-between py-1">
-                <h2 className="text-base font-medium">
-                    Stage {stageIndex + 1}
-                </h2>
-                <div className="flex">{stageActions()}</div>
-                <span className="text-xs" title="number of parts">
-                    [{stage.parts.length}]
-                </span>
+                <div className="flex gap-1">
+                    <h2 className="text-base font-medium">Stage</h2>
+                    <StageIndexSelector
+                        length={rocket.stages.length}
+                        index={stage.stageIndex}
+                        stageId={stage.id}
+                    />
+                </div>
+
+                <div className="flex">
+                    <span className="text-xs" title="number of parts">
+                        [{stage.parts.length}]
+                    </span>
+                </div>
             </div>
             <div className="flex flex-col">
                 {stage.parts.map((part) => (
-                    <Part key={part.id} part={part} />
+                    <Part
+                        key={part.id}
+                        part={part}
+                        stageIndex={stage.stageIndex}
+                    />
                 ))}
             </div>
         </div>
     );
 };
 
-const Part = ({ part }: { part: RocketPart }) => {
+const Part = ({
+    part,
+    stageIndex,
+}: {
+    part: RocketPart;
+    stageIndex: number;
+}) => {
     const { highlightPartId } = useContext(RocketContext);
     const protPart = RocketPartPrototypes.find((x) => x.name === part.name);
     if (!protPart) return "Part details not found: " + part.name;
@@ -160,15 +123,23 @@ const Part = ({ part }: { part: RocketPart }) => {
             </div>
 
             <div className="flex justify-end basis-1/6">
-                <PartActionsPopover part={part} />
+                <PartActionsPopover part={part} stageIndex={stageIndex} />
             </div>
         </div>
     );
 };
 
-const PartActionsPopover = ({ part }: { part: RocketPart }) => {
+const PartActionsPopover = ({
+    part,
+    stageIndex,
+}: {
+    part: RocketPart;
+    stageIndex: number;
+}) => {
     const { highlightPartId, setHighLightPartId } = useContext(RocketContext);
-    const { updatePartStage } = useContext(RocketContext);
+    const { rocket } = useContext(RocketContext);
+
+    if (!rocket) return "";
 
     return (
         <Popover>
@@ -196,34 +167,96 @@ const PartActionsPopover = ({ part }: { part: RocketPart }) => {
 
                 <Separator decorative />
 
-                <div className="flex items-center justify-between">
-                    <span className="text-sm">Move to previous stage</span>
-                    <Button
-                        title="move to previous stage"
-                        variant={"ghost"}
-                        className="p-1 h-5"
-                        onClick={() =>
-                            updatePartStage({ part, moveDirection: -1 })
-                        }
-                    >
-                        <ChevronUp className="w-5 h-5" />
-                    </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                    <span className="text-sm">Move to next stage</span>
-                    <Button
-                        title="move to next stage"
-                        variant={"ghost"}
-                        className="p-1 h-5"
-                        onClick={() =>
-                            updatePartStage({ part, moveDirection: 1 })
-                        }
-                    >
-                        <ChevronDown className="w-5 h-5" />
-                    </Button>
+                <div className="flex flex-col">
+                    <span className="text-sm">Stage</span>
+                    <div className="flex w-[60px]">
+                        <PartStageIndexSelector
+                            partId={part.id}
+                            stageIndex={stageIndex}
+                            length={rocket.stages.length}
+                        />
+                    </div>
                 </div>
             </PopoverContent>
         </Popover>
+    );
+};
+
+export const StageIndexSelector = ({
+    length,
+    index,
+    stageId,
+}: {
+    length: number;
+    index: number;
+    stageId: string;
+}) => {
+    const [selectedIndex, setSelectedIndex] = useState(index.toString());
+    const { updateStageIndex } = useContext(RocketContext);
+
+    const arrayFromZeroToN = Array.from({ length: length }, (_, index) =>
+        index.toString()
+    );
+
+    const onValueChange = (value: string) => {
+        updateStageIndex({ stageId, index: parseInt(value) });
+
+        setSelectedIndex(value);
+    };
+
+    return (
+        <Select value={selectedIndex} onValueChange={onValueChange}>
+            <SelectTrigger className="p-1 h-6">
+                <SelectValue />
+            </SelectTrigger>
+
+            <SelectContent>
+                {arrayFromZeroToN.map((value) => (
+                    <SelectItem key={stageId + "_" + value} value={value}>
+                        {parseInt(value) + 1}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+};
+
+export const PartStageIndexSelector = ({
+    length,
+    stageIndex,
+    partId,
+}: {
+    length: number;
+    stageIndex: number;
+    partId: string;
+}) => {
+    const [selectedIndex, setSelectedIndex] = useState(stageIndex.toString());
+    const { updatePartStage } = useContext(RocketContext);
+
+    const arrayFromZeroToN = Array.from({ length: length }, (_, index) =>
+        index.toString()
+    );
+
+    const onValueChange = (value: string) => {
+        updatePartStage({ partId, stageIndex: parseInt(value) });
+
+        setSelectedIndex(value);
+    };
+
+    return (
+        <Select value={selectedIndex} onValueChange={onValueChange}>
+            <SelectTrigger className="p-1 h-6">
+                <SelectValue />
+            </SelectTrigger>
+
+            <SelectContent>
+                {arrayFromZeroToN.map((value) => (
+                    <SelectItem key={partId + "_" + value} value={value}>
+                        {parseInt(value) + 1}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
     );
 };
 

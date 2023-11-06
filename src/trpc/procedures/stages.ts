@@ -38,12 +38,12 @@ export const stageRouter = router({
             z.object({
                 rocketId: z.string(),
                 partId: z.string(),
-                moveDir: z.number(),
+                stageIndex: z.number(),
             })
         )
         .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
-            const { rocketId, partId, moveDir } = input;
+            const { rocketId, partId, stageIndex } = input;
 
             const rocket = await db.rocket.findFirst({
                 where: {
@@ -66,34 +66,10 @@ export const stageRouter = router({
             const oldStage = rocket.stages.find((x) => x.id === part.stageId);
             if (!oldStage) return new TRPCError({ code: "NOT_FOUND" });
 
-            if (moveDir === -1 && oldStage.stageIndex === 0)
-                return new TRPCError({ code: "FORBIDDEN" });
-
-            //stage does yet exist (up direction)
-            if (oldStage.stageIndex + moveDir > rocket.stages.length - 1) {
-                const stage = await db.rocketStage.create({
-                    data: {
-                        rocketId: rocket.id,
-                        stageIndex: rocket.stages.length,
-                    },
-                });
-                await db.rocketPart.update({
-                    where: {
-                        id: partId,
-                    },
-                    data: {
-                        stageId: stage.id,
-                    },
-                });
-
-                return {
-                    status: "success",
-                    message: "Stages with parts updated successfully",
-                };
-            }
+            if (stageIndex < 0) return new TRPCError({ code: "FORBIDDEN" });
 
             const newStage = rocket.stages.find(
-                (x) => x.stageIndex === oldStage.stageIndex + moveDir
+                (x) => x.stageIndex === stageIndex
             );
             if (!newStage) return new TRPCError({ code: "NOT_FOUND" });
 
@@ -116,12 +92,12 @@ export const stageRouter = router({
             z.object({
                 rocketId: z.string(),
                 stageId: z.string(),
-                moveDir: z.number(),
+                index: z.number(),
             })
         )
         .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
-            const { rocketId, stageId, moveDir } = input;
+            const { rocketId, stageId, index } = input;
 
             const rocket = await db.rocket.findFirst({
                 where: {
@@ -137,11 +113,11 @@ export const stageRouter = router({
             const stage = rocket.stages.find((x) => x.id === stageId);
             if (!stage) return new TRPCError({ code: "NOT_FOUND" });
 
-            const newStageIndex = stage.stageIndex + moveDir;
+            const newStageIndex = index;
             if (newStageIndex < 0 || newStageIndex >= rocket.stages.length) {
                 return new TRPCError({
                     code: "BAD_REQUEST",
-                    message: "Invalid move direction",
+                    message: "Invalid stage index",
                 });
             }
 
