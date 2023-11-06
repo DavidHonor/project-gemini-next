@@ -288,7 +288,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const LAUNCH_LAT = 28.608389;
     const LAUNCH_LNG = -80.604333;
 
-    const TURN_START_ALT = 7000;
+    const TURN_START_ALT = 10000;
     const TURN_END_ALT = 80000;
     const TURN_RATE = Math.PI / 2 / (TURN_END_ALT - TURN_START_ALT); // Rate of the turn, radians per meter
 
@@ -491,6 +491,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             trajIndex++;
         }
 
+        console.log(prevSecond, "START COASTING", state.mass);
         //Coasting
         let second = 0;
         let coastingTraj: Trajectory = {
@@ -512,6 +513,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             };
             state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
+            console.log(prevSecond + second, state);
             const geoidPoint = computeDestinationPoint(
                 {
                     latitude: LAUNCH_LAT,

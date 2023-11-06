@@ -13,7 +13,7 @@ interface State {
 }
 
 export type rk4Vars = {
-    thrust: number;
+    thrust: number; //in Newtowns (N)
     massFlowRate: number;
     largestSection: number;
 
@@ -36,6 +36,36 @@ let stageVars: rk4Vars = {
     TURN_RATE: 0,
 };
 
+function turnLogic(
+    state: State,
+    t: number,
+    gravityForce: number,
+    thrust: number
+): number {
+    if (thrust === 0) return degreesToRadians(90);
+    if (state.altitude < stageVars.TURN_START_ALT) return 0;
+
+    let turnAngle = 0;
+    if (state.altitude < stageVars.TURN_END_ALT) {
+        turnAngle =
+            Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
+            stageVars.TURN_RATE;
+
+        // Ensure no vertical speed is lost
+        const verticalThrustComponent = Math.cos(turnAngle) * thrust;
+        if (verticalThrustComponent <= gravityForce) {
+            turnAngle = Math.acos(gravityForce / thrust);
+        }
+
+        return turnAngle;
+    }
+
+    const gravityTurnAngle = Math.acos(gravityForce / thrust);
+    turnAngle = Math.min(Math.max(gravityTurnAngle, 0), degreesToRadians(90));
+
+    return turnAngle;
+}
+
 function derivative(state: State, t: number): Derivative {
     const thrust = stageVars.thrust;
     const velocityMagnitude = Math.sqrt(
@@ -54,22 +84,7 @@ function derivative(state: State, t: number): Derivative {
     );
 
     // Turning logic
-    let turnAngle = 0;
-    if (
-        state.altitude > stageVars.TURN_START_ALT &&
-        state.altitude < stageVars.TURN_END_ALT
-    ) {
-        turnAngle =
-            Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
-            stageVars.TURN_RATE;
-    } else if (state.altitude > stageVars.TURN_END_ALT) {
-        turnAngle = degreesToRadians(90);
-
-        //after engine cutoff
-        //90degrees -> altitude: 189276 east: 191332
-        //85degrees -> altitude: 197149 east: 190988
-        //80degrees -> altitude: 204962 east: 189961
-    }
+    let turnAngle = turnLogic(state, t, gravityForce, thrust);
 
     // Calculate force components based on the turn angle
     const eastwardForceProportion = turnAngle > 0 ? Math.sin(turnAngle) : 0;
