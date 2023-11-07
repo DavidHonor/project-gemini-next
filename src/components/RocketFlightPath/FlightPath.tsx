@@ -4,12 +4,19 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RocketContext } from "../RocketEditor/RocketContext";
 
 import Globe from "react-globe.gl";
+import { LaunchConfigType } from "@/config/rocket_parts";
 
 interface RocketFlightPathProps {
+    useDefaultConfig: boolean;
+    launchConfig: LaunchConfigType;
     globeImage: string;
 }
 
-const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
+const RocketFlightPath = ({
+    useDefaultConfig,
+    launchConfig,
+    globeImage,
+}: RocketFlightPathProps) => {
     const wrapperDiv = useRef<any>(null);
     const globeEl = useRef<any>(null);
 
@@ -21,7 +28,9 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
     const trajectories = useMemo(() => {
         if (stats) {
             //const traj = stats.simulateTrajectory();
-            const rk4 = stats.trajectoryRK4().trajectories;
+            let rk4 = useDefaultConfig
+                ? stats.trajectoryRK4().trajectories
+                : stats.trajectoryRK4(launchConfig).trajectories;
             return [...rk4];
         }
         return [];

@@ -3,7 +3,10 @@ import {
     GRAVITY_SOURCE,
     PartTypes,
     RocketPartPrototypes,
+    LaunchConfigType,
+    DefaultLaunchConfig,
 } from "@/config/rocket_parts";
+
 import {
     burnTime,
     calculateDrag,
@@ -294,160 +297,166 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         // return { records: flightRecords };
     };
 
-    const LAUNCH_LAT = 28.608389;
-    const LAUNCH_LNG = -80.604333;
-    const HEADING = 90;
-
-    const TURN_START_ALT = 10000;
-    const TURN_END_ALT = 80000;
-    const TURN_RATE = Math.PI / 2 / (TURN_END_ALT - TURN_START_ALT); // Rate of the turn, radians per meter
-
-    const TIMESTEP = 1;
-    const COLORS = ["red", "blue", "green", "yellow", "BlueViolet"];
-
-    const COASTING_MINUTES = 15;
-
     const simulateTrajectory = (): Trajectory[] => {
         let trajectories: Trajectory[] = [];
-        let trajIndex = 0;
+        // let trajIndex = 0;
 
-        let prevSecond = 0;
+        // let prevSecond = 0;
 
-        let altitude = 0;
-        let east = 0;
+        // let altitude = 0;
+        // let east = 0;
 
-        let verticalVelocity = 0;
-        let eastVelocity = 0;
+        // let verticalVelocity = 0;
+        // let eastVelocity = 0;
 
-        for (let stageStat of stageStats) {
-            let stageTraj: Trajectory = {
-                stageId: stageStat.stageId,
-                points: [],
-                label: `stage: ${trajIndex + 1}`,
-                pathColor: COLORS[trajIndex],
-                pathStroke: "2px",
-            };
+        // for (let stageStat of stageStats) {
+        //     let stageTraj: Trajectory = {
+        //         stageId: stageStat.stageId,
+        //         points: [],
+        //         label: `stage: ${trajIndex + 1}`,
+        //         pathColor: COLORS[trajIndex],
+        //         pathStroke: "2px",
+        //     };
 
-            if (!trajIndex && !stageTraj.points.length) {
-                //add starting point (launchpad)
-                stageTraj.points.push({
-                    lat: LAUNCH_LAT,
-                    lng: LAUNCH_LNG,
-                    alt: 0,
-                });
-            }
+        //     if (!trajIndex && !stageTraj.points.length) {
+        //         //add starting point (launchpad)
+        //         stageTraj.points.push({
+        //             lat: LAUNCH_LAT,
+        //             lng: LAUNCH_LNG,
+        //             alt: 0,
+        //         });
+        //     }
 
-            for (
-                let second = 0;
-                second <= stageStat.stacked.burnTime;
-                second += TIMESTEP
-            ) {
-                let currentMass =
-                    stageStat.stacked.totalMass -
-                    stageStat.individual.totalMassFlowRate * second;
+        //     for (
+        //         let second = 0;
+        //         second <= stageStat.stacked.burnTime;
+        //         second += TIMESTEP
+        //     ) {
+        //         let currentMass =
+        //             stageStat.stacked.totalMass -
+        //             stageStat.individual.totalMassFlowRate * second;
 
-                const velocityMagnitude = Math.sqrt(
-                    verticalVelocity ** 2 + eastVelocity ** 2
-                );
+        //         const velocityMagnitude = Math.sqrt(
+        //             verticalVelocity ** 2 + eastVelocity ** 2
+        //         );
 
-                const drag = calculateDrag(
-                    largestSection,
-                    velocityMagnitude,
-                    altitude
-                );
+        //         const drag = calculateDrag(
+        //             largestSection,
+        //             velocityMagnitude,
+        //             altitude
+        //         );
 
-                const gravityForce = calculateGravitationalForce(
-                    currentMass,
-                    altitude
-                );
+        //         const gravityForce = calculateGravitationalForce(
+        //             currentMass,
+        //             altitude
+        //         );
 
-                let thrust = stageStat.individual.totalThrust * 1000;
-                if (currentMass <= stageStat.stacked.dryMass) {
-                    thrust = 0;
-                    currentMass = stageStat.stacked.dryMass;
-                }
+        //         let thrust = stageStat.individual.totalThrust * 1000;
+        //         if (currentMass <= stageStat.stacked.dryMass) {
+        //             thrust = 0;
+        //             currentMass = stageStat.stacked.dryMass;
+        //         }
 
-                let turnAngle = 0;
-                if (altitude > TURN_START_ALT && altitude < TURN_END_ALT) {
-                    turnAngle =
-                        Math.max(0, altitude - TURN_START_ALT) * TURN_RATE;
-                } else if (altitude > TURN_END_ALT) {
-                    turnAngle = degreesToRadians(90);
-                }
+        //         let turnAngle = 0;
+        //         if (altitude > TURN_START_ALT && altitude < TURN_END_ALT) {
+        //             turnAngle =
+        //                 Math.max(0, altitude - TURN_START_ALT) * TURN_RATE;
+        //         } else if (altitude > TURN_END_ALT) {
+        //             turnAngle = degreesToRadians(90);
+        //         }
 
-                // Calculate force components based on the turn angle
-                const eastwardForceProportion =
-                    turnAngle > 0 ? Math.sin(turnAngle) : 0;
-                const verticalForceProportion =
-                    turnAngle > 0 ? Math.cos(turnAngle) : 1;
+        //         // Calculate force components based on the turn angle
+        //         const eastwardForceProportion =
+        //             turnAngle > 0 ? Math.sin(turnAngle) : 0;
+        //         const verticalForceProportion =
+        //             turnAngle > 0 ? Math.cos(turnAngle) : 1;
 
-                // Drag forces proportionally
-                let verticalDrag = 0;
-                let eastwardDrag = 0;
-                if (velocityMagnitude !== 0) {
-                    verticalDrag =
-                        drag * (verticalVelocity / velocityMagnitude);
-                    eastwardDrag = drag * (eastVelocity / velocityMagnitude);
-                }
+        //         // Drag forces proportionally
+        //         let verticalDrag = 0;
+        //         let eastwardDrag = 0;
+        //         if (velocityMagnitude !== 0) {
+        //             verticalDrag =
+        //                 drag * (verticalVelocity / velocityMagnitude);
+        //             eastwardDrag = drag * (eastVelocity / velocityMagnitude);
+        //         }
 
-                //Calculate the net forces
-                const verticalNetForce =
-                    thrust * verticalForceProportion -
-                    gravityForce -
-                    verticalDrag;
-                const eastwardNetForce =
-                    thrust * eastwardForceProportion - eastwardDrag;
+        //         //Calculate the net forces
+        //         const verticalNetForce =
+        //             thrust * verticalForceProportion -
+        //             gravityForce -
+        //             verticalDrag;
+        //         const eastwardNetForce =
+        //             thrust * eastwardForceProportion - eastwardDrag;
 
-                // Calculate the accelerations for each direction
-                let verticalAcceleration = verticalNetForce / currentMass;
-                let eastwardAcceleration = eastwardNetForce / currentMass;
+        //         // Calculate the accelerations for each direction
+        //         let verticalAcceleration = verticalNetForce / currentMass;
+        //         let eastwardAcceleration = eastwardNetForce / currentMass;
 
-                let altitudeStep = 0;
-                let eastStep = 0;
-                altitudeStep =
-                    verticalVelocity * TIMESTEP +
-                    0.5 * verticalAcceleration * Math.pow(TIMESTEP, 2);
-                eastStep =
-                    eastVelocity * TIMESTEP +
-                    0.5 * eastwardAcceleration * Math.pow(TIMESTEP, 2);
+        //         let altitudeStep = 0;
+        //         let eastStep = 0;
+        //         altitudeStep =
+        //             verticalVelocity * TIMESTEP +
+        //             0.5 * verticalAcceleration * Math.pow(TIMESTEP, 2);
+        //         eastStep =
+        //             eastVelocity * TIMESTEP +
+        //             0.5 * eastwardAcceleration * Math.pow(TIMESTEP, 2);
 
-                altitude += altitudeStep;
-                east += eastStep;
+        //         altitude += altitudeStep;
+        //         east += eastStep;
 
-                // Calculate the new velocities
-                verticalVelocity += verticalAcceleration * TIMESTEP;
-                eastVelocity += eastwardAcceleration * TIMESTEP;
+        //         // Calculate the new velocities
+        //         verticalVelocity += verticalAcceleration * TIMESTEP;
+        //         eastVelocity += eastwardAcceleration * TIMESTEP;
 
-                let point: Point = {
-                    lat: LAUNCH_LAT,
-                    lng:
-                        LAUNCH_LNG +
-                        eastStep / ((Math.PI * EARTH_RADIUS) / 180),
-                    alt: altitude / EARTH_RADIUS,
-                };
+        //         let point: Point = {
+        //             lat: LAUNCH_LAT,
+        //             lng:
+        //                 LAUNCH_LNG +
+        //                 eastStep / ((Math.PI * EARTH_RADIUS) / 180),
+        //             alt: altitude / EARTH_RADIUS,
+        //         };
 
-                stageTraj.points.push(point);
-            }
-            prevSecond += stageStat.stacked.burnTime;
-            trajectories.push(stageTraj);
-            trajIndex++;
-        }
+        //         stageTraj.points.push(point);
+        //     }
+        //     prevSecond += stageStat.stacked.burnTime;
+        //     trajectories.push(stageTraj);
+        //     trajIndex++;
+        // }
 
         return trajectories;
     };
 
-    const trajectoryRK4 = (): SimulationResult => {
+    const getLaunchConfig = (launchConfigOverride?: LaunchConfigType) => {
+        let launchConfig = { ...DefaultLaunchConfig };
+
+        if (launchConfigOverride) {
+            launchConfig = {
+                ...launchConfig,
+                ...launchConfigOverride,
+            };
+        }
+
+        launchConfig.TURN_RATE =
+            Math.PI /
+            2 /
+            (launchConfig.TURN_END_ALT - launchConfig.TURN_START_ALT);
+        return launchConfig;
+    };
+
+    const trajectoryRK4 = (
+        launchConfigOverride?: LaunchConfigType
+    ): SimulationResult => {
         let trajectories: Trajectory[] = [];
         let flightData: FlightData = { records: [] };
+
+        let launchConfig = getLaunchConfig(launchConfigOverride);
 
         let trajIndex = 0;
         let prevSecond = 0;
 
-        const launchPoint = { x: 0, y: EARTH_RADIUS };
-
         let state: State = {
-            x: launchPoint.x,
-            y: launchPoint.y,
+            x: launchConfig.launchPoint.x,
+            y: launchConfig.launchPoint.y,
             xVelocity: 0,
             yVelocity: 0,
             mass: 0,
@@ -457,7 +466,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             const stageFiring = simulateStageThrusting(
                 state,
                 stageStat,
-                launchPoint,
+                launchConfig,
                 prevSecond,
                 trajIndex
             );
@@ -473,9 +482,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         //Coasting
         const coasting = simulateCoastingTrajectory(
             state,
-            launchPoint,
-            prevSecond,
-            60 * COASTING_MINUTES
+            launchConfig,
+            prevSecond
         );
 
         trajectories.push(coasting.trajectory);
@@ -488,7 +496,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const simulateStageThrusting = (
         state: State,
         stageStat: StageStats,
-        launchPoint: { x: number; y: number },
+        launchConfig: LaunchConfigType,
         prevSecond: number,
         stageIndex: number
     ): RK4TrajectorySimulation => {
@@ -496,7 +504,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             stageId: stageStat.stageId,
             points: [],
             label: `stage: ${stageIndex + 1}`,
-            pathColor: COLORS[stageIndex],
+            pathColor: launchConfig.TRACE_COLORS[stageIndex],
             pathStroke: "2px",
         };
 
@@ -504,9 +512,9 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             thrustNewtons: stageStat.individual.totalThrust * 1000,
             massFlowRate: stageStat.individual.totalMassFlowRate,
             largestSection,
-            turnStartAlt: TURN_START_ALT,
-            turnEndAlt: TURN_END_ALT,
-            turnRate: TURN_RATE,
+            turnStartAlt: launchConfig.TURN_START_ALT,
+            turnEndAlt: launchConfig.TURN_END_ALT,
+            turnRate: launchConfig.TURN_RATE,
         };
 
         let flightData: FlightData = { records: [] };
@@ -516,24 +524,29 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         for (
             let second = 0;
             second <= stageStat.stacked.burnTime;
-            second += TIMESTEP
+            second += launchConfig.TIMESTEP
         ) {
-            state = rk4(state, config, prevSecond + second, TIMESTEP);
+            state = rk4(
+                state,
+                config,
+                prevSecond + second,
+                launchConfig.TIMESTEP
+            );
 
             recordFlightData(
                 state,
                 stageStat.stageId,
-                launchPoint,
+                launchConfig.launchPoint,
                 prevSecond + second,
                 stageStat
             );
 
-            let point: Point = createTrajectoryPoint(state, launchPoint);
+            let point: Point = createTrajectoryPoint(state, launchConfig);
             flightData.records.push(
                 recordFlightData(
                     state,
                     stageStat.stageId,
-                    launchPoint,
+                    launchConfig.launchPoint,
                     prevSecond + second,
                     stageStat
                 )
@@ -547,9 +560,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
 
     const simulateCoastingTrajectory = (
         state: State,
-        launchPoint: { x: number; y: number },
-        prevSecond: number,
-        coastSeconds: number
+        launchConfig: LaunchConfigType,
+        prevSecond: number
     ): RK4TrajectorySimulation => {
         let second = 0;
 
@@ -565,21 +577,34 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             thrustNewtons: 0,
             massFlowRate: 0,
             largestSection,
-            turnStartAlt: TURN_START_ALT,
-            turnEndAlt: TURN_END_ALT,
-            turnRate: TURN_RATE,
+            turnStartAlt: launchConfig.TURN_START_ALT,
+            turnEndAlt: launchConfig.TURN_END_ALT,
+            turnRate: launchConfig.TURN_RATE,
         };
 
         let flightData: FlightData = { records: [] };
 
-        while (calculateAltitude(state) > 0 && second < coastSeconds) {
-            state = rk4(state, config, prevSecond + second, TIMESTEP);
+        while (
+            calculateAltitude(state) > 0 &&
+            second < launchConfig.COASTING_MINUTES * 60
+        ) {
+            state = rk4(
+                state,
+                config,
+                prevSecond + second,
+                launchConfig.TIMESTEP
+            );
 
-            let point: Point = createTrajectoryPoint(state, launchPoint);
+            let point: Point = createTrajectoryPoint(state, launchConfig);
 
             coastingTrajectory.points.push(point);
             flightData.records.push(
-                recordFlightData(state, "", launchPoint, prevSecond + second)
+                recordFlightData(
+                    state,
+                    "",
+                    launchConfig.launchPoint,
+                    prevSecond + second
+                )
             );
 
             second++;
@@ -590,7 +615,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
 
     const createTrajectoryPoint = (
         state: State,
-        launchPoint: { x: number; y: number }
+        launchConfig: LaunchConfigType
     ) => {
         const altitude = calculateAltitude(state);
         const normalizedPoint = normalizeToSurface(
@@ -600,15 +625,18 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             EARTH_RADIUS
         );
         const distance = calculateCircumferenceDistance(
-            launchPoint,
+            launchConfig.launchPoint,
             normalizedPoint,
             EARTH_RADIUS
         );
 
         const coords = computeDestinationPoint(
-            { latitude: LAUNCH_LAT, longitude: LAUNCH_LNG },
+            {
+                latitude: launchConfig.LAUNCH_LAT,
+                longitude: launchConfig.LAUNCH_LNG,
+            },
             distance,
-            HEADING
+            launchConfig.HEADING
         );
 
         return {

@@ -16,15 +16,26 @@ import { RocketContext } from "@/components/RocketEditor/RocketContext";
 import LineChart from "@/components/LineChart/LineChart";
 import { FlightData } from "@/types/rocket_stats";
 import { BarChart } from "lucide-react";
+import { LaunchConfigType } from "@/config/rocket_parts";
 
-const FlightPerformance = () => {
+interface FlightPerformanceProps {
+    useDefaultConfig: boolean;
+    launchConfig: LaunchConfigType;
+}
+
+const FlightPerformance = ({
+    useDefaultConfig,
+    launchConfig,
+}: FlightPerformanceProps) => {
     const { stats } = useContext(RocketContext);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedChart, setSelected] = useState("massOverTime");
 
     const flightData = useMemo(() => {
         if (isOpen && stats) {
-            const flightStats = stats.trajectoryRK4().flightData;
+            let flightStats = useDefaultConfig
+                ? stats.trajectoryRK4().flightData
+                : stats.trajectoryRK4(launchConfig).flightData;
             return flightStats;
         }
     }, [isOpen, stats]);
@@ -32,7 +43,7 @@ const FlightPerformance = () => {
     return (
         <>
             <Button variant={"outline"} onClick={onOpen}>
-                <span className="text-xs lg:text-base">Show charts</span>
+                <span className="text-xs lg:text-base">2D visuals</span>
                 <BarChart className="w-4 h-4 ml-1" />
             </Button>
             <Modal

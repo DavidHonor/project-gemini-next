@@ -1,3 +1,4 @@
+import { LaunchConfigType } from "@/config/rocket_parts";
 import { State } from "@/lib/rk4_trajectory";
 
 export type RocketStats = {
@@ -5,7 +6,9 @@ export type RocketStats = {
 
     getFlightData: () => FlightData;
     simulateTrajectory: () => Trajectory[];
-    trajectoryRK4: () => SimulationResult;
+    trajectoryRK4: (
+        launchConfigOverride?: LaunchConfigType
+    ) => SimulationResult;
 };
 
 export type StageStats = {

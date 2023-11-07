@@ -18,8 +18,16 @@ const FlightPathNoSSR = dynamic(() => import("./FlightPath"), {
 });
 
 import { toast } from "../ui/use-toast";
+import { LaunchConfigType } from "@/config/rocket_parts";
 
-const FlightPathWrapper = () => {
+interface FlightPathWrapperProps {
+    useDefaultConfig: boolean;
+    launchConfig: LaunchConfigType;
+}
+const FlightPathWrapper = ({
+    useDefaultConfig,
+    launchConfig,
+}: FlightPathWrapperProps) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [globeImage, setGlobeImage] = useState("/world_small.jpg");
 
@@ -40,7 +48,7 @@ const FlightPathWrapper = () => {
     return (
         <>
             <Button variant={"outline"} onClick={onOpen}>
-                <span className="text-xs lg:text-base">Show flight path</span>
+                <span className="text-xs lg:text-base">3D trajectory</span>
                 <Plane className="w-4 h-4 ml-1" />
             </Button>
             <Modal
@@ -61,7 +69,11 @@ const FlightPathWrapper = () => {
                                 </Button>
                             </ModalHeader>
                             <ModalBody className="flex items-center justify-center">
-                                <FlightPathNoSSR globeImage={globeImage} />
+                                <FlightPathNoSSR
+                                    useDefaultConfig={useDefaultConfig}
+                                    launchConfig={launchConfig}
+                                    globeImage={globeImage}
+                                />
                             </ModalBody>
                             <ModalFooter>
                                 <Button

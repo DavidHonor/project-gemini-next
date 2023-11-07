@@ -6,6 +6,28 @@ export const AIR_DENSITY_SEA_LEVEL = 1.225; // kg/m^3
 
 export const EARTH_RADIUS = 6371000;
 
+export const DefaultLaunchConfig = {
+    LAUNCH_LAT: 28.608389,
+    LAUNCH_LNG: -80.604333,
+    HEADING: 90,
+
+    launchPoint: {
+        x: 0,
+        y: EARTH_RADIUS,
+    },
+
+    TURN_START_ALT: 10000,
+    TURN_END_ALT: 80000,
+    TURN_RATE: 0,
+
+    TIMESTEP: 1,
+    COASTING_MINUTES: 15,
+
+    TRACE_COLORS: ["red", "blue", "green", "yellow", "BlueViolet"],
+};
+
+export type LaunchConfigType = typeof DefaultLaunchConfig;
+
 export enum PartTypes {
     ENGINE = "Engine",
     FUELTANK = "Fuel tank",
