@@ -305,7 +305,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const TIMESTEP = 1;
     const COLORS = ["red", "blue", "green", "yellow", "BlueViolet"];
 
-    const COASTING_MINUTES = 3;
+    const COASTING_MINUTES = 15;
 
     const simulateTrajectory = (): Trajectory[] => {
         let trajectories: Trajectory[] = [];

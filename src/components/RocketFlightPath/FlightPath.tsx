@@ -35,13 +35,30 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
                 text: "Launchpad 39A",
                 color: "lightgray",
             };
+            let cutP: GlobeLabel | undefined = undefined;
+
+            //Find engine cutoff point
+            for (let trajectory of trajectories) {
+                if (!trajectory.stageId) {
+                    cutP = {
+                        lat: trajectory.points[0].lat,
+                        lng: trajectory.points[0].lng,
+                        alt: trajectory.points[0].alt,
+                        labelSize: 0.25,
+                        text: "Engine cutoff",
+                        color: "lightgray",
+                    };
+                }
+            }
+            setLabels([startP]);
+            if (!cutP) return;
+            setLabels([startP, cutP]);
+
             const lastTrajectoryPoints =
                 trajectories[trajectories.length - 1].points;
 
-            if (lastTrajectoryPoints[lastTrajectoryPoints.length - 1].alt > 0) {
-                setLabels([startP]);
+            if (lastTrajectoryPoints[lastTrajectoryPoints.length - 1].alt > 0)
                 return;
-            }
 
             let endP: GlobeLabel = {
                 lat: lastTrajectoryPoints[lastTrajectoryPoints.length - 1].lat,
@@ -50,23 +67,7 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
                 color: "lightgray",
             };
 
-            //Find point after engine cutoff
-            for (let trajectory of trajectories) {
-                if (!trajectory.stageId) {
-                    let cutP: GlobeLabel = {
-                        lat: trajectory.points[0].lat,
-                        lng: trajectory.points[0].lng,
-                        alt: trajectory.points[0].alt,
-                        labelSize: 0.25,
-                        text: "Engine cutoff",
-                        color: "lightgray",
-                    };
-                    setLabels([startP, cutP, endP]);
-                    return;
-                }
-            }
-
-            setLabels([startP, endP]);
+            setLabels([startP, cutP, endP]);
         }
     }, [trajectories]);
 
