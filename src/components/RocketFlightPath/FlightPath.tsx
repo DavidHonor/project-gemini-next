@@ -21,7 +21,7 @@ const RocketFlightPath = ({ globeImage }: RocketFlightPathProps) => {
     const trajectories = useMemo(() => {
         if (stats) {
             //const traj = stats.simulateTrajectory();
-            const rk4 = stats.trajectoryRK4();
+            const rk4 = stats.trajectoryRK4().trajectories;
             return [...rk4];
         }
         return [];

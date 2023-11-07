@@ -21,6 +21,7 @@ import {
     Point,
     RK4TrajectorySimulation,
     RocketStats,
+    SimulationResult,
     StageStats,
     Trajectory,
 } from "@/types/rocket_stats";
@@ -304,7 +305,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const TIMESTEP = 1;
     const COLORS = ["red", "blue", "green", "yellow", "BlueViolet"];
 
-    const COASTING_MINUTES = 90;
+    const COASTING_MINUTES = 3;
 
     const simulateTrajectory = (): Trajectory[] => {
         let trajectories: Trajectory[] = [];
@@ -435,9 +436,11 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         return trajectories;
     };
 
-    const trajectoryRK4 = (): Trajectory[] => {
+    const trajectoryRK4 = (): SimulationResult => {
         let trajectories: Trajectory[] = [];
-        let trajIndex = 1;
+        let flightData: FlightData = { records: [] };
+
+        let trajIndex = 0;
         let prevSecond = 0;
 
         const launchPoint = { x: 0, y: EARTH_RADIUS };
@@ -460,6 +463,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             );
 
             trajectories.push(stageFiring.trajectory);
+            flightData.records.push(...stageFiring.flightData.records);
             state = stageFiring.state;
 
             prevSecond += stageStat.stacked.burnTime;
@@ -473,9 +477,12 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             prevSecond,
             60 * COASTING_MINUTES
         );
-        trajectories.push(coasting.trajectory);
 
-        return trajectories;
+        trajectories.push(coasting.trajectory);
+        flightData.records.push(...coasting.flightData.records);
+        state = coasting.state;
+
+        return { trajectories, flightData };
     };
 
     const simulateStageThrusting = (
@@ -502,6 +509,8 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             turnRate: TURN_RATE,
         };
 
+        let flightData: FlightData = { records: [] };
+
         state.mass = stageStat.stacked.totalMass;
 
         for (
@@ -511,17 +520,29 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         ) {
             state = rk4(state, config, prevSecond + second, TIMESTEP);
 
-            let point: Point = createTrajectoryPoint(
+            recordFlightData(
                 state,
+                stageStat.stageId,
                 launchPoint,
-                prevSecond,
-                second
+                prevSecond + second,
+                stageStat
+            );
+
+            let point: Point = createTrajectoryPoint(state, launchPoint);
+            flightData.records.push(
+                recordFlightData(
+                    state,
+                    stageStat.stageId,
+                    launchPoint,
+                    prevSecond + second,
+                    stageStat
+                )
             );
 
             stageTrajectory.points.push(point);
         }
 
-        return { trajectory: stageTrajectory, state };
+        return { trajectory: stageTrajectory, flightData, state };
     };
 
     const simulateCoastingTrajectory = (
@@ -549,29 +570,27 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             turnRate: TURN_RATE,
         };
 
+        let flightData: FlightData = { records: [] };
+
         while (calculateAltitude(state) > 0 && second < coastSeconds) {
             state = rk4(state, config, prevSecond + second, TIMESTEP);
 
-            let point: Point = createTrajectoryPoint(
-                state,
-                launchPoint,
-                prevSecond,
-                second
-            );
+            let point: Point = createTrajectoryPoint(state, launchPoint);
 
             coastingTrajectory.points.push(point);
+            flightData.records.push(
+                recordFlightData(state, "", launchPoint, prevSecond + second)
+            );
 
             second++;
         }
 
-        return { trajectory: coastingTrajectory, state };
+        return { trajectory: coastingTrajectory, flightData, state };
     };
 
     const createTrajectoryPoint = (
         state: State,
-        launchPoint: { x: number; y: number },
-        prevSecond: number,
-        second: number
+        launchPoint: { x: number; y: number }
     ) => {
         const altitude = calculateAltitude(state);
         const normalizedPoint = normalizeToSurface(
@@ -599,9 +618,49 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         };
     };
 
+    const recordFlightData = (
+        state: State,
+        stageId: string,
+        launchPoint: { x: number; y: number },
+        timeElapsed: number,
+        stageStat?: StageStats
+    ) => {
+        const velocity = Math.sqrt(state.xVelocity ** 2 + state.yVelocity ** 2);
+
+        const altitude = calculateAltitude(state);
+
+        const normalizedPoint = normalizeToSurface(
+            state.x,
+            state.y,
+            altitude,
+            EARTH_RADIUS
+        );
+
+        const distance = calculateCircumferenceDistance(
+            launchPoint,
+            normalizedPoint,
+            EARTH_RADIUS
+        );
+
+        return {
+            stageId: stageId,
+
+            timeElapsed,
+            twr: stageId
+                ? twr(stageStat!.individual.totalThrust, state.mass)
+                : 0,
+            mass: state.mass,
+            velocity: velocity,
+            altitude: altitude,
+            east: distance,
+            drag: calculateDrag(largestSection, velocity, altitude),
+            gravityForce: calculateGravitationalForce(state.mass, altitude),
+        };
+    };
+
     return {
-        largestSection,
         stageStats,
+
         getFlightData,
         simulateTrajectory,
         trajectoryRK4,

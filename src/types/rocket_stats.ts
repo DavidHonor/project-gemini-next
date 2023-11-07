@@ -1,11 +1,11 @@
 import { State } from "@/lib/rk4_trajectory";
 
 export type RocketStats = {
-    largestSection: number;
     stageStats: StageStats[];
+
     getFlightData: () => FlightData;
     simulateTrajectory: () => Trajectory[];
-    trajectoryRK4: () => Trajectory[];
+    trajectoryRK4: () => SimulationResult;
 };
 
 export type StageStats = {
@@ -63,9 +63,15 @@ export type Trajectory = {
     pathStroke: string;
 };
 
+export type SimulationResult = {
+    trajectories: Trajectory[];
+    flightData: FlightData;
+};
+
 export type RK4TrajectorySimulation = {
     state: State;
     trajectory: Trajectory;
+    flightData: FlightData;
 };
 
 export type Point = {

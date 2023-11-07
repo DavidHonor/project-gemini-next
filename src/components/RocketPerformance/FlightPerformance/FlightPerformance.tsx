@@ -24,7 +24,7 @@ const FlightPerformance = () => {
 
     const flightData = useMemo(() => {
         if (isOpen && stats) {
-            const flightStats = stats.getFlightData();
+            const flightStats = stats.trajectoryRK4().flightData;
             return flightStats;
         }
     }, [isOpen, stats]);
