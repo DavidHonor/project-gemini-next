@@ -3,7 +3,7 @@ import { calculateDrag } from "@/lib/ship_functions";
 import { degreesToRadians, radiansToDegrees } from "@/lib/utils";
 
 export type rk4Vars = {
-    thrust: number; //in Newtowns (N)
+    thrust_newtons: number;
     massFlowRate: number;
     largestSection: number;
 
@@ -16,7 +16,7 @@ export type rk4Vars = {
 export type Derivative = State;
 
 let stageVars: rk4Vars = {
-    thrust: 0,
+    thrust_newtons: 0,
     massFlowRate: 0,
     largestSection: 0,
 
@@ -57,9 +57,9 @@ function turnLogic(
     state: State,
     t: number,
     gravityForce: number,
-    thrust: number
+    thrust_newtons: number
 ): number {
-    if (thrust === 0) return degreesToRadians(90);
+    if (thrust_newtons === 0) return degreesToRadians(90);
     const altitude = calculateAltitude(state);
     if (altitude < stageVars.TURN_START_ALT) return 0;
 
@@ -70,23 +70,25 @@ function turnLogic(
             stageVars.TURN_RATE;
 
         // Ensure no vertical speed is lost
-        const verticalThrustComponent = Math.cos(turnAngle) * thrust;
+        const verticalThrustComponent = Math.cos(turnAngle) * thrust_newtons;
         if (verticalThrustComponent <= gravityForce) {
-            turnAngle = Math.acos(gravityForce / thrust);
+            turnAngle = Math.acos(gravityForce / thrust_newtons);
         }
 
         return turnAngle;
     }
 
-    // Gradually transition to horizontal flight
-    const gravityTurnAngle = Math.acos(gravityForce / thrust);
-    turnAngle = Math.min(Math.max(gravityTurnAngle, 0), degreesToRadians(90));
+    //const gravityTurnAngle = Math.acos(gravityForce / thrust_newtons);
+    //turnAngle = Math.min(Math.max(gravityTurnAngle, 0), degreesToRadians(90));
+
+    // if (thrust_newtons > 0) console.log(t, radiansToDegrees(turnAngle));
+    turnAngle = degreesToRadians(94);
 
     return turnAngle;
 }
 
 function derivative(state: State, t: number): Derivative {
-    const thrust = stageVars.thrust;
+    const thrust_newtons = stageVars.thrust_newtons;
     const distanceFromCenter = calculateDistanceFromCenter(state);
 
     const gravityMagnitude = calculateGravitationalForce(
@@ -114,12 +116,12 @@ function derivative(state: State, t: number): Derivative {
     );
 
     // Turning logic
-    let turnAngle = turnLogic(state, t, gravityMagnitude, thrust);
+    let turnAngle = turnLogic(state, t, gravityMagnitude, thrust_newtons);
     angleOfVelocity += turnAngle;
 
     // Calculate force components based on the turn angle
-    const thrustYComponent = Math.cos(turnAngle) * thrust;
-    const thrustXComponent = Math.sin(turnAngle) * thrust;
+    const thrustYComponent = Math.cos(turnAngle) * thrust_newtons;
+    const thrustXComponent = Math.sin(turnAngle) * thrust_newtons;
 
     // Drag forces proportionally
     let dragXComponent = 0;
@@ -130,7 +132,7 @@ function derivative(state: State, t: number): Derivative {
         dragYComponent = drag * (state.yVelocity / velocityMagnitude);
     }
 
-    // Calculate the net forces including thrust, drag, and gravity
+    // Calculate the net forces including thrust_newtons, drag, and gravity
     const netForceY = thrustYComponent - dragYComponent + gravityForceY;
     const netForceX = thrustXComponent - dragXComponent + gravityForceX;
 
@@ -139,7 +141,7 @@ function derivative(state: State, t: number): Derivative {
     const accelerationX = netForceX / state.mass;
 
     //Check if the rocket is coasting
-    const massRateOfChange = thrust > 0 ? -stageVars.massFlowRate : 0;
+    const massRateOfChange = thrust_newtons > 0 ? -stageVars.massFlowRate : 0;
 
     return {
         x: state.xVelocity,

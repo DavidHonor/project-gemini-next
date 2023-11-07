@@ -137,11 +137,16 @@ export function getDeltaV(
     return deltaV;
 }
 
-export function massFlowRate(isp: number, thrust: number, gravity: number) {
+export function massFlowRate(
+    isp: number,
+    thrust_newtons: number,
+    gravity: number,
+    throttle: number = 1
+) {
     const exhaustVelocity = isp * gravity;
-    const massFlowRate = (thrust * 1000) / exhaustVelocity;
+    const massFlowRate = thrust_newtons / exhaustVelocity;
 
-    return massFlowRate;
+    return massFlowRate * throttle;
 }
 
 function getAirDensity(altitude: number): number {

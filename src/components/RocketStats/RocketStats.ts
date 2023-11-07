@@ -107,7 +107,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                     ispThrustSum += protPart.thrust_sl * protPart.isp_sl;
                     stageSummary.individual.totalMassFlowRate += massFlowRate(
                         protPart.isp_sl,
-                        protPart.thrust_sl,
+                        protPart.thrust_sl * 1000,
                         GRAVITY_SOURCE.EARTH
                     );
                 } else if (part.part_type === PartTypes.FUELTANK) {
@@ -293,6 +293,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
 
     const LAUNCH_LAT = 28.608389;
     const LAUNCH_LNG = -80.604333;
+    const HEADING = 90;
 
     const TURN_START_ALT = 10000;
     const TURN_END_ALT = 80000;
@@ -301,7 +302,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
     const TIMESTEP = 1;
     const COLORS = ["red", "blue", "green", "yellow", "BlueViolet"];
 
-    const COASTING_MINUTES = 69;
+    const COASTING_MINUTES = 90;
 
     const simulateTrajectory = (): Trajectory[] => {
         let trajectories: Trajectory[] = [];
@@ -451,7 +452,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             state.mass = stageStat.stacked.totalMass;
 
             let vars: rk4Vars = {
-                thrust: stageStat.individual.totalThrust * 1000,
+                thrust_newtons: stageStat.individual.totalThrust * 1000,
                 massFlowRate: stageStat.individual.totalMassFlowRate,
                 largestSection,
                 TIMESTEP,
@@ -476,37 +477,12 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             ) {
                 state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
-                const altitude = calculateAltitude(state);
-
-                const nPoint = normalizeToSurface(
-                    state.x,
-                    state.y,
-                    altitude,
-                    EARTH_RADIUS
-                );
-                const distance = calculateCircumferenceDistance(
+                let point: Point = createTrajectoryPoint(
+                    state,
                     launchPoint,
-                    nPoint,
-                    EARTH_RADIUS
+                    prevSecond,
+                    second
                 );
-
-                //console.log(prevSecond + second, state, distance);
-
-                const HEADING = 90;
-                const coords = computeDestinationPoint(
-                    {
-                        latitude: LAUNCH_LAT,
-                        longitude: LAUNCH_LNG,
-                    },
-                    distance,
-                    HEADING
-                );
-
-                let point: Point = {
-                    lat: coords.latitude,
-                    lng: coords.longitude,
-                    alt: altitude / EARTH_RADIUS,
-                };
 
                 stageTraj.points.push(point);
             }
@@ -525,9 +501,10 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             pathColor: "gray",
             pathStroke: "1px",
         };
+
         while (calculateAltitude(state) > 0 && second < 60 * COASTING_MINUTES) {
             let vars: rk4Vars = {
-                thrust: 0,
+                thrust_newtons: 0,
                 massFlowRate: 0,
                 largestSection,
                 TIMESTEP,
@@ -537,35 +514,12 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             };
             state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
-            const altitude = calculateAltitude(state);
-
-            const nPoint = normalizeToSurface(
-                state.x,
-                state.y,
-                altitude,
-                EARTH_RADIUS
-            );
-            const distance = calculateCircumferenceDistance(
+            let point: Point = createTrajectoryPoint(
+                state,
                 launchPoint,
-                nPoint,
-                EARTH_RADIUS
+                prevSecond,
+                second
             );
-
-            const HEADING = 90;
-            const coords = computeDestinationPoint(
-                {
-                    latitude: LAUNCH_LAT,
-                    longitude: LAUNCH_LNG,
-                },
-                distance,
-                HEADING
-            );
-
-            let point: Point = {
-                lat: coords.latitude,
-                lng: coords.longitude,
-                alt: altitude / EARTH_RADIUS,
-            };
 
             coastingTraj.points.push(point);
 
@@ -574,6 +528,38 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         trajectories.push(coastingTraj);
 
         return trajectories;
+    };
+
+    const createTrajectoryPoint = (
+        state: Derivative,
+        launchPoint: { x: number; y: number },
+        prevSecond: number,
+        second: number
+    ) => {
+        const altitude = calculateAltitude(state);
+        const normalizedPoint = normalizeToSurface(
+            state.x,
+            state.y,
+            altitude,
+            EARTH_RADIUS
+        );
+        const distance = calculateCircumferenceDistance(
+            launchPoint,
+            normalizedPoint,
+            EARTH_RADIUS
+        );
+
+        const coords = computeDestinationPoint(
+            { latitude: LAUNCH_LAT, longitude: LAUNCH_LNG },
+            distance,
+            HEADING
+        );
+
+        return {
+            lat: coords.latitude,
+            lng: coords.longitude,
+            alt: altitude / EARTH_RADIUS,
+        };
     };
 
     return {
