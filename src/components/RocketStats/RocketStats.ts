@@ -19,6 +19,7 @@ import {
     FlightData,
     FlightRecord,
     Point,
+    RK4TrajectorySimulation,
     RocketStats,
     StageStats,
     Trajectory,
@@ -440,6 +441,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         let prevSecond = 0;
 
         const launchPoint = { x: 0, y: EARTH_RADIUS };
+
         let state: State = {
             x: launchPoint.x,
             y: launchPoint.y,
@@ -449,66 +451,87 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         };
 
         for (let stageStat of stageStats) {
-            //next stage so initilize with stage mass
-            state.mass = stageStat.stacked.totalMass;
+            const stageFiring = simulateStageThrusting(
+                state,
+                stageStat,
+                launchPoint,
+                prevSecond,
+                trajIndex
+            );
 
-            let rk4Config: RK4ConfigVars = {
-                thrustNewtons: stageStat.individual.totalThrust * 1000,
-                massFlowRate: stageStat.individual.totalMassFlowRate,
-                largestSection,
-                turnStartAlt: TURN_START_ALT,
-                turnEndAlt: TURN_END_ALT,
-                turnRate: TURN_RATE,
-            };
-
-            //init stage trajectory
-            let stageTraj: Trajectory = {
-                stageId: stageStat.stageId,
-                points: [],
-                label: `stage: ${trajIndex + 1}`,
-                pathColor: COLORS[trajIndex],
-                pathStroke: "2px",
-            };
-
-            for (
-                let second = 0;
-                second <= stageStat.stacked.burnTime;
-                second += TIMESTEP
-            ) {
-                state = rk4(state, rk4Config, prevSecond + second, TIMESTEP);
-
-                let point: Point = createTrajectoryPoint(
-                    state,
-                    launchPoint,
-                    prevSecond,
-                    second
-                );
-
-                stageTraj.points.push(point);
-            }
+            trajectories.push(stageFiring.trajectory);
+            state = stageFiring.state;
 
             prevSecond += stageStat.stacked.burnTime;
-            trajectories.push(stageTraj);
             trajIndex++;
         }
 
         //Coasting
-        const coastTrajectory = simulateCoastingTrajectory(
+        const coasting = simulateCoastingTrajectory(
             state,
             launchPoint,
-            prevSecond
+            prevSecond,
+            60 * COASTING_MINUTES
         );
-        trajectories.push(coastTrajectory);
+        trajectories.push(coasting.trajectory);
 
         return trajectories;
+    };
+
+    const simulateStageThrusting = (
+        state: State,
+        stageStat: StageStats,
+        launchPoint: { x: number; y: number },
+        prevSecond: number,
+        stageIndex: number
+    ): RK4TrajectorySimulation => {
+        let stageTrajectory: Trajectory = {
+            stageId: stageStat.stageId,
+            points: [],
+            label: `stage: ${stageIndex + 1}`,
+            pathColor: COLORS[stageIndex],
+            pathStroke: "2px",
+        };
+
+        let config: RK4ConfigVars = {
+            thrustNewtons: stageStat.individual.totalThrust * 1000,
+            massFlowRate: stageStat.individual.totalMassFlowRate,
+            largestSection,
+            turnStartAlt: TURN_START_ALT,
+            turnEndAlt: TURN_END_ALT,
+            turnRate: TURN_RATE,
+        };
+
+        state.mass = stageStat.stacked.totalMass;
+
+        for (
+            let second = 0;
+            second <= stageStat.stacked.burnTime;
+            second += TIMESTEP
+        ) {
+            state = rk4(state, config, prevSecond + second, TIMESTEP);
+
+            let point: Point = createTrajectoryPoint(
+                state,
+                launchPoint,
+                prevSecond,
+                second
+            );
+
+            stageTrajectory.points.push(point);
+        }
+
+        return { trajectory: stageTrajectory, state };
     };
 
     const simulateCoastingTrajectory = (
         state: State,
         launchPoint: { x: number; y: number },
-        prevSecond: number
-    ): Trajectory => {
+        prevSecond: number,
+        coastSeconds: number
+    ): RK4TrajectorySimulation => {
         let second = 0;
+
         let coastingTrajectory: Trajectory = {
             stageId: "",
             points: [],
@@ -517,16 +540,17 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             pathStroke: "1px",
         };
 
-        while (calculateAltitude(state) > 0 && second < 60 * COASTING_MINUTES) {
-            let vars: RK4ConfigVars = {
-                thrustNewtons: 0,
-                massFlowRate: 0,
-                largestSection,
-                turnStartAlt: TURN_START_ALT,
-                turnEndAlt: TURN_END_ALT,
-                turnRate: TURN_RATE,
-            };
-            state = rk4(state, vars, prevSecond + second, TIMESTEP);
+        let config: RK4ConfigVars = {
+            thrustNewtons: 0,
+            massFlowRate: 0,
+            largestSection,
+            turnStartAlt: TURN_START_ALT,
+            turnEndAlt: TURN_END_ALT,
+            turnRate: TURN_RATE,
+        };
+
+        while (calculateAltitude(state) > 0 && second < coastSeconds) {
+            state = rk4(state, config, prevSecond + second, TIMESTEP);
 
             let point: Point = createTrajectoryPoint(
                 state,
@@ -540,7 +564,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             second++;
         }
 
-        return coastingTrajectory;
+        return { trajectory: coastingTrajectory, state };
     };
 
     const createTrajectoryPoint = (

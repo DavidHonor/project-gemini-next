@@ -1,3 +1,5 @@
+import { State } from "@/lib/rk4_trajectory";
+
 export type RocketStats = {
     largestSection: number;
     stageStats: StageStats[];
@@ -59,6 +61,11 @@ export type Trajectory = {
     label: string;
     pathColor: string;
     pathStroke: string;
+};
+
+export type RK4TrajectorySimulation = {
+    state: State;
+    trajectory: Trajectory;
 };
 
 export type Point = {
