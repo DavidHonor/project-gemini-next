@@ -1,16 +1,6 @@
-import {
-    calculateDrag,
-    calculateGravitationalForce,
-} from "@/lib/ship_functions";
+import { EARTH_RADIUS } from "@/config/rocket_parts";
+import { calculateDrag } from "@/lib/ship_functions";
 import { degreesToRadians, radiansToDegrees } from "@/lib/utils";
-
-interface State {
-    altitude: number;
-    verticalVelocity: number;
-    east: number;
-    eastVelocity: number;
-    mass: number;
-}
 
 export type rk4Vars = {
     thrust: number; //in Newtowns (N)
@@ -36,6 +26,33 @@ let stageVars: rk4Vars = {
     TURN_RATE: 0,
 };
 
+interface State {
+    x: number;
+    y: number;
+
+    xVelocity: number;
+    yVelocity: number;
+
+    mass: number;
+}
+
+export function calculateDistanceFromCenter(state: State): number {
+    return Math.sqrt(state.x ** 2 + state.y ** 2);
+}
+
+export function calculateAltitude(state: State): number {
+    return calculateDistanceFromCenter(state) - EARTH_RADIUS;
+}
+
+function calculateGravitationalForce(
+    mass: number,
+    distanceFromCenter: number
+): number {
+    const G = 6.6743e-11;
+    const earthMass = 5.972e24;
+    return (G * mass * earthMass) / distanceFromCenter ** 2;
+}
+
 function turnLogic(
     state: State,
     t: number,
@@ -43,12 +60,13 @@ function turnLogic(
     thrust: number
 ): number {
     if (thrust === 0) return degreesToRadians(90);
-    if (state.altitude < stageVars.TURN_START_ALT) return 0;
+    const altitude = calculateAltitude(state);
+    if (altitude < stageVars.TURN_START_ALT) return 0;
 
     let turnAngle = 0;
-    if (state.altitude < stageVars.TURN_END_ALT) {
+    if (altitude < stageVars.TURN_END_ALT) {
         turnAngle =
-            Math.max(0, state.altitude - stageVars.TURN_START_ALT) *
+            Math.max(0, altitude - stageVars.TURN_START_ALT) *
             stageVars.TURN_RATE;
 
         // Ensure no vertical speed is lost
@@ -60,6 +78,7 @@ function turnLogic(
         return turnAngle;
     }
 
+    // Gradually transition to horizontal flight
     const gravityTurnAngle = Math.acos(gravityForce / thrust);
     turnAngle = Math.min(Math.max(gravityTurnAngle, 0), degreesToRadians(90));
 
@@ -68,53 +87,67 @@ function turnLogic(
 
 function derivative(state: State, t: number): Derivative {
     const thrust = stageVars.thrust;
+    const distanceFromCenter = calculateDistanceFromCenter(state);
+
+    const gravityMagnitude = calculateGravitationalForce(
+        state.mass,
+        distanceFromCenter
+    );
+    const gravityDirection = {
+        x: -state.x / distanceFromCenter,
+        y: -state.y / distanceFromCenter,
+    };
+
+    const gravityForceX = gravityMagnitude * gravityDirection.x;
+    const gravityForceY = gravityMagnitude * gravityDirection.y;
+
+    let angleOfVelocity = Math.atan2(state.yVelocity, state.xVelocity);
+
     const velocityMagnitude = Math.sqrt(
-        state.verticalVelocity ** 2 + state.eastVelocity ** 2
+        state.xVelocity ** 2 + state.yVelocity ** 2
     );
 
     const drag = calculateDrag(
         stageVars.largestSection,
         velocityMagnitude,
-        state.altitude
-    );
-
-    const gravityForce = calculateGravitationalForce(
-        state.mass,
-        state.altitude
+        distanceFromCenter - EARTH_RADIUS
     );
 
     // Turning logic
-    let turnAngle = turnLogic(state, t, gravityForce, thrust);
+    let turnAngle = turnLogic(state, t, gravityMagnitude, thrust);
+    angleOfVelocity += turnAngle;
 
     // Calculate force components based on the turn angle
-    const eastwardForceProportion = turnAngle > 0 ? Math.sin(turnAngle) : 0;
-    const verticalForceProportion = turnAngle > 0 ? Math.cos(turnAngle) : 1;
+    const thrustYComponent = Math.cos(turnAngle) * thrust;
+    const thrustXComponent = Math.sin(turnAngle) * thrust;
 
     // Drag forces proportionally
-    let verticalDrag = 0;
-    let eastwardDrag = 0;
+    let dragXComponent = 0;
+    let dragYComponent = 0;
+
     if (velocityMagnitude !== 0) {
-        verticalDrag = drag * (state.verticalVelocity / velocityMagnitude);
-        eastwardDrag = drag * (state.eastVelocity / velocityMagnitude);
+        dragXComponent = drag * (state.xVelocity / velocityMagnitude);
+        dragYComponent = drag * (state.yVelocity / velocityMagnitude);
     }
 
-    //Calculate the net forces
-    const verticalNetForce =
-        thrust * verticalForceProportion - gravityForce - verticalDrag;
-    const eastwardNetForce = thrust * eastwardForceProportion - eastwardDrag;
+    // Calculate the net forces including thrust, drag, and gravity
+    const netForceY = thrustYComponent - dragYComponent + gravityForceY;
+    const netForceX = thrustXComponent - dragXComponent + gravityForceX;
 
     // Compute accelerations
-    let verticalAcceleration = verticalNetForce / state.mass;
-    let eastwardAcceleration = eastwardNetForce / state.mass;
+    const accelerationY = netForceY / state.mass;
+    const accelerationX = netForceX / state.mass;
 
     //Check if the rocket is coasting
     const massRateOfChange = thrust > 0 ? -stageVars.massFlowRate : 0;
 
     return {
-        altitude: state.verticalVelocity,
-        verticalVelocity: verticalAcceleration,
-        east: state.eastVelocity,
-        eastVelocity: eastwardAcceleration,
+        x: state.xVelocity,
+        y: state.yVelocity,
+
+        xVelocity: accelerationX,
+        yVelocity: accelerationY,
+
         mass: massRateOfChange,
     };
 }
@@ -133,26 +166,24 @@ export function rk4(state: State, vars: rk4Vars, t: number, dt: number): State {
     );
     const d = derivative(updateState(state, scaleDerivative(c, dt)), t + dt);
 
-    const dxdt = (a.altitude + 2 * (b.altitude + c.altitude) + d.altitude) / 6;
-    const dvdt =
-        (a.verticalVelocity +
-            2 * (b.verticalVelocity + c.verticalVelocity) +
-            d.verticalVelocity) /
-        6;
-    const dedt = (a.east + 2 * (b.east + c.east) + d.east) / 6;
-    const devdt =
-        (a.eastVelocity +
-            2 * (b.eastVelocity + c.eastVelocity) +
-            d.eastVelocity) /
-        6;
-    const dmdt = (a.mass + 2 * (b.mass + c.mass) + d.mass) / 6;
+    const dx = (a.x + 2 * (b.x + c.x) + d.x) / 6;
+    const dy = (a.y + 2 * (b.y + c.y) + d.y) / 6;
+
+    const dxVelocity =
+        (a.xVelocity + 2 * (b.xVelocity + c.xVelocity) + d.xVelocity) / 6;
+    const dyVelocity =
+        (a.yVelocity + 2 * (b.yVelocity + c.yVelocity) + d.yVelocity) / 6;
+
+    const dMass = (a.mass + 2 * (b.mass + c.mass) + d.mass) / 6;
 
     return {
-        altitude: state.altitude + dxdt * dt,
-        verticalVelocity: state.verticalVelocity + dvdt * dt,
-        east: state.east + dedt * dt,
-        eastVelocity: state.eastVelocity + devdt * dt,
-        mass: state.mass + dmdt,
+        x: state.x + dx * dt,
+        y: state.y + dy * dt,
+
+        xVelocity: state.xVelocity + dxVelocity * dt,
+        yVelocity: state.yVelocity + dyVelocity * dt,
+
+        mass: state.mass + dMass * dt,
     };
 }
 
@@ -161,20 +192,24 @@ function scaleDerivative(
     scaleFactor: number
 ): Derivative {
     return {
-        altitude: derivative.altitude * scaleFactor,
-        verticalVelocity: derivative.verticalVelocity * scaleFactor,
-        east: derivative.east * scaleFactor,
-        eastVelocity: derivative.eastVelocity * scaleFactor,
+        x: derivative.x * scaleFactor,
+        y: derivative.y * scaleFactor,
+
+        xVelocity: derivative.xVelocity * scaleFactor,
+        yVelocity: derivative.yVelocity * scaleFactor,
+
         mass: derivative.mass * scaleFactor,
     };
 }
 
 function updateState(state: State, derivative: Derivative): State {
     return {
-        altitude: state.altitude + derivative.altitude,
-        verticalVelocity: state.verticalVelocity + derivative.verticalVelocity,
-        east: state.east + derivative.east,
-        eastVelocity: state.eastVelocity + derivative.eastVelocity,
+        x: state.x + derivative.x,
+        y: state.y + derivative.y,
+
+        xVelocity: state.xVelocity + derivative.xVelocity,
+        yVelocity: state.yVelocity + derivative.yVelocity,
+
         mass: state.mass + derivative.mass,
     };
 }

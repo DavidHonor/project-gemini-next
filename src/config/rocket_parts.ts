@@ -4,6 +4,8 @@ export const GRAVITY_SOURCE = {
 
 export const AIR_DENSITY_SEA_LEVEL = 1.225; // kg/m^3
 
+export const EARTH_RADIUS = 6371000;
+
 export enum PartTypes {
     ENGINE = "Engine",
     FUELTANK = "Fuel tank",

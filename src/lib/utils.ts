@@ -92,3 +92,43 @@ export function degreesToRadians(degrees: number) {
 export function radiansToDegrees(radians: number) {
     return radians * (180 / Math.PI);
 }
+
+export function normalizeToSurface(
+    x: number,
+    y: number,
+    altitude: number,
+    radius: number
+) {
+    // Calculate current distance from Earth's center
+    const currentDistance = Math.sqrt(x ** 2 + y ** 2);
+
+    // Calculate the scale factor to normalize the vector (x, y) to the Earth's surface
+    const scaleFactor = (currentDistance - altitude) / currentDistance;
+
+    return {
+        x: x * scaleFactor,
+        y: y * scaleFactor,
+    };
+}
+
+export function calculateCircumferenceDistance(
+    pointA: { x: number; y: number },
+    pointB: { x: number; y: number },
+    radius: number
+): number {
+    const angleA = Math.atan2(pointA.y, pointA.x);
+    const angleB = Math.atan2(pointB.y, pointB.x);
+
+    // Find the difference in angles, considering the clockwise direction
+    let deltaAngle = angleA - angleB;
+
+    // If the angle is negative, we need to add 2 * PI to get the clockwise angle
+    if (deltaAngle < 0) {
+        deltaAngle += 2 * Math.PI;
+    }
+
+    // The arc length is the angle in radians multiplied by the radius of the circle
+    const arcLength = deltaAngle * radius;
+
+    return arcLength;
+}

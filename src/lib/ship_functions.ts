@@ -1,5 +1,6 @@
 import {
     AIR_DENSITY_SEA_LEVEL,
+    EARTH_RADIUS,
     GRAVITY_SOURCE,
     PartTypes,
     RocketPartPrototypes,
@@ -157,14 +158,14 @@ export function calculateDrag(
 
     const area = Math.PI * Math.pow(diameter / 2, 2);
 
-    const dragForce =
-        0.5 * airDensity * Math.pow(velocity, 2) * DRAG_COEFFICIENT * area;
+    const dragForce = Math.abs(
+        0.5 * airDensity * Math.pow(velocity, 2) * DRAG_COEFFICIENT * area
+    );
 
     return dragForce;
 }
 
 function calculateGravityAtAltitude(altitude: number) {
-    const EARTH_RADIUS = 6371000;
     return (
         GRAVITY_SOURCE.EARTH *
         Math.pow(EARTH_RADIUS / (EARTH_RADIUS + altitude), 2)
