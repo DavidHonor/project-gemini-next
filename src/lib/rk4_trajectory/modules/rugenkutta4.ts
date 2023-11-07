@@ -1,94 +1,21 @@
-import { EARTH_RADIUS } from "@/config/rocket_parts";
-import { calculateDrag } from "@/lib/ship_functions";
-import { degreesToRadians, radiansToDegrees } from "@/lib/utils";
+import { EARTH_RADIUS } from "./config";
+import { RK4ConfigVars, State } from "./types";
+import {
+    calculateAltitude,
+    calculateDistanceFromCenter,
+    calculateDrag,
+    calculateGravitationalForce,
+    degreesToRadians,
+} from "./utils";
 
-export type rk4Vars = {
-    thrust_newtons: number;
-    massFlowRate: number;
-    largestSection: number;
+type Derivative = State;
+export type { RK4ConfigVars, State };
 
-    TIMESTEP: number;
-    TURN_START_ALT: number;
-    TURN_END_ALT: number;
-    TURN_RATE: number;
-};
-
-export type Derivative = State;
-
-let stageVars: rk4Vars = {
-    thrust_newtons: 0,
-    massFlowRate: 0,
-    largestSection: 0,
-
-    TIMESTEP: 0,
-    TURN_START_ALT: 0,
-    TURN_END_ALT: 0,
-    TURN_RATE: 0,
-};
-
-interface State {
-    x: number;
-    y: number;
-
-    xVelocity: number;
-    yVelocity: number;
-
-    mass: number;
-}
-
-export function calculateDistanceFromCenter(state: State): number {
-    return Math.sqrt(state.x ** 2 + state.y ** 2);
-}
-
-export function calculateAltitude(state: State): number {
-    return calculateDistanceFromCenter(state) - EARTH_RADIUS;
-}
-
-function calculateGravitationalForce(
-    mass: number,
-    distanceFromCenter: number
-): number {
-    const G = 6.6743e-11;
-    const earthMass = 5.972e24;
-    return (G * mass * earthMass) / distanceFromCenter ** 2;
-}
-
-function turnLogic(
+function derivative(
     state: State,
     t: number,
-    gravityForce: number,
-    thrust_newtons: number
-): number {
-    if (thrust_newtons === 0) return degreesToRadians(90);
-    const altitude = calculateAltitude(state);
-    if (altitude < stageVars.TURN_START_ALT) return 0;
-
-    let turnAngle = 0;
-    if (altitude < stageVars.TURN_END_ALT) {
-        turnAngle =
-            Math.max(0, altitude - stageVars.TURN_START_ALT) *
-            stageVars.TURN_RATE;
-
-        // Ensure no vertical speed is lost
-        const verticalThrustComponent = Math.cos(turnAngle) * thrust_newtons;
-        if (verticalThrustComponent <= gravityForce) {
-            turnAngle = Math.acos(gravityForce / thrust_newtons);
-        }
-
-        return turnAngle;
-    }
-
-    //const gravityTurnAngle = Math.acos(gravityForce / thrust_newtons);
-    //turnAngle = Math.min(Math.max(gravityTurnAngle, 0), degreesToRadians(90));
-
-    // if (thrust_newtons > 0) console.log(t, radiansToDegrees(turnAngle));
-    turnAngle = degreesToRadians(94);
-
-    return turnAngle;
-}
-
-function derivative(state: State, t: number): Derivative {
-    const thrust_newtons = stageVars.thrust_newtons;
+    config: RK4ConfigVars
+): Derivative {
     const distanceFromCenter = calculateDistanceFromCenter(state);
 
     const gravityMagnitude = calculateGravitationalForce(
@@ -110,18 +37,17 @@ function derivative(state: State, t: number): Derivative {
     );
 
     const drag = calculateDrag(
-        stageVars.largestSection,
+        config.largestSection,
         velocityMagnitude,
         distanceFromCenter - EARTH_RADIUS
     );
 
-    // Turning logic
-    let turnAngle = turnLogic(state, t, gravityMagnitude, thrust_newtons);
+    let turnAngle = turnLogic(state, t, config, gravityMagnitude);
     angleOfVelocity += turnAngle;
 
     // Calculate force components based on the turn angle
-    const thrustYComponent = Math.cos(turnAngle) * thrust_newtons;
-    const thrustXComponent = Math.sin(turnAngle) * thrust_newtons;
+    const thrustYComponent = Math.cos(turnAngle) * config.thrustNewtons;
+    const thrustXComponent = Math.sin(turnAngle) * config.thrustNewtons;
 
     // Drag forces proportionally
     let dragXComponent = 0;
@@ -141,7 +67,8 @@ function derivative(state: State, t: number): Derivative {
     const accelerationX = netForceX / state.mass;
 
     //Check if the rocket is coasting
-    const massRateOfChange = thrust_newtons > 0 ? -stageVars.massFlowRate : 0;
+    const massRateOfChange =
+        config.thrustNewtons > 0 ? -config.massFlowRate : 0;
 
     return {
         x: state.xVelocity,
@@ -154,19 +81,28 @@ function derivative(state: State, t: number): Derivative {
     };
 }
 
-export function rk4(state: State, vars: rk4Vars, t: number, dt: number): State {
-    stageVars = vars;
-
-    const a = derivative(state, t);
+export function rk4(
+    state: State,
+    config: RK4ConfigVars,
+    t: number,
+    dt: number
+): State {
+    const a = derivative(state, t, config);
     const b = derivative(
         updateState(state, scaleDerivative(a, dt / 2)),
-        t + dt / 2
+        t + dt / 2,
+        config
     );
     const c = derivative(
         updateState(state, scaleDerivative(b, dt / 2)),
-        t + dt / 2
+        t + dt / 2,
+        config
     );
-    const d = derivative(updateState(state, scaleDerivative(c, dt)), t + dt);
+    const d = derivative(
+        updateState(state, scaleDerivative(c, dt)),
+        t + dt,
+        config
+    );
 
     const dx = (a.x + 2 * (b.x + c.x) + d.x) / 6;
     const dy = (a.y + 2 * (b.y + c.y) + d.y) / 6;
@@ -214,4 +150,38 @@ function updateState(state: State, derivative: Derivative): State {
 
         mass: state.mass + derivative.mass,
     };
+}
+
+const NO_THRUST_TURN_ANGLE_DEGREES = 90;
+const MAX_TURN_ANGLE_DEGREES = 94;
+
+function turnLogic(
+    state: State,
+    t: number,
+    config: RK4ConfigVars,
+    gravityForce: number
+): number {
+    if (!config.thrustNewtons)
+        return degreesToRadians(NO_THRUST_TURN_ANGLE_DEGREES);
+
+    const altitude = calculateAltitude(state);
+    if (altitude < config.turnStartAlt) return 0;
+
+    let turnAngle = 0;
+    if (altitude < config.turnEndAlt) {
+        turnAngle =
+            Math.max(0, altitude - config.turnStartAlt) * config.turnRate;
+
+        // Ensure no vertical speed is lost
+        const verticalThrustComponent =
+            Math.cos(turnAngle) * config.thrustNewtons;
+        if (verticalThrustComponent <= gravityForce) {
+            turnAngle = Math.acos(gravityForce / config.thrustNewtons);
+        }
+
+        return turnAngle;
+    }
+
+    // Once past the turn end altitude, fixed turn angle
+    return degreesToRadians(MAX_TURN_ANGLE_DEGREES);
 }

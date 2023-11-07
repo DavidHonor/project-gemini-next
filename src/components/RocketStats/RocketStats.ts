@@ -24,7 +24,6 @@ import {
     Trajectory,
 } from "@/types/rocket_stats";
 
-import { Derivative, rk4, rk4Vars, calculateAltitude } from "./RugenKutta";
 import {
     calculateCircumferenceDistance,
     degreesToRadians,
@@ -32,6 +31,8 @@ import {
 } from "@/lib/utils";
 
 import { computeDestinationPoint } from "geolib";
+import { RK4ConfigVars, State, rk4 } from "@/lib/rk4_trajectory";
+import { calculateAltitude } from "@/lib/rk4_trajectory/modules/utils";
 
 function initStageSummary(stageId: string) {
     return {
@@ -439,7 +440,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         let prevSecond = 0;
 
         const launchPoint = { x: 0, y: EARTH_RADIUS };
-        let state: Derivative = {
+        let state: State = {
             x: launchPoint.x,
             y: launchPoint.y,
             xVelocity: 0,
@@ -451,14 +452,13 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             //next stage so initilize with stage mass
             state.mass = stageStat.stacked.totalMass;
 
-            let vars: rk4Vars = {
-                thrust_newtons: stageStat.individual.totalThrust * 1000,
+            let rk4Config: RK4ConfigVars = {
+                thrustNewtons: stageStat.individual.totalThrust * 1000,
                 massFlowRate: stageStat.individual.totalMassFlowRate,
                 largestSection,
-                TIMESTEP,
-                TURN_START_ALT,
-                TURN_END_ALT,
-                TURN_RATE,
+                turnStartAlt: TURN_START_ALT,
+                turnEndAlt: TURN_END_ALT,
+                turnRate: TURN_RATE,
             };
 
             //init stage trajectory
@@ -475,7 +475,7 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 second <= stageStat.stacked.burnTime;
                 second += TIMESTEP
             ) {
-                state = rk4(state, vars, prevSecond + second, TIMESTEP);
+                state = rk4(state, rk4Config, prevSecond + second, TIMESTEP);
 
                 let point: Point = createTrajectoryPoint(
                     state,
@@ -493,24 +493,38 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
         }
 
         //Coasting
+        const coastTrajectory = simulateCoastingTrajectory(
+            state,
+            launchPoint,
+            prevSecond
+        );
+        trajectories.push(coastTrajectory);
+
+        return trajectories;
+    };
+
+    const simulateCoastingTrajectory = (
+        state: State,
+        launchPoint: { x: number; y: number },
+        prevSecond: number
+    ): Trajectory => {
         let second = 0;
-        let coastingTraj: Trajectory = {
+        let coastingTrajectory: Trajectory = {
             stageId: "",
             points: [],
-            label: `stage: ${trajIndex + 1}`,
+            label: `Coasting`,
             pathColor: "gray",
             pathStroke: "1px",
         };
 
         while (calculateAltitude(state) > 0 && second < 60 * COASTING_MINUTES) {
-            let vars: rk4Vars = {
-                thrust_newtons: 0,
+            let vars: RK4ConfigVars = {
+                thrustNewtons: 0,
                 massFlowRate: 0,
                 largestSection,
-                TIMESTEP,
-                TURN_START_ALT,
-                TURN_END_ALT,
-                TURN_RATE,
+                turnStartAlt: TURN_START_ALT,
+                turnEndAlt: TURN_END_ALT,
+                turnRate: TURN_RATE,
             };
             state = rk4(state, vars, prevSecond + second, TIMESTEP);
 
@@ -521,17 +535,16 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
                 second
             );
 
-            coastingTraj.points.push(point);
+            coastingTrajectory.points.push(point);
 
             second++;
         }
-        trajectories.push(coastingTraj);
 
-        return trajectories;
+        return coastingTrajectory;
     };
 
     const createTrajectoryPoint = (
-        state: Derivative,
+        state: State,
         launchPoint: { x: number; y: number },
         prevSecond: number,
         second: number
