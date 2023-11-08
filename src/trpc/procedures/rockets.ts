@@ -15,6 +15,8 @@ import {
     RocketPart,
 } from "../../../prisma/generated/zod";
 
+import { generateDefaultRocket } from "@/lib/ship_functions";
+
 const ExtendedRocketStageSchema = RocketStageSchema.extend({
     parts: z.array(RocketPartSchema),
 });
@@ -68,24 +70,26 @@ export const rocketRouter = router({
         });
     }),
 
-    createRocket: privateProcedure.mutation(async ({ ctx }) => {
-        const { userId } = ctx;
+    createRocket: privateProcedure
+        .input(z.object({ name: z.string(), fromExisting: z.boolean() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { fromExisting, name } = input;
 
-        const noRockets = await db.rocket.count({
-            where: {
-                userId,
-            },
-        });
+            if (!fromExisting) {
+                const rocket = await db.rocket.create({
+                    data: {
+                        userId,
+                        name,
+                    },
+                });
+                return rocket;
+            }
 
-        const rocket = await db.rocket.create({
-            data: {
-                userId,
-                name: `Rocket ${noRockets + 1}`,
-            },
-        });
+            const rocket = generateDefaultRocket({ name, userId });
 
-        return rocket;
-    }),
+            return rocket;
+        }),
 
     deleteRocket: privateProcedure
         .input(z.object({ rocketId: z.string() }))

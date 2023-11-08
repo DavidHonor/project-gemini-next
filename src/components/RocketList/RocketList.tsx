@@ -12,6 +12,7 @@ import {
     TooltipTrigger,
 } from "../ui/tooltip";
 import { useToast } from "../ui/use-toast";
+import CreateRocketDialog from "../Dialogs/CreateRocketDialog/CreateRocketDialog";
 
 const RocketList = () => {
     const {
@@ -21,7 +22,7 @@ const RocketList = () => {
     } = trpc.rocket.getUserRockets.useQuery();
 
     const {
-        mutate,
+        mutate: createRocket,
         data: rocket,
         isLoading: isRocketLoading,
         status,
@@ -55,36 +56,41 @@ const RocketList = () => {
         }
     }, [status]);
 
+    if (isLoading)
+        return (
+            <div className="max-h-[calc(100vh-3.5rem)] flex flex-col">
+                <div className="flex w-full justify-between items-center px-2">
+                    <div className="text-center flex-grow">
+                        <h2 className="mb-3 mt-3 font-bold text-3xl text-gray-900">
+                            My rockets
+                        </h2>
+                    </div>
+                </div>
+                <Skeleton className="h-16" />
+            </div>
+        );
+
     return (
         <div className="max-h-[calc(100vh-3.5rem)] flex flex-col">
-            <div className="flex w-full justify-between items-center px-2">
-                <div className="text-center flex-grow">
-                    <h2 className="mb-3 mt-3 font-bold text-3xl text-gray-900">
-                        My rockets
-                    </h2>
+            <div className="flex w-full justify-center items-center relative py-2">
+                <h2 className="font-bold text-3xl text-gray-900">My rockets</h2>
+                <div className="absolute right-0 ">
+                    <CreateRocketDialog
+                        noRockets={rockets!.length}
+                        createRocket={createRocket}
+                    />
                 </div>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger onClick={() => mutate()}>
-                            <PlusSquareIcon />
-                        </TooltipTrigger>
-                        <TooltipContent>Create new rocket</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
             </div>
-            {isLoading ? (
-                <Skeleton className="h-16" />
-            ) : (
-                <div className="flex flex-wrap justify-center md:justify-start mt-5 gap-3">
-                    {rockets?.map((rocket) => (
-                        <RocketListItem
-                            key={rocket.createdAt}
-                            rocket={rocket!}
-                            onRocketDeleted={refetch}
-                        />
-                    ))}
-                </div>
-            )}
+
+            <div className="flex flex-wrap justify-center md:justify-start mt-5 gap-3">
+                {rockets?.map((rocket) => (
+                    <RocketListItem
+                        key={rocket.createdAt}
+                        rocket={rocket!}
+                        onRocketDeleted={refetch}
+                    />
+                ))}
+            </div>
         </div>
     );
 };

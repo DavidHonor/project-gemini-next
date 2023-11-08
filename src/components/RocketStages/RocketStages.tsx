@@ -18,7 +18,7 @@ import {
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
-import DeleteDialog from "../DeleteDialog/DeleteDialog";
+import DeleteDialog from "../Dialogs/DeleteDialog/DeleteDialog";
 
 const RocketStages = () => {
     const { rocket, stats, addRocketStage } = useContext(RocketContext);

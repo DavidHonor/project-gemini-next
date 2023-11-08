@@ -8,7 +8,7 @@ import {
     useDisclosure,
 } from "@nextui-org/react";
 
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +69,7 @@ const DeleteDialog = ({
                                         e.stopPropagation();
                                         e.preventDefault();
                                         deleteAction();
+                                        onClose();
                                     }}
                                 >
                                     Confirm

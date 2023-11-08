@@ -140,8 +140,8 @@ export const partRouter = router({
                     scaled_width: 0,
                     targetStage: rocket.stages.length - 1,
                     weight: prototypePart.weight,
-                    length: prototypePart.length ?? 0, //for fuel tanks
-                    diameter: prototypePart.diameter ?? 0, //for fuel tanks
+                    length: prototypePart.length ?? 0,
+                    diameter: prototypePart.diameter ?? 0,
                 },
             });
 

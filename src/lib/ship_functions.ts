@@ -1,10 +1,12 @@
 import {
     AIR_DENSITY_SEA_LEVEL,
+    DefaultRockets,
     EARTH_RADIUS,
     GRAVITY_SOURCE,
     PartTypes,
     RocketPartPrototypes,
 } from "@/config/rocket_parts";
+import { db } from "@/db";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { RocketPart } from "@prisma/client";
 
@@ -193,3 +195,93 @@ export function burnTime(propellant_mass: number, mass_flow_rate: number) {
 
     return propellant_mass / mass_flow_rate;
 }
+
+export const generateDefaultRocket = async ({
+    userId,
+    name,
+}: {
+    userId: string;
+    name: string;
+}) => {
+    const defr = DefaultRockets.find((x) => x.key === name);
+    if (!defr) throw new Error("DefaultRockets not found: " + name);
+
+    const rocket = await db.rocket.create({
+        data: {
+            userId,
+            name: defr!.name,
+        },
+    });
+
+    let currentHeight = 80;
+
+    for (let j = defr.stages.length - 1; j >= 0; j--) {
+        const stage = defr.stages[j];
+        const newStage = await db.rocketStage.create({
+            data: {
+                rocketId: rocket.id,
+                stageIndex: j,
+            },
+        });
+
+        //place fuel tank
+        const protFuel = RocketPartPrototypes.find(
+            (x) => x.name === stage.fuel
+        );
+        if (!protFuel)
+            throw new Error("RocketPartPrototype not found: " + stage.fuel);
+
+        const tankHeight = protFuel.height * protFuel.scale * 0.5;
+        await db.rocketPart.create({
+            data: {
+                stageId: newStage.id,
+                part_type: protFuel.part_type,
+                name: stage.fuel,
+                x: 150,
+                y: currentHeight,
+                height: protFuel.height,
+                width: protFuel.width,
+                image: protFuel.image ?? "",
+                scale: protFuel.scale * 0.5,
+                scaled_height: 0,
+                scaled_width: 0,
+                targetStage: j,
+                weight: protFuel.weight,
+                length: protFuel.length ?? 0,
+                diameter: protFuel.diameter ?? 0,
+            },
+        });
+        currentHeight += tankHeight;
+
+        //place engines
+        const protEngine = RocketPartPrototypes.find(
+            (x) => x.name === stage.engine
+        );
+        if (!protEngine)
+            throw new Error("RocketPartPrototype not found: " + stage.engine);
+
+        const engineHeight = protEngine.height * protEngine.scale;
+        for (let i = 0; i < stage.engine_nmb; i++) {
+            await db.rocketPart.create({
+                data: {
+                    stageId: newStage.id,
+                    part_type: protEngine.part_type,
+                    name: stage.engine,
+                    x: 50 + i * 50,
+                    y: currentHeight,
+                    height: protEngine.height,
+                    width: protEngine.width,
+                    image: protEngine.image ?? "",
+                    scale: protEngine.scale,
+                    scaled_height: 0,
+                    scaled_width: 0,
+                    targetStage: j,
+                    weight: protEngine.weight,
+                },
+            });
+        }
+        currentHeight += engineHeight;
+    }
+
+    return rocket;
+};

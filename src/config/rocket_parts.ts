@@ -35,6 +35,36 @@ export enum PartTypes {
     UTILITY = "Utility",
 }
 
+export const DefaultRockets = [
+    {
+        name: "Falcon 9 [block 5]",
+        key: "falcon9block5",
+        stages: [
+            {
+                engine: "Merlin",
+                engine_nmb: 9,
+                fuel: "3.7m Falcon 9 tank",
+            },
+            {
+                engine: "Merlin Vacuum",
+                engine_nmb: 1,
+                fuel: "3m tank",
+            },
+        ],
+    },
+    {
+        name: "Single stage rocket",
+        key: "singlestage",
+        stages: [
+            {
+                engine: "Merlin",
+                engine_nmb: 5,
+                fuel: "3.7m Falcon 9 tank",
+            },
+        ],
+    },
+];
+
 export const RocketPartPrototypes = [
     {
         part_type: PartTypes.ENGINE,

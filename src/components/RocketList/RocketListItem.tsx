@@ -16,7 +16,7 @@ import {
 import { Loader2, Trash } from "lucide-react";
 import { toast } from "../ui/use-toast";
 import { Button } from "../ui/button";
-import DeleteDialog from "../DeleteDialog/DeleteDialog";
+import DeleteDialog from "../Dialogs/DeleteDialog/DeleteDialog";
 
 interface RocketItemListProps {
     rocket: RocketName;
