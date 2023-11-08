@@ -30,6 +30,7 @@ export const RocketContext = createContext({
         partId: string;
         stageIndex: number;
     }) => {},
+    deleteStage: (stageId: string) => {},
     updateStageIndex: ({
         stageId,
         index,
@@ -208,6 +209,26 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }
     );
 
+    const deleteStage = useMutation(async (stageId: string) => {
+        if (!rocket) return handleAPIError();
+
+        const rocketCopy = structuredClone(rocket);
+        const stageIndex = rocketCopy.stages.findIndex((x) => x.id === stageId);
+
+        if (!stageIndex) return handleAPIError();
+
+        rocketCopy.stages.splice(stageIndex, 1);
+        setRocket(rocketCopy);
+
+        utils.client.stage.deleteStage
+            .mutate({
+                stageId,
+            })
+            .then((resp) => {
+                if (!("status" in resp)) return handleAPIError();
+            });
+    });
+
     const updateStageIndex = useMutation(
         async ({ stageId, index }: { stageId: string; index: number }) => {
             if (index < 0) throw new Error("cant move stage index below zero");
@@ -322,6 +343,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
                 addRocketStage: addRocketStage.mutate,
                 updateStageIndex: updateStageIndex.mutate,
+                deleteStage: deleteStage.mutate,
                 updatePartStage: updatePartStage.mutate,
 
                 updatePartScale: updatePartScale.mutate,

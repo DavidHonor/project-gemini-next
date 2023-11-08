@@ -10,16 +10,21 @@ import {
 
 import { Button } from "../ui/button";
 import { Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DeleteDialogProps {
     deleteTitle?: string;
     deleteText?: string;
     deleteAction: () => void;
+    triggerBtnClass?: string;
+    triggerIconClass?: string;
 }
 const DeleteDialog = ({
     deleteAction,
     deleteTitle,
     deleteText,
+    triggerBtnClass,
+    triggerIconClass,
 }: DeleteDialogProps) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -31,8 +36,12 @@ const DeleteDialog = ({
 
     return (
         <>
-            <Button variant={"outline"} onClick={onOpen}>
-                <Trash2 className="w-5 h-5" />
+            <Button
+                variant={"outline"}
+                onClick={onOpen}
+                className={triggerBtnClass ?? ""}
+            >
+                <Trash2 className={cn("w-5 h-5", triggerIconClass)} />
             </Button>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>

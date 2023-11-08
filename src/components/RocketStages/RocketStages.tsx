@@ -18,6 +18,7 @@ import {
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
+import DeleteDialog from "../DeleteDialog/DeleteDialog";
 
 const RocketStages = () => {
     const { rocket, stats, addRocketStage } = useContext(RocketContext);
@@ -55,6 +56,8 @@ const Stage = ({
     stats: RocketStats;
     rocket: Rocket;
 }) => {
+    const { deleteStage } = useContext(RocketContext);
+
     const stageStats = stats.stageStats.find((x) => x.stageId === stage.id);
     if (!stageStats) return "performance unavailable";
 
@@ -70,7 +73,16 @@ const Stage = ({
                     />
                 </div>
 
-                <div className="flex">
+                <div className="flex items-center gap-1">
+                    <DeleteDialog
+                        triggerBtnClass="p-1 flex h-5"
+                        triggerIconClass="w-4 h-4"
+                        deleteTitle="Delete stage"
+                        deleteText={`Are you sure to delete stage ${
+                            stage.stageIndex + 1
+                        }, including all its parts?`}
+                        deleteAction={() => deleteStage(stage.id)}
+                    />
                     <span className="text-xs" title="number of parts">
                         [{stage.parts.length}]
                     </span>

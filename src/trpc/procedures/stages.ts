@@ -87,6 +87,40 @@ export const stageRouter = router({
                 message: "Stages with parts updated successfully",
             };
         }),
+    deleteStage: privateProcedure
+        .input(
+            z.object({
+                stageId: z.string(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const { stageId } = input;
+
+            const stage = await db.rocketStage.findFirst({
+                where: {
+                    id: stageId,
+                },
+                include: {
+                    rocket: true,
+                },
+            });
+            if (!stage) return new TRPCError({ code: "NOT_FOUND" });
+            if (!stage.rocket) return new TRPCError({ code: "NOT_FOUND" });
+            if (stage.rocket.userId !== userId)
+                return new TRPCError({ code: "FORBIDDEN" });
+
+            await db.rocketStage.delete({
+                where: {
+                    id: stageId,
+                },
+            });
+
+            return {
+                status: "success",
+                message: "Stage deleted",
+            };
+        }),
     updateStageIndex: privateProcedure
         .input(
             z.object({
