@@ -16,6 +16,7 @@ import {
 import { Loader2, Trash } from "lucide-react";
 import { toast } from "../ui/use-toast";
 import { Button } from "../ui/button";
+import DeleteDialog from "../DeleteDialog/DeleteDialog";
 
 interface RocketItemListProps {
     rocket: RocketName;
@@ -55,30 +56,34 @@ const RocketListItem = ({ rocket, onRocketDeleted }: RocketItemListProps) => {
     };
 
     return (
-        <Card className="flex flex-col w-[250px] sm:w-[300px] items-center p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 hover:cursor-pointer group">
+        <Card className="flex flex-col w-full sm:w-[300px] items-center p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 hover:cursor-pointer group">
             <Link
                 href={`/dashboard/${rocket.id}`}
                 className="w-full flex flex-col gap-1"
             >
-                <div className="text-md text-center group-hover:underline text-zinc-700 font-semibold relative">
-                    {rocket.name}
-                    <Button
-                        variant={"ghost"}
-                        className="absolute right-0 top-0 p-2"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            deleteRocket({ rocketId: rocket.id });
-                        }}
+                <div className="text-md text-center group-hover:underline relative">
+                    <span className=" text-base text-zinc-700 font-bold">
+                        {rocket.name}
+                    </span>
+                    <div
+                        className="absolute right-0 top-0"
+                        onClick={(e) => e.preventDefault()}
                     >
-                        <Trash className="w-5 h-5" />
-                    </Button>
+                        <DeleteDialog
+                            deleteTitle="Delete rocket"
+                            deleteText={`Are your sure you want to delete ${rocket.name}?`}
+                            deleteAction={() =>
+                                deleteRocket({ rocketId: rocket.id })
+                            }
+                        />
+                    </div>
                 </div>
 
-                <div className="text-sm text-center text-gray-600 group-hover:underline">
+                <div className="text-base lg:text-sm text-center text-gray-600 group-hover:underline">
                     {new Date(rocket.createdAt).toLocaleDateString()}
                 </div>
 
-                <div className="text-sm text-center text-gray-500">
+                <div className="text-base lg:text-sm text-center text-gray-500">
                     Stages: {rocket.stages.length}
                 </div>
 
@@ -97,7 +102,7 @@ const RocketListItem = ({ rocket, onRocketDeleted }: RocketItemListProps) => {
                                 width="0"
                                 height="0"
                                 sizes="100vw"
-                                className="w-auto h-[100px]"
+                                className="w-auto h-[150px] lg:h-[100px]"
                             />
                         )}
                     </div>

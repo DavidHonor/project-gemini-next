@@ -30,7 +30,7 @@ export default function Home() {
                         className: "mt-5",
                     })}
                 >
-                    Get started
+                    <span className="font-bold ">Get started</span>
                     <ArrowRight className="ml-1.5 h-5 w-5" />
                 </RegisterLink>
 

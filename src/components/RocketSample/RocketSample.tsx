@@ -3,14 +3,14 @@ import RocketPartImg from "./RocketPartImg";
 
 const RocketSample = () => {
     return (
-        <div className="flex flex-col pt-40 space-y-60 pb-20">
+        <div className="flex flex-col pt-20 lg:pt-40 space-y-20 lg:space-y-60 pb-20">
             <RocketPartImg
                 imageSource={"/rocket_parts/gemini.png"}
                 alt="command pod"
                 width={300}
                 height={300}
                 description={
-                    "The command pod is responsible for controlling the rocket, it has a weight of 3500kgs."
+                    "The command pod is responsible for controlling the rocket, it has a mass of 3500kgs."
                 }
             />
 
@@ -30,7 +30,7 @@ const RocketSample = () => {
                 width={150}
                 height={150}
                 description={
-                    "The command pod is responsible for controlling the rocket, it has a weight of 3500kgs."
+                    "Converts the liquid propellant into a fast moving gas, which propels the rocket forward"
                 }
             />
         </div>

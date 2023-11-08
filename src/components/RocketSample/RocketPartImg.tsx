@@ -21,33 +21,40 @@ const RocketPartImg = ({
     height,
     description,
 }: RocketPartImgProps) => {
-    const { ref, inView, entry } = useInView({
-        threshold: 1,
-        fallbackInView: true,
+    const { ref, inView } = useInView({
+        threshold: 0.8,
+        triggerOnce: false,
     });
 
     return (
         <div
-            className={cn(
-                `flex justify-center w-[300px] transition-all duration-300 p-2 lg:p-4`,
-                {
-                    "ease-in rounded-xl bg-gray-900/5 ring-1 ring-inset ring-gray-900/10 lg:rounded-2xl w-[600px] flex-row justify-between":
-                        inView,
-
-                    "ease-out": !inView,
-                }
-            )}
+            className={`flex flex-col lg:flex-row items-center justify-center w-full transition-all duration-500 ease-in-out p-4 ${
+                inView
+                    ? "rounded-xl bg-gray-100 shadow-lg ring-1 ring-gray-300/50 lg:rounded-2xl"
+                    : ""
+            }`}
             ref={ref}
+            style={{
+                maxWidth: inView ? "600px" : "300px",
+            }}
         >
-            <Image src={imageSource} alt={alt} width={width} height={height} />
-
-            {inView ? (
-                <div className="w-[250px] flex items-center justify-center text-center">
-                    <p className="max-w-prose text-zinc-700 sm:text-lg">
+            <div className="w-full lg:w-1/2 h-auto flex justify-center">
+                <Image
+                    src={imageSource}
+                    alt={alt}
+                    width={"0"}
+                    height={"0"}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="w-auto h-[150px] lg:h-[250px]"
+                />
+            </div>
+            {inView && (
+                <div className="mt-4 lg:mt-0 lg:ml-4 w-full lg:w-1/2">
+                    <p className="text-gray-700 text-center sm:text-left sm:text-lg">
                         {description}
                     </p>
                 </div>
-            ) : null}
+            )}
         </div>
     );
 };
