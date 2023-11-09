@@ -92,4 +92,5 @@ export type GlobeLabel = {
     color?: string;
     labelRotation?: number;
     labelSize?: number;
+    labelDotRadius?: number;
 };

@@ -8,6 +8,7 @@ import {
 } from "@/config/rocket_parts";
 import { db } from "@/db";
 import { Rocket, RocketStage } from "@/types/rocket";
+import { GlobeLabel, Trajectory } from "@/types/rocket_stats";
 import { RocketPart } from "@prisma/client";
 
 export function partScaleChanged(
@@ -285,3 +286,76 @@ export const generateDefaultRocket = async ({
 
     return rocket;
 };
+
+export function generateGlobeLabels(trajectories: Trajectory[]) {
+    let labels: GlobeLabel[] = [
+        {
+            lat: trajectories[0].points[0].lat,
+            lng: trajectories[0].points[0].lng,
+            text: "Launchpad 39A",
+        },
+    ];
+
+    let currentStage = "";
+    let stageIndex = 0;
+
+    let maxPoint: GlobeLabel = {
+        ...trajectories[0].points[0],
+        text: "Peak altitude",
+        labelSize: 0.25,
+    };
+    if (!maxPoint || !maxPoint.alt) throw new Error("Peak altitude not found");
+
+    for (let trajectory of trajectories) {
+        //Engine cutoff point
+        if (!trajectory.stageId) {
+            labels.push({
+                lat: trajectory.points[0].lat,
+                lng: trajectory.points[0].lng,
+                alt: trajectory.points[0].alt,
+                labelSize: 0.35,
+                text: "Engine cutoff",
+            });
+        }
+
+        //Stage label
+        if (currentStage !== trajectory.stageId && trajectory.stageId) {
+            const halfPoint = Math.floor(trajectory.points.length / 2);
+            labels.push({
+                lat: trajectory.points[halfPoint].lat,
+                lng: trajectory.points[halfPoint].lng,
+                alt: trajectory.points[halfPoint].alt,
+                labelSize: 0.25,
+                labelDotRadius: 0.05,
+                text: `Stage ${stageIndex + 1}`,
+                color: trajectory.pathColor,
+            });
+            currentStage = trajectory.stageId;
+        }
+
+        //Find max
+        for (let point of trajectory.points) {
+            if (maxPoint.alt < point.alt) {
+                maxPoint.alt = point.alt;
+                maxPoint.lat = point.lat;
+                maxPoint.lng = point.lng;
+            }
+        }
+
+        stageIndex++;
+    }
+
+    labels.push(maxPoint);
+
+    const lastTrajectoryPoints = trajectories[trajectories.length - 1].points;
+    if (lastTrajectoryPoints[lastTrajectoryPoints.length - 1].alt > 0)
+        return labels;
+
+    labels.push({
+        lat: lastTrajectoryPoints[lastTrajectoryPoints.length - 1].lat,
+        lng: lastTrajectoryPoints[lastTrajectoryPoints.length - 1].lng,
+        text: "Touchdown",
+        color: "lightgray",
+    });
+    return labels;
+}

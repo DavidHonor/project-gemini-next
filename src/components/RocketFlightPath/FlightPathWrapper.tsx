@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { Plane } from "lucide-react";
+import { Loader2, Plane } from "lucide-react";
 import {
     Modal,
     ModalBody,
@@ -10,15 +10,11 @@ import {
     useDisclosure,
 } from "@nextui-org/react";
 
-//import RocketFlightPath from "./FlightPath";
-
-import dynamic from "next/dynamic";
-const FlightPathNoSSR = dynamic(() => import("./FlightPath"), {
-    ssr: false,
-});
-
 import { toast } from "../ui/use-toast";
 import { LaunchConfigType } from "@/config/rocket_parts";
+import GlobeWrapper from "../GlobeGL/GlobeWrapper";
+import { RocketContext } from "../RocketEditor/RocketContext";
+import { generateGlobeLabels } from "@/lib/ship_functions";
 
 interface FlightPathWrapperProps {
     useDefaultConfig: boolean;
@@ -28,7 +24,10 @@ const FlightPathWrapper = ({
     useDefaultConfig,
     launchConfig,
 }: FlightPathWrapperProps) => {
+    const { stats } = useContext(RocketContext);
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
     const [globeImage, setGlobeImage] = useState("/world_small.jpg");
 
     function loadHighRes() {
@@ -44,6 +43,22 @@ const FlightPathWrapper = ({
             });
         };
     }
+
+    const trajectories = useMemo(() => {
+        if (stats && isOpen) {
+            let rk4 = useDefaultConfig
+                ? stats.trajectoryRK4().trajectories
+                : stats.trajectoryRK4(launchConfig).trajectories;
+            return rk4;
+        }
+        return undefined;
+    }, [stats, isOpen]);
+
+    const labels = useMemo(() => {
+        if (trajectories) {
+            return generateGlobeLabels(trajectories);
+        }
+    }, [trajectories]);
 
     return (
         <>
@@ -69,11 +84,15 @@ const FlightPathWrapper = ({
                                 </Button>
                             </ModalHeader>
                             <ModalBody className="flex items-center justify-center">
-                                <FlightPathNoSSR
-                                    useDefaultConfig={useDefaultConfig}
-                                    launchConfig={launchConfig}
-                                    globeImage={globeImage}
-                                />
+                                {trajectories && labels ? (
+                                    <GlobeWrapper
+                                        trajectories={trajectories}
+                                        labels={labels}
+                                        globeImage={globeImage}
+                                    />
+                                ) : (
+                                    <Loader2 className="h-8 w-8 animate-spin text-zinc-800" />
+                                )}
                             </ModalBody>
                             <ModalFooter>
                                 <Button

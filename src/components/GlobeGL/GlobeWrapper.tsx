@@ -1,16 +1,28 @@
 "use client";
 
-import { DefaultTrajectorySimulation } from "@/config/mock_trajectory";
-
+import { GlobeLabel, Trajectory } from "@/types/rocket_stats";
 import dynamic from "next/dynamic";
 const GlobeGLNoSSR = dynamic(() => import("./GlobeGL"), {
     ssr: false,
 });
 
-const GlobeWrapper = () => {
-    const sim = DefaultTrajectorySimulation();
-
-    return <GlobeGLNoSSR trajectories={sim.trajectories} labels={sim.labels} />;
+interface GlobeWrapperProps {
+    trajectories: Trajectory[];
+    labels: GlobeLabel[];
+    globeImage?: string;
+}
+const GlobeWrapper = ({
+    trajectories,
+    labels,
+    globeImage,
+}: GlobeWrapperProps) => {
+    return (
+        <GlobeGLNoSSR
+            trajectories={trajectories}
+            labels={labels}
+            globeImage={globeImage}
+        />
+    );
 };
 
 export default GlobeWrapper;
