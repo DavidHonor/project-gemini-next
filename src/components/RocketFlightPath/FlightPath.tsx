@@ -27,7 +27,6 @@ const RocketFlightPath = ({
 
     const trajectories = useMemo(() => {
         if (stats) {
-            //const traj = stats.simulateTrajectory();
             let rk4 = useDefaultConfig
                 ? stats.trajectoryRK4().trajectories
                 : stats.trajectoryRK4(launchConfig).trajectories;
@@ -83,7 +82,7 @@ const RocketFlightPath = ({
     useEffect(() => {
         if (globeEl.current && size.width !== wrapperDiv.current.clientWidth) {
             setSize({
-                height: globeEl.current.clientHeight,
+                height: wrapperDiv.current.clientHeight,
                 width: wrapperDiv.current.clientWidth,
             });
         }
@@ -105,38 +104,12 @@ const RocketFlightPath = ({
                 2000
             );
 
-            //globeEl.current.controls().target
-
-            // const handleKeyDown = (event: any) => {
-            //     switch (event.key) {
-            //         case "ArrowLeft":
-            //             //globeEl.current.controls().object.position.x -= 5;
-            //             globeEl.current.controls().object.rotateX(0.1);
-            //             break;
-            //         case "ArrowRight":
-            //             globeEl.current.controls().object.position.x += 5;
-            //             break;
-            //         case "ArrowUp":
-            //             globeEl.current.controls().object.position.y += 5;
-            //             break;
-            //         case "ArrowDown":
-            //             globeEl.current.controls().object.position.y -= 5;
-            //             break;
-            //         default:
-            //             break;
-            //     }
-            //     globeEl.current.camera().updateProjectionMatrix();
-            //     globeEl.current.camera().updateWorldMatrix(true);
-
-            //     if (globeEl.current.controls().update) {
-            //         globeEl.current.controls().update();
-            //     }
-            // };
-
-            // window.addEventListener("keydown", handleKeyDown);
-            // return () => {
-            //     window.removeEventListener("keydown", handleKeyDown);
-            // };
+            const controls = globeEl.current.controls();
+            controls.enablePan = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = -0.9;
+            controls.update();
+            console.log(controls);
         }
     }, [trajectories]);
 

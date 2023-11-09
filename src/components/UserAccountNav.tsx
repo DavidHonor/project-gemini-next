@@ -70,10 +70,13 @@ const UserAccountNav = async ({
                     <Link href={"/dashboard"}>Dashboard</Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem asChild>
+                {/* <DropdownMenuItem asChild>
                     <Link href={"/pricing"}>
                         Upgrade <Gem className="text-blue-600 h-4 w-4 ml-1.5" />
                     </Link>
+                </DropdownMenuItem> */}
+                <DropdownMenuItem asChild>
+                    <Link href={"/about"}>About</Link>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
