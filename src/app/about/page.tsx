@@ -7,12 +7,36 @@ const page = () => {
         <MaxWidthWrapper>
             <div className="flex pt-20 w-full justify-center">
                 <div className="flex flex-col space-y-4">
+                    <AppOverview />
+
                     <SimulationCard />
 
                     <ContactCard />
                 </div>
             </div>
         </MaxWidthWrapper>
+    );
+};
+
+const AppOverview = () => {
+    return (
+        <div className="flex max-w-[600px] justify-center">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col gap-y-3">
+                        <span className=" ">
+                            Build a rocket from parts, orgonize stages, view
+                            performance details, 2D plots, 3D trajectory.
+                            Configure flight parameters, such as heading,
+                            simulation length, climb rate.
+                        </span>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 
@@ -56,17 +80,24 @@ const ContactCard = () => {
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col max-w-[600px]">
-                    <div className="grid grid-cols-2 text-lg gap-x-2">
-                        <span>Made by:</span>
-                        <span>Levente Kovács</span>
-                    </div>
-                    <div className="grid grid-cols-2 text-lg gap-x-2">
-                        <span>Contact:</span>
+                    <div className="flex gap-x-1">
+                        <span>Levente Kovács -</span>
                         <a
                             href="mailto:kovacs.levente.csanad@gmail.com"
                             className="text-blue-600 hover:text-blue-800 break-words"
                         >
                             kovacs.levente.csanad@gmail.com
+                        </a>
+                    </div>
+
+                    <div className="flex gap-x-1">
+                        <span>Project link -</span>
+                        <a
+                            href="https://github.com/DavidHonor/project-gemini-next"
+                            className="text-blue-600 hover:text-blue-800 break-words"
+                            target="_blank"
+                        >
+                            github.com/DavidHonor/project-gemini-next
                         </a>
                     </div>
                 </div>

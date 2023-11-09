@@ -121,7 +121,7 @@ const LineChart: React.FC<LineChartProps> = ({ flightData, selectedChart }) => {
             );
         } else if (selectedChart === "gravityForceOverAltitude") {
             setDesc(
-                "*Force of gravitational force acting upon the rocket, as the mass and gravitational acceleration decreases with altitude"
+                "*Gravitational force, as the mass, g acceleration decreases with altitude"
             );
             return Object.entries(groupedByStageId).map(
                 ([stageId, records]) => ({
