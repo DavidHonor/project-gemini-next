@@ -28,7 +28,7 @@ const RocketSample = () => {
                 }
             />
 
-            <h2 className="font-bold text-4xl">Part catalog</h2>
+            <h2 className="font-bold text-3xl lg:text-4xl">Part catalog</h2>
 
             <RocketPartImg
                 imageSource={"/rocket_parts/gemini.png"}

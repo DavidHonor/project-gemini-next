@@ -22,9 +22,6 @@ const Navbar = () => {
                         <Link href={"/"} className="flex z-40 font-semibold">
                             <span>Project gemini</span>
                         </Link>
-                        <Link href={"/about"} className="flex z-40">
-                            <span>About</span>
-                        </Link>
                     </div>
 
                     <div className="items-center space-x-4 sm:flex">

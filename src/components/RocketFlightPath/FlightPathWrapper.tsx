@@ -83,7 +83,7 @@ const FlightPathWrapper = ({
                                     Load highres textures
                                 </Button>
                             </ModalHeader>
-                            <ModalBody className="flex items-center justify-center">
+                            <ModalBody className="flex items-center justify-center h-[80vh]">
                                 {trajectories && labels ? (
                                     <GlobeWrapper
                                         trajectories={trajectories}

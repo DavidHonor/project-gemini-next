@@ -1,9 +1,10 @@
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, InfoIcon } from "lucide-react";
 
 import RocketSample from "@/components/RocketSample/RocketSample";
+import Link from "next/link";
 
 export default function Home() {
     return (
@@ -24,15 +25,28 @@ export default function Home() {
                     check the results
                 </p>
 
-                <RegisterLink
-                    className={buttonVariants({
-                        size: "lg",
-                        className: "mt-5",
-                    })}
-                >
-                    <span className="font-bold ">Get started</span>
-                    <ArrowRight className="ml-1.5 h-5 w-5" />
-                </RegisterLink>
+                <div className="flex gap-2 items-center justify-center mt-5">
+                    <Link
+                        href={"/about"}
+                        className={buttonVariants({
+                            size: "lg",
+
+                            variant: "outline",
+                        })}
+                    >
+                        About
+                        <InfoIcon className="ml-1.5 h-5 w-5" />
+                    </Link>
+
+                    <RegisterLink
+                        className={buttonVariants({
+                            size: "lg",
+                        })}
+                    >
+                        <span className="font-bold ">Get started</span>
+                        <ArrowRight className="ml-1.5 h-5 w-5" />
+                    </RegisterLink>
+                </div>
 
                 <RocketSample />
             </div>

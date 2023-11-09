@@ -5,7 +5,7 @@ import React from "react";
 const page = () => {
     return (
         <MaxWidthWrapper>
-            <div className="flex pt-20 w-full justify-center">
+            <div className="flex pt-10 pb-10 lg:pt-20 w-full justify-center">
                 <div className="flex flex-col space-y-4">
                     <AppOverview />
 
