@@ -17,9 +17,9 @@ export function absoluteUrl(path: string) {
 
 export function constructMetadata({
     title = "Project gemini - a rocket builder",
-    description = "Project gemini is a software to make building a rocket easy.",
+    description = "Project gemini is a software to simulate your rocket trajectory",
     image = "/thumbnail.png",
-    icons = "/favicon.ico",
+    icons = "/favicon.png",
     noIndex = false,
 }: {
     title?: string;
@@ -45,10 +45,10 @@ export function constructMetadata({
             title,
             description,
             images: [image],
-            creator: "@elonmusk",
+            creator: "",
         },
         icons,
-        metadataBase: new URL("https://quill-lime.vercel.app"),
+        metadataBase: new URL("https://project-gemini-next.vercel.app/"),
         themeColor: "#FFF",
         ...(noIndex && {
             robots: {

@@ -19,7 +19,9 @@ const RocketPartsList = () => {
                     <AccordionTrigger>{key}</AccordionTrigger>
                     <AccordionContent>
                         {RocketPartPrototypes.filter(
-                            (partCat) => partCat.part_type === key
+                            (partCat) =>
+                                partCat.part_type === key &&
+                                partCat.image !== ""
                         ).map((part) => (
                             <PrototypePartCard
                                 key={`part:_${key.toString()}_${part.name}`}

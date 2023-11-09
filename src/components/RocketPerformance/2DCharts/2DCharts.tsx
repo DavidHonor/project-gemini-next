@@ -56,6 +56,8 @@ const FlightPerformance = ({
                         <>
                             <ModalHeader className="flex flex-col justify-between">
                                 Flight stats
+                            </ModalHeader>
+                            <ModalBody>
                                 <Select
                                     label="Select a chart"
                                     className="max-w-xs"
@@ -113,13 +115,15 @@ const FlightPerformance = ({
                                         Gravity force over altitude
                                     </SelectItem>
                                 </Select>
-                            </ModalHeader>
-                            <ModalBody>
                                 {flightData ? (
-                                    <LineChart
-                                        flightData={flightData}
-                                        selectedChart={selectedChart}
-                                    />
+                                    <>
+                                        {selectedChart ? (
+                                            <LineChart
+                                                flightData={flightData}
+                                                selectedChart={selectedChart}
+                                            />
+                                        ) : null}
+                                    </>
                                 ) : null}
                             </ModalBody>
                             <ModalFooter>

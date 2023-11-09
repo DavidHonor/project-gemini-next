@@ -69,7 +69,7 @@ export const RocketPartPrototypes = [
     {
         part_type: PartTypes.ENGINE,
         name: "RS-25",
-        image: "rs-25_1.png",
+        image: "",
         fuel_type: "hydrolox",
         thrust_sl: 1860,
         thrust_vc: 2279,
@@ -111,7 +111,7 @@ export const RocketPartPrototypes = [
     {
         part_type: PartTypes.ENGINE,
         name: "Raptor",
-        image: "raptor_1.png",
+        image: "",
         fuel_type: "methalox",
         thrust_sl: 1860,
         thrust_vc: 2279,
@@ -159,7 +159,7 @@ export const RocketPartPrototypes = [
     {
         part_type: PartTypes.FUELTANK,
         name: "8.4m Space Shuttle Tank",
-        image: "fuel_1.png",
+        image: "",
         diameter: 8.4,
         length: 45,
         weight: 26500,
@@ -191,6 +191,7 @@ export const RocketPartPrototypes = [
     {
         part_type: PartTypes.COMMANDPOD,
         name: "apollo spacecraft",
+        image: "",
         weight: 5800,
         scale: 0.6,
         width: 0,

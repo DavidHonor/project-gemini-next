@@ -23,7 +23,9 @@ const RocketSample = () => {
                 imageSource={"/editor_preview.png"}
                 alt="merlin engine"
                 lefty={false}
-                description={"Easily edit the scale of your rocket & parts"}
+                description={
+                    "Easily edit the scale, position, stage configuration of your rocket parts"
+                }
             />
 
             <h2 className="font-bold text-4xl">Part catalog</h2>
@@ -33,7 +35,7 @@ const RocketSample = () => {
                 alt="command pod"
                 lefty={true}
                 description={
-                    "A command pod is responsible for controlling the rocket systems, it has a mass of 3500kgs."
+                    "A command pod is responsible for controlling the rocket systems"
                 }
             />
 
@@ -42,7 +44,7 @@ const RocketSample = () => {
                 alt="fuel tank"
                 lefty={false}
                 description={
-                    "Holds the necessary propellant (oxidizer and fuel) for the rocket."
+                    "Holds the necessary propellant (oxidizer and fuel) for the rocket"
                 }
             />
 

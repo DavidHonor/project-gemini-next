@@ -4,7 +4,7 @@ import { Separator } from "../ui/separator";
 import { roundToDecimalPlaces } from "@/lib/utils";
 import { twr } from "@/lib/ship_functions";
 
-import FlightPerformance from "./FlightPerformance/FlightPerformance";
+import FlightPerformance from "./2DCharts/2DCharts";
 
 import FlightPathWrapper from "../RocketFlightPath/FlightPathWrapper";
 import { Input } from "../ui/input";
