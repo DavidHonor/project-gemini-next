@@ -292,7 +292,8 @@ export function generateGlobeLabels(trajectories: Trajectory[]) {
         {
             lat: trajectories[0].points[0].lat,
             lng: trajectories[0].points[0].lng,
-            text: "Launchpad 39A",
+            alt: trajectories[0].points[0].alt,
+            text: "Launchpad",
         },
     ];
 

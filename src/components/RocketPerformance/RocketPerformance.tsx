@@ -9,7 +9,7 @@ import FlightPerformance from "./2DCharts/2DCharts";
 import FlightPathWrapper from "../RocketFlightPath/FlightPathWrapper";
 import { Input } from "../ui/input";
 import { Checkbox } from "@nextui-org/react";
-import { DefaultLaunchConfig } from "@/config/rocket_parts";
+import { DefaultLaunchConfig, EARTH_RADIUS } from "@/config/rocket_parts";
 
 const RocketPerformance = () => {
     const { stats } = useContext(RocketContext);
@@ -198,88 +198,173 @@ const RocketPerformance = () => {
                         onChange={defaultOptionChange}
                     />
                 </div>
+            </div>
 
-                <div className="flex items-center justify-end gap-2">
-                    <span className="flex-1 text-xs font-medium">
-                        Turn start altitude
-                    </span>
-                    <div className="flex-1 flex">
-                        <Input
-                            type="number"
-                            placeholder="Turn start altitude"
-                            disabled={isDefault}
-                            value={launchConfig.TURN_START_ALT}
-                            min={0}
-                            max={launchConfig.TURN_END_ALT}
-                            onChange={(e) =>
-                                setLaunchConfig({
-                                    ...launchConfig,
-                                    TURN_START_ALT: e.target.valueAsNumber,
-                                })
-                            }
-                        />
-                    </div>
-
-                    <span className="flex-1 text-xs font-medium">
-                        Turn end altitude
-                    </span>
-                    <div className="flex-1 flex">
-                        <Input
-                            type="number"
-                            placeholder="Turn end altitude"
-                            disabled={isDefault}
-                            value={launchConfig.TURN_END_ALT}
-                            min={launchConfig.TURN_START_ALT}
-                            onChange={(e) =>
-                                setLaunchConfig({
-                                    ...launchConfig,
-                                    TURN_END_ALT: e.target.valueAsNumber,
-                                })
-                            }
-                        />
-                    </div>
+            <div className="flex items-center justify-end gap-2">
+                <span className="flex-1 text-xs font-medium">
+                    Launch altitude SL (meters)
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Launch altitude (meters)"
+                        disabled={isDefault}
+                        value={launchConfig.launchPoint.y - EARTH_RADIUS}
+                        min={0}
+                        onChange={(e) => {
+                            const launchPoint = { ...launchConfig.launchPoint };
+                            launchPoint.y =
+                                e.target.valueAsNumber + EARTH_RADIUS;
+                            setLaunchConfig({
+                                ...launchConfig,
+                                launchPoint,
+                            });
+                        }}
+                    />
                 </div>
 
-                <div className="flex items-center justify-end gap-2">
-                    <span className="flex-1 text-xs font-medium">
-                        Heading (in degrees)
-                    </span>
-                    <div className="flex-1 flex">
-                        <Input
-                            type="number"
-                            placeholder="Heading (degrees)"
-                            disabled={isDefault}
-                            value={launchConfig.HEADING}
-                            min={0}
-                            max={360}
-                            onChange={(e) =>
-                                setLaunchConfig({
-                                    ...launchConfig,
-                                    HEADING: e.target.valueAsNumber,
-                                })
-                            }
-                        />
-                    </div>
+                <span className="flex-1 text-xs font-medium">
+                    Turn rate (radians/meter)
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Turn rate (radians/meter)"
+                        disabled={true}
+                        value={launchConfig.TURN_RATE}
+                        min={0}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                TURN_RATE: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+            </div>
 
-                    <span className="flex-1 text-xs font-medium">
-                        Simulation time (mins)
-                    </span>
-                    <div className="flex-1 flex">
-                        <Input
-                            type="number"
-                            placeholder=" Simulation time (mins)"
-                            disabled={isDefault}
-                            value={launchConfig.COASTING_MINUTES}
-                            min={0}
-                            max={180}
-                            onChange={(e) =>
-                                setLaunchConfig({
-                                    ...launchConfig,
-                                    COASTING_MINUTES: e.target.valueAsNumber,
-                                })
-                            }
-                        />
-                    </div>
+            <div className="flex items-center justify-end gap-2">
+                <span className="flex-1 text-xs font-medium">
+                    Launch latitude
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Launch latitude"
+                        disabled={isDefault}
+                        value={launchConfig.LAUNCH_LAT}
+                        min={-90}
+                        max={90}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                LAUNCH_LAT: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+
+                <span className="flex-1 text-xs font-medium">
+                    Launch longitude
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Launch longitude"
+                        disabled={isDefault}
+                        value={launchConfig.LAUNCH_LNG}
+                        min={-180}
+                        max={180}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                LAUNCH_LNG: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+                <span className="flex-1 text-xs font-medium">
+                    Turn start altitude
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Turn start altitude"
+                        disabled={isDefault}
+                        value={launchConfig.TURN_START_ALT}
+                        min={0}
+                        max={launchConfig.TURN_END_ALT}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                TURN_START_ALT: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+
+                <span className="flex-1 text-xs font-medium">
+                    Turn end altitude
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Turn end altitude"
+                        disabled={isDefault}
+                        value={launchConfig.TURN_END_ALT}
+                        min={launchConfig.TURN_START_ALT}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                TURN_END_ALT: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+                <span className="flex-1 text-xs font-medium">
+                    Heading (degrees)
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Heading (degrees)"
+                        disabled={isDefault}
+                        value={launchConfig.HEADING}
+                        min={0}
+                        max={360}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                HEADING: e.target.valueAsNumber,
+                            })
+                        }
+                    />
+                </div>
+
+                <span className="flex-1 text-xs font-medium">
+                    Simulation time (mins)
+                </span>
+                <div className="flex-1 flex">
+                    <Input
+                        type="number"
+                        placeholder="Simulation time (mins)"
+                        disabled={isDefault}
+                        value={launchConfig.COASTING_MINUTES}
+                        min={0}
+                        max={180}
+                        onChange={(e) =>
+                            setLaunchConfig({
+                                ...launchConfig,
+                                COASTING_MINUTES: e.target.valueAsNumber,
+                            })
+                        }
+                    />
                 </div>
             </div>
 

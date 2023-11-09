@@ -18,7 +18,7 @@ export const DefaultLaunchConfig = {
 
     TURN_START_ALT: 10000,
     TURN_END_ALT: 80000,
-    TURN_RATE: 0,
+    TURN_RATE: 0.00002243994,
 
     TIMESTEP: 1,
     COASTING_MINUTES: 15,
