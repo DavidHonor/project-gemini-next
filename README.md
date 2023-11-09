@@ -2,6 +2,8 @@
 
 Build a rocket from parts, orgonize stages, view performance details, 2D plots, 3D trajectory. Configure flight parameters, such as heading, simulation length, climb rate.
 
+### [Working demo](https://project-gemini-next.vercel.app/about)
+
 ## Getting Started
 
 Some versions of zod, might not work with prisma-zod-generator.
