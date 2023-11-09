@@ -50,7 +50,7 @@ export function partScaleChanged(
 }
 
 function getRootPart(rocket: Rocket) {
-    let rootPart = null; //part with oldest uniqueId
+    let rootPart = null; //part with oldest createdAt
     for (let i = 0; i < rocket.stages.length; i++) {
         for (let j = 0; j < rocket.stages[i].parts.length; j++) {
             if (rootPart === null) {
@@ -75,13 +75,17 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
     const oldScaleSlider = shipCopy.scaleSlider;
     shipCopy.scaleSlider = scaleSliderValue;
 
-    const rootPart = getRootPart(shipCopy);
-    if (!rootPart) return shipCopy; // Exit early if no root part found
-
-    let rootPartCoords = { x: rootPart.x, y: rootPart.y };
+    let referencePart: null | RocketPart = null;
+    let referencePartOldPos = { x: -99999, y: -99999 };
 
     for (const stage of shipCopy.stages) {
         for (const part of stage.parts) {
+            // set the reference part, this will act as the reference point for scaling
+            if (referencePart === null) {
+                referencePart = part;
+                referencePartOldPos = { x: part.x, y: part.y };
+            }
+
             const partScale = part.scale;
             const partCoords = { x: part.x, y: part.y };
 
@@ -98,16 +102,16 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
             part.x += widthChange / 2;
             part.y += heightChange / 2;
 
-            // If it's not the root part, adjust its position relative to the root
-            if (part.id !== rootPart.id) {
-                const relativeX = partCoords.x - rootPartCoords.x;
-                const relativeY = partCoords.y - rootPartCoords.y;
+            // adjust part position relative to the reference
+            if (part.id !== referencePart.id) {
+                const relativeX = partCoords.x - referencePartOldPos.x;
+                const relativeY = partCoords.y - referencePartOldPos.y;
 
                 const unitX = relativeX / oldScaleSlider;
                 const unitY = relativeY / oldScaleSlider;
 
-                const newScaledX = rootPart.x + unitX * scaleSliderValue;
-                const newScaledY = rootPart.y + unitY * scaleSliderValue;
+                const newScaledX = referencePart.x + unitX * scaleSliderValue;
+                const newScaledY = referencePart.y + unitY * scaleSliderValue;
 
                 part.x = newScaledX;
                 part.y = newScaledY;
