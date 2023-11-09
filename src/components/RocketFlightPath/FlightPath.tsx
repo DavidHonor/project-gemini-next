@@ -106,10 +106,9 @@ const RocketFlightPath = ({
 
             const controls = globeEl.current.controls();
             controls.enablePan = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = -0.9;
+            //controls.autoRotate = true;
+            //controls.autoRotateSpeed = -0.9;
             controls.update();
-            console.log(controls);
         }
     }, [trajectories]);
 

@@ -153,8 +153,6 @@ export const rocketRouter = router({
             const { userId } = ctx;
             const { rocketId, image } = input;
 
-            return;
-
             const bucket = admin
                 .storage()
                 .bucket("project-gemini-next.appspot.com");

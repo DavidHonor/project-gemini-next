@@ -4,7 +4,7 @@ import { trpc } from "@/app/_trpc/client";
 import React, { useEffect } from "react";
 import Skeleton from "react-loading-skeleton";
 import RocketListItem from "./RocketListItem";
-import { Ban, Loader2, PlusSquareIcon } from "lucide-react";
+import { Ban, Loader2, PlusSquareIcon, Rocket } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
@@ -83,6 +83,14 @@ const RocketList = () => {
             </div>
 
             <div className="flex flex-wrap justify-center md:justify-start mt-5 gap-3">
+                {!rockets?.length ? (
+                    <div className="flex justify-center w-full gap-x-1">
+                        <span className="text-lg font-semibold">
+                            It&#39;s empty here, create your first rocket
+                        </span>
+                        <Rocket className="w-7 h-7 " />
+                    </div>
+                ) : null}
                 {rockets?.map((rocket) => (
                     <RocketListItem
                         key={rocket.createdAt}

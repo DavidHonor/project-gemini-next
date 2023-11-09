@@ -1,7 +1,4 @@
-import { cn } from "@/lib/utils";
 import RocketPartImg from "./RocketPartImg";
-import Image from "next/image";
-import { Card } from "../ui/card";
 
 const RocketSample = () => {
     return (
@@ -16,7 +13,7 @@ const RocketSample = () => {
                     src={"/globe_traj.mp4"}
                 />
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center p-5 bg-black bg-opacity-30">
-                    <span className="text-white font-bold text-2xl lg:text-5xl text-center shadow-lg">
+                    <span className="text-white font-bold text-2xl lg:text-5xl text-center">
                         Simulate trajectories in 3D
                     </span>
                 </div>
