@@ -21,7 +21,7 @@ jobs:
               run: npm install
 
             - name: Run Cypress tests
-                env:
+              env:
                   KINDE_SITE_URL: ${{ secrets.KINDE_SITE_URL }}
                   KINDE_POST_LOGOUT_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGOUT_REDIRECT_URL }}
                   KINDE_POST_LOGIN_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGIN_REDIRECT_URL }}
