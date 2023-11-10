@@ -69,7 +69,7 @@ const RocketListItem = ({
                 <div className="text-md text-center group-hover:underline relative">
                     <span
                         className=" text-base text-zinc-700 font-bold"
-                        data-testId={`rocket-item-${index}`}
+                        data-testid={`rocket-item-${index}`}
                     >
                         {rocket.name}
                     </span>

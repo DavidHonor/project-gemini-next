@@ -70,7 +70,7 @@ const CreateRocketDialog = ({
             <Button
                 variant={"ghost"}
                 onClick={onOpen}
-                data-testId={"create-rocket-btn"}
+                data-testid={"create-rocket-btn"}
             >
                 <PlusCircle className={cn("w-5 h-5")} />
             </Button>
@@ -119,7 +119,7 @@ const CreateRocketDialog = ({
                                         });
                                         onClose();
                                     }}
-                                    data-testId={"create-rocket-confirm-btn"}
+                                    data-testid={"create-rocket-confirm-btn"}
                                 >
                                     Confirm
                                 </Button>

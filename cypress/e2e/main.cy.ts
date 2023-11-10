@@ -20,9 +20,9 @@ describe("E2E test", () => {
     });
 
     it("Create rocket test", () => {
-        cy.get('[data-testId="create-rocket-btn"]').click();
+        cy.get('[data-testid="create-rocket-btn"]').click();
 
-        cy.get('[data-testId="create-rocket-confirm-btn"]').click();
+        cy.get('[data-testid="create-rocket-confirm-btn"]').click();
 
         cy.get('[data-testid^="rocket-item-"]').then((items) => {
             const count = items.length;
