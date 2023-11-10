@@ -1,12 +1,12 @@
 import {
-    AIR_DENSITY_SEA_LEVEL,
     DefaultRockets,
-    EARTH_RADIUS,
     GRAVITY_SOURCE,
     PartTypes,
     RocketPartPrototypes,
 } from "@/config/rocket_parts";
+
 import { db } from "@/db";
+
 import { Rocket, RocketStage } from "@/types/rocket";
 import { GlobeLabel, Trajectory } from "@/types/rocket_stats";
 import { RocketPart } from "@prisma/client";
@@ -47,26 +47,6 @@ export function partScaleChanged(
     if (updatedPart === null) throw new Error("No part found!");
 
     return { updatedRocket: shipCopy, updatedPart };
-}
-
-function getRootPart(rocket: Rocket) {
-    let rootPart = null; //part with oldest createdAt
-    for (let i = 0; i < rocket.stages.length; i++) {
-        for (let j = 0; j < rocket.stages[i].parts.length; j++) {
-            if (rootPart === null) {
-                rootPart = rocket.stages[i].parts[j];
-            }
-
-            if (
-                rootPart !== null &&
-                new Date(rootPart.createdAt) >
-                    new Date(rocket.stages[i].parts[j].createdAt)
-            ) {
-                rootPart = rocket.stages[i].parts[j];
-            }
-        }
-    }
-    return rootPart;
 }
 
 export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
@@ -154,40 +134,6 @@ export function massFlowRate(
     const massFlowRate = thrust_newtons / exhaustVelocity;
 
     return massFlowRate * throttle;
-}
-
-function getAirDensity(altitude: number): number {
-    const scaleHeight = 8500; // Scale height for Earth's atmosphere in meters 1.225
-    return AIR_DENSITY_SEA_LEVEL * Math.exp(-altitude / scaleHeight);
-}
-export function calculateDrag(
-    diameter: number,
-    velocity: number,
-    altitude: number
-): number {
-    const airDensity = getAirDensity(altitude);
-    const DRAG_COEFFICIENT = 0.75;
-
-    const area = Math.PI * Math.pow(diameter / 2, 2);
-
-    const dragForce = Math.abs(
-        0.5 * airDensity * Math.pow(velocity, 2) * DRAG_COEFFICIENT * area
-    );
-
-    return dragForce;
-}
-
-function calculateGravityAtAltitude(altitude: number) {
-    return (
-        GRAVITY_SOURCE.EARTH *
-        Math.pow(EARTH_RADIUS / (EARTH_RADIUS + altitude), 2)
-    );
-}
-
-export function calculateGravitationalForce(mass: number, altitude: number) {
-    const gravity = calculateGravityAtAltitude(altitude);
-    const gravityForce = mass * gravity;
-    return gravityForce;
 }
 
 export function twr(thrust_in_kN: number, mass: number) {

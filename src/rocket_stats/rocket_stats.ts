@@ -1,5 +1,4 @@
 import {
-    EARTH_RADIUS,
     GRAVITY_SOURCE,
     PartTypes,
     RocketPartPrototypes,
@@ -9,8 +8,6 @@ import {
 
 import {
     burnTime,
-    calculateDrag,
-    calculateGravitationalForce,
     fuelMassCalc,
     getDeltaV,
     massFlowRate,
@@ -37,7 +34,13 @@ import {
 
 import { computeDestinationPoint } from "geolib";
 import { RK4ConfigVars, State, rk4 } from "@/lib/rk4_trajectory";
-import { calculateAltitude } from "@/lib/rk4_trajectory/modules/utils";
+
+import {
+    calculateAltitude,
+    calculateDrag,
+    calculateGravitationalForce,
+} from "@/lib/rk4_trajectory/modules/utils";
+import { EARTH_RADIUS } from "@/lib/rk4_trajectory/modules/config";
 
 function initStageSummary(stageId: string) {
     return {
@@ -682,7 +685,10 @@ export function calculateRocketStats(rocket: Rocket): RocketStats {
             altitude: altitude,
             east: distance,
             drag: calculateDrag(largestSection, velocity, altitude),
-            gravityForce: calculateGravitationalForce(state.mass, altitude),
+            gravityForce: calculateGravitationalForce(
+                state.mass,
+                altitude + EARTH_RADIUS
+            ),
         };
     };
 

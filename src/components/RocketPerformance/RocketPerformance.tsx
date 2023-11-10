@@ -9,7 +9,9 @@ import FlightPerformance from "./2DCharts/2DCharts";
 import FlightPathWrapper from "../RocketFlightPath/FlightPathWrapper";
 import { Input } from "../ui/input";
 import { Checkbox } from "@nextui-org/react";
-import { DefaultLaunchConfig, EARTH_RADIUS } from "@/config/rocket_parts";
+import { DefaultLaunchConfig } from "@/config/rocket_parts";
+
+import { EARTH_RADIUS } from "@/lib/rk4_trajectory/modules/config";
 
 const RocketPerformance = () => {
     const { stats } = useContext(RocketContext);

@@ -1,10 +1,8 @@
+import { EARTH_RADIUS } from "@/lib/rk4_trajectory/modules/config";
+
 export const GRAVITY_SOURCE = {
     EARTH: 9.81,
 };
-
-export const AIR_DENSITY_SEA_LEVEL = 1.225; // kg/m^3
-
-export const EARTH_RADIUS = 6371000;
 
 export const DefaultLaunchConfig = {
     LAUNCH_LAT: 28.608389,

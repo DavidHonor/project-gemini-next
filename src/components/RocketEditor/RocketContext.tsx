@@ -9,7 +9,7 @@ import { Rocket, RocketStage } from "@/types/rocket";
 import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
 import { rocketScaleChanged, partScaleChanged } from "@/lib/ship_functions";
 import { RocketStats } from "@/types/rocket_stats";
-import { calculateRocketStats } from "../RocketStats/RocketStats";
+import { calculateRocketStats } from "../../rocket_stats/rocket_stats";
 
 interface Props {
     rocketId: string;
