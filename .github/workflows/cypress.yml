@@ -20,18 +20,22 @@ jobs:
             - name: Install dependencies
               run: npm install
 
+            - name: Create .env file
+              run: |
+                  touch .env
+                  echo "KINDE_SITE_URL=${{ secrets.KINDE_SITE_URL }}" >> .env
+                  echo "KINDE_POST_LOGOUT_REDIRECT_URL=${{ secrets.KINDE_POST_LOGOUT_REDIRECT_URL }}" >> .env
+                  echo "KINDE_POST_LOGIN_REDIRECT_URL=${{ secrets.KINDE_POST_LOGIN_REDIRECT_URL }}" >> .env
+                  echo "KINDE_LOGIN_PWD=${{ secrets.KINDE_LOGIN_PWD }}" >> .env
+                  echo "KINDE_LOGIN_EMAIL=${{ secrets.KINDE_LOGIN_EMAIL }}" >> .env
+                  echo "KINDE_ISSUER_URL=${{ secrets.KINDE_ISSUER_URL }}" >> .env
+                  echo "KINDE_CLIENT_SECRET=${{ secrets.KINDE_CLIENT_SECRET }}" >> .env
+                  echo "KINDE_CLIENT_ID=${{ secrets.KINDE_CLIENT_ID }}" >> .env
+                  echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
+                  echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env
+                  echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env
+                  echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+                  cat .env
+
             - name: Run Cypress tests
-              env:
-                  KINDE_SITE_URL: ${{ secrets.KINDE_SITE_URL }}
-                  KINDE_POST_LOGOUT_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGOUT_REDIRECT_URL }}
-                  KINDE_POST_LOGIN_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGIN_REDIRECT_URL }}
-                  KINDE_LOGIN_PWD: ${{ secrets.KINDE_LOGIN_PWD }}
-                  KINDE_LOGIN_EMAIL: ${{ secrets.KINDE_LOGIN_EMAIL }}
-                  KINDE_ISSUER_URL: ${{ secrets.KINDE_ISSUER_URL }}
-                  KINDE_CLIENT_SECRET: ${{ secrets.KINDE_CLIENT_SECRET }}
-                  KINDE_CLIENT_ID: ${{ secrets.KINDE_CLIENT_ID }}
-                  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-                  FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-                  FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
               run: npm run test:e2e:run
