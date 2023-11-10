@@ -11,7 +11,8 @@
         "cypress:open": "cypress open",
         "cypress:run": "cypress run",
         "start:devserver": "npm run dev",
-        "test:e2e:open": "start-server-and-test start:devserver http://localhost:3000 cypress:open"
+        "test:e2e:open": "start-server-and-test start:devserver http://localhost:3000 cypress:open",
+        "test:e2e:run": "start-server-and-test start:devserver http://localhost:3000 cypress:run"
     },
     "dependencies": {
         "@kinde-oss/kinde-auth-nextjs": "^1.8.22",

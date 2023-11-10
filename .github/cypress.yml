@@ -1,0 +1,37 @@
+name: Run Cypress Tests
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    cypress-run:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out repository code
+              uses: actions/checkout@v2
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: "14"
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Run Cypress tests
+                env:
+                  KINDE_SITE_URL: ${{ secrets.KINDE_SITE_URL }}
+                  KINDE_POST_LOGOUT_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGOUT_REDIRECT_URL }}
+                  KINDE_POST_LOGIN_REDIRECT_URL: ${{ secrets.KINDE_POST_LOGIN_REDIRECT_URL }}
+                  KINDE_LOGIN_PWD: ${{ secrets.KINDE_LOGIN_PWD }}
+                  KINDE_LOGIN_EMAIL: ${{ secrets.KINDE_LOGIN_EMAIL }}
+                  KINDE_ISSUER_URL: ${{ secrets.KINDE_ISSUER_URL }}
+                  KINDE_CLIENT_SECRET: ${{ secrets.KINDE_CLIENT_SECRET }}
+                  KINDE_CLIENT_ID: ${{ secrets.KINDE_CLIENT_ID }}
+                  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+                  FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+                  FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+              run: npm run test:e2e:run
