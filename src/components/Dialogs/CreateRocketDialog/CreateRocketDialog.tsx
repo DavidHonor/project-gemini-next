@@ -67,7 +67,11 @@ const CreateRocketDialog = ({
 
     return (
         <>
-            <Button variant={"ghost"} onClick={onOpen}>
+            <Button
+                variant={"ghost"}
+                onClick={onOpen}
+                data-testId={"create-rocket-btn"}
+            >
                 <PlusCircle className={cn("w-5 h-5")} />
             </Button>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -115,6 +119,7 @@ const CreateRocketDialog = ({
                                         });
                                         onClose();
                                     }}
+                                    data-testId={"create-rocket-confirm-btn"}
                                 >
                                     Confirm
                                 </Button>

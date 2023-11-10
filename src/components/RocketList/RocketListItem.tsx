@@ -19,11 +19,16 @@ import { Button } from "../ui/button";
 import DeleteDialog from "../Dialogs/DeleteDialog/DeleteDialog";
 
 interface RocketItemListProps {
+    index: number;
     rocket: RocketName;
     onRocketDeleted: () => void;
 }
 
-const RocketListItem = ({ rocket, onRocketDeleted }: RocketItemListProps) => {
+const RocketListItem = ({
+    index,
+    rocket,
+    onRocketDeleted,
+}: RocketItemListProps) => {
     const { data: imageResponse, isLoading } =
         trpc.rocket.getRocketPreview.useQuery({
             rocketId: rocket.id,
@@ -62,7 +67,10 @@ const RocketListItem = ({ rocket, onRocketDeleted }: RocketItemListProps) => {
                 className="w-full flex flex-col gap-1"
             >
                 <div className="text-md text-center group-hover:underline relative">
-                    <span className=" text-base text-zinc-700 font-bold">
+                    <span
+                        className=" text-base text-zinc-700 font-bold"
+                        data-testId={`rocket-item-${index}`}
+                    >
                         {rocket.name}
                     </span>
                     <div

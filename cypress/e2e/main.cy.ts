@@ -1,9 +1,7 @@
 describe("E2E test", () => {
     beforeEach(() => {
         cy.visit("/");
-    });
-    it("Login test", () => {
-        cy.visit("/");
+
         cy.contains("Sign in").click();
 
         cy.origin(Cypress.env("KINDE_ISSUER_URL"), () => {
@@ -18,6 +16,20 @@ describe("E2E test", () => {
             );
 
             cy.contains("Continue").click();
+        });
+    });
+
+    it("Create rocket test", () => {
+        cy.get('[data-testId="create-rocket-btn"]').click();
+
+        cy.get('[data-testId="create-rocket-confirm-btn"]').click();
+
+        cy.get('[data-testid^="rocket-item-"]').then((items) => {
+            const count = items.length;
+
+            cy.log(`Number of rocket items: ${count}`);
+
+            expect(count).to.be.greaterThan(0);
         });
     });
 });

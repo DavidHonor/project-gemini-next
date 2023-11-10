@@ -91,8 +91,9 @@ const RocketList = () => {
                         <Rocket className="w-7 h-7 " />
                     </div>
                 ) : null}
-                {rockets?.map((rocket) => (
+                {rockets?.map((rocket, index) => (
                     <RocketListItem
+                        index={index}
                         key={rocket.createdAt}
                         rocket={rocket!}
                         onRocketDeleted={refetch}
