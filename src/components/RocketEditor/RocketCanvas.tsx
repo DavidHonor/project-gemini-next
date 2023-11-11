@@ -1,9 +1,15 @@
 import { Rocket } from "@/types/rocket";
 import { RocketPart } from "../../../prisma/generated/zod";
 
-import React, { useContext, useEffect, useRef } from "react";
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import RocketPartComp from "./RocketPartComp";
-import { Grab, Loader2, MousePointerSquareDashed } from "lucide-react";
+import { Grab, Loader2, MousePointerSquareDashed, XCircle } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { RocketContext } from "./RocketContext";
 import { CursorOptions, cn } from "@/lib/utils";
@@ -12,6 +18,7 @@ import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
 import { toPng } from "html-to-image";
 import { Button } from "../ui/button";
+import { rocketScaleChanged } from "@/lib/ship_functions";
 
 interface RocketCanvasProps {
     rocket: Rocket;
@@ -29,7 +36,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     } = useContext(RocketContext);
 
     const captureRocketImage = async () => {
-        if (ref === null || ref.current === null) return;
+        if (!ref || !ref.current) return;
 
         const dataUrl = await toPng(ref.current, { cacheBust: true });
         return dataUrl;
@@ -40,10 +47,6 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
         if (img && img.includes("data:image/png;base64"))
             uploadRocketPreview(img);
     };
-
-    useEffect(() => {
-        if (rocket && rocket.stages) uploadRocketImage();
-    }, [rocket]);
 
     if (!rocket || !rocket.stages)
         return (
@@ -58,14 +61,15 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     return (
         <div className="h-full w-full relative">
             <div ref={ref} className="h-full w-full relative">
-                {rocket.stages.flatMap((stage, index) => {
+                {rocket.stages.flatMap((stage) => {
                     return stage.parts.map((part: RocketPart) => {
                         return (
                             <RocketPartComp
-                                key={"rp_" + part?.id}
+                                key={"rocketPart_" + part.id}
                                 rocketPart={part}
                                 editorAreaRef={ref}
                                 deleteAreaRef={deleteAreaRef}
+                                rocket={rocket}
                             />
                         );
                     });
@@ -102,7 +106,12 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                             step={0.1}
                             value={rocket.scaleSlider}
                             onValueCommit={(values) => {
-                                updateRocketScale(values[0]);
+                                updateRocketScale({
+                                    scale: values[0],
+                                    rocketUpdated: rocket,
+                                    editorSize:
+                                        ref!.current!.getBoundingClientRect(),
+                                });
                             }}
                         />
                     </CardContent>
@@ -114,6 +123,20 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                 ref={deleteAreaRef}
                 className="fixed bottom-0 left-0 right-0 h-16 pointer-events-none"
             />
+
+            {/* animation for deleting parts */}
+            <div
+                className={cn(
+                    "fixed flex items-center justify-center curve-effect bottom-0 left-0 right-0 h-16 pointer-events-none slide-in",
+                    {
+                        "slide-in-active": cursorMode === CursorOptions.GRAB,
+                    }
+                )}
+            >
+                <div className="flex z-10">
+                    <XCircle className="text-red-600 h-8 w-8" />
+                </div>
+            </div>
         </div>
     );
 };

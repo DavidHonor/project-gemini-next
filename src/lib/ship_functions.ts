@@ -44,16 +44,20 @@ export function partScaleChanged(
             }
         }
     }
-    if (updatedPart === null) throw new Error("No part found!");
+    if (!updatedPart) throw new Error("No part found!");
 
     return { updatedRocket: shipCopy, updatedPart };
 }
 
-export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
+export function rocketScaleChanged(
+    rocket: Rocket,
+    newScale: number,
+    editorSize: DOMRect
+) {
     const shipCopy = structuredClone(rocket);
 
     const oldScaleSlider = shipCopy.scaleSlider;
-    shipCopy.scaleSlider = scaleSliderValue;
+    shipCopy.scaleSlider = newScale;
 
     let referencePart: null | RocketPart = null;
     let referencePartOldPos = { x: -99999, y: -99999 };
@@ -70,10 +74,10 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
             const partCoords = { x: part.x, y: part.y };
 
             const oldWidth = part.width * partScale * oldScaleSlider;
-            const newWidth = part.width * partScale * scaleSliderValue;
+            const newWidth = part.width * partScale * newScale;
 
             const oldHeight = part.height * partScale * oldScaleSlider;
-            const newHeight = part.height * partScale * scaleSliderValue;
+            const newHeight = part.height * partScale * newScale;
 
             const widthChange = oldWidth - newWidth;
             const heightChange = oldHeight - newHeight;
@@ -90,8 +94,8 @@ export function rocketScaleChanged(rocket: Rocket, scaleSliderValue: number) {
                 const unitX = relativeX / oldScaleSlider;
                 const unitY = relativeY / oldScaleSlider;
 
-                const newScaledX = referencePart.x + unitX * scaleSliderValue;
-                const newScaledY = referencePart.y + unitY * scaleSliderValue;
+                const newScaledX = referencePart.x + unitX * newScale;
+                const newScaledY = referencePart.y + unitY * newScale;
 
                 part.x = newScaledX;
                 part.y = newScaledY;

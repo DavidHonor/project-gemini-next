@@ -7,7 +7,7 @@ import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
-import { rocketScaleChanged, partScaleChanged } from "@/lib/ship_functions";
+import { partScaleChanged, rocketScaleChanged } from "@/lib/ship_functions";
 import { RocketStats } from "@/types/rocket_stats";
 import { calculateRocketStats } from "../../rocket_stats/rocket_stats";
 
@@ -20,7 +20,15 @@ export const RocketContext = createContext({
     getRocket: (rocketId: string) => {},
     getRocketPreview: () => {},
     uploadRocketPreview: (image: string) => {},
-    updateRocketScale: (scale: number) => {},
+    updateRocketScale: ({
+        scale,
+        rocketUpdated,
+        editorSize,
+    }: {
+        scale: number;
+        rocketUpdated: Rocket;
+        editorSize: DOMRect;
+    }) => {},
 
     addRocketStage: () => {},
     updatePartStage: ({
@@ -93,10 +101,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }
     }, [rocket]);
 
-    const handleAPIError = () =>
+    const handleAPIError = (title?: string, description?: string) =>
         toast({
-            title: "Something went wrong",
-            description: "Please try again later",
+            title: title ?? "Something went wrong",
+            description: description ?? "Please try again later",
             variant: "destructive",
         });
 
@@ -129,22 +137,29 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         setRocket(parsedResponse);
     });
 
-    const updateRocketScale = useMutation(async (scale: number) => {
-        if (rocket === null) return handleAPIError();
+    const updateRocketScale = useMutation(
+        async ({
+            scale,
+            rocketUpdated,
+            editorSize,
+        }: {
+            scale: number;
+            rocketUpdated: Rocket;
+            editorSize: DOMRect;
+        }) => {
+            if (!rocket) return handleAPIError();
+            if (!editorSize) return handleAPIError("", "Editor size not found");
 
-        const rocketCopy = rocketScaleChanged(rocket, scale);
+            const rocketScaled = rocketScaleChanged(rocket, scale, editorSize);
 
-        setRocket(rocketCopy);
+            setRocket(rocketScaled);
 
-        utils.client.rocket.updateRocketScale
-            .mutate({
-                rocket: rocketCopy,
+            utils.client.rocket.updateRocketScale.mutate({
+                rocket: rocketScaled,
                 scaleSlider: scale,
-            })
-            .then((response) => {
-                console.log(response);
             });
-    });
+        }
+    );
 
     const uploadRocketPreview = useMutation(async (image: string) => {
         if (!rocket) return handleAPIError();

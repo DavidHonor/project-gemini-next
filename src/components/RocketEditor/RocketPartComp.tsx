@@ -1,4 +1,9 @@
-import { CursorOptions, cn, getCursorPosition } from "@/lib/utils";
+import {
+    CursorOptions,
+    cn,
+    getCursorPosition,
+    positionPercentage,
+} from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -15,24 +20,27 @@ import {
     CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
+import { Rocket } from "@/types/rocket";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
     editorAreaRef: React.RefObject<HTMLDivElement>;
     deleteAreaRef: React.RefObject<any>;
+    rocket: Rocket;
 }
 
 const RocketPartComp = ({
     rocketPart,
     editorAreaRef,
     deleteAreaRef,
+    rocket,
 }: RocketPartCompProps) => {
     const {
         updatePartPosition,
         rocketPartIdDrag,
         highlightPartId,
         cursorMode,
-        rocket,
+
         updatePartScale,
         deletePart,
         setRocketPartIdDrag,
@@ -52,10 +60,16 @@ const RocketPartComp = ({
     useEffect(() => {
         //simulate the drag start on the dynamically created part
         if (rocketPartIdDrag === rocketPart.id) {
+            const offsetXPx = -(rocketPart.width * rocketPart.scale) / 2;
+            const offsetYPx = -(rocketPart.height * rocketPart.scale) / 2;
+            const offset = positionPercentage(
+                { x: offsetXPx, y: offsetYPx },
+                editorAreaRef!.current!.getBoundingClientRect()
+            );
             setDrag({
                 enabled: true,
-                offset_x: -(rocketPart.width * rocketPart.scale) / 2,
-                offset_y: -(rocketPart.height * rocketPart.scale) / 2,
+                offset_x: offset.x,
+                offset_y: offset.y,
             });
         }
     }, [rocketPartIdDrag]);
@@ -115,7 +129,7 @@ const RocketPartComp = ({
         x = x - rect.left;
         y = y - rect.top;
 
-        return { x, y };
+        return positionPercentage({ x, y }, rect);
     };
 
     const handlePartMoveStart = (
@@ -165,7 +179,7 @@ const RocketPartComp = ({
         //has to be taken into count
         const topBarHeight = 56;
         const halfPartHeight =
-            (rocketPart.height * rocket!.scaleSlider * rocketPart.scale) / 2;
+            (rocketPart.height * rocket.scaleSlider * rocketPart.scale) / 2;
 
         if (
             deleteArea.y - topBarHeight <
@@ -205,118 +219,37 @@ const RocketPartComp = ({
         return "pointer";
     };
 
-    const PartPopupPosition = () => {
-        const canvasBounds = deleteAreaRef.current.getBoundingClientRect();
-        const PART_POPUP_WIDTH = 200;
-
-        let xModif = 0;
-        if (canvasBounds.width < drag.offset_x + PART_POPUP_WIDTH) {
-            xModif = canvasBounds.width - (drag.offset_x + PART_POPUP_WIDTH);
-        }
-
-        return {
-            left: drag.offset_x + xModif,
-            top: drag.offset_y,
-        };
-    };
+    if (!editorAreaRef.current) return "";
 
     return (
-        <>
-            <div
-                style={{
-                    position: "absolute",
-                    ...partPosition,
-                    cursor: Cursor(),
-                }}
-                className={cn(
-                    "hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none",
-                    {
-                        "after:opacity-30": rocketPart.id === highlightPartId,
-                    }
-                )}
-            >
-                <Image
-                    key={`part_img_${rocketPart.id}`}
-                    alt={rocketPart.name}
-                    width={
-                        rocketPart.width *
-                        rocketPart.scale *
-                        rocket!.scaleSlider
-                    }
-                    height={
-                        rocketPart.height *
-                        rocketPart.scale *
-                        rocket!.scaleSlider
-                    }
-                    src={`/rocket_parts/${rocketPart.image}`}
-                    draggable="false"
-                    onMouseDown={handlePartMoveStart}
-                    onTouchStart={handlePartMoveStart}
-                    className="z-10"
-                />
-            </div>
-
-            {/* Part scale slider popup */}
-            {drag.enabled && cursorMode === CursorOptions.SELECT ? (
-                <Card
-                    className="absolute w-[200px] z-30"
-                    style={{ ...PartPopupPosition() }}
-                >
-                    <CardHeader className="p-2">
-                        <CardTitle className="flex items-center justify-between">
-                            <span className="text-base font-bold">
-                                Adjust size
-                            </span>
-                            <Button
-                                className="p-1 h-6 flex"
-                                variant={"ghost"}
-                                onClick={() =>
-                                    setDrag({
-                                        enabled: false,
-                                        offset_x: 0,
-                                        offset_y: 0,
-                                    })
-                                }
-                            >
-                                <XCircle className="w-5 h-5 cursor-pointer" />
-                            </Button>
-                        </CardTitle>
-                        <CardDescription className="flex text-sm">
-                            {`Scale of part: ${rocketPart.name}`}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-2">
-                        <ControlledSlider
-                            value={rocketPart.scale}
-                            min={0.3}
-                            max={1.5}
-                            step={0.1}
-                            onValueCommit={(values) =>
-                                updatePartScale({
-                                    partScale: values[0],
-                                    partId: rocketPart.id,
-                                })
-                            }
-                        />
-                    </CardContent>
-                </Card>
-            ) : null}
-
-            {/* animated div for effect of deleting parts, no functinality here */}
-            <div
-                className={cn(
-                    "fixed flex items-center justify-center curve-effect bottom-0 left-0 right-0 h-16 pointer-events-none slide-in",
-                    {
-                        "slide-in-active":
-                            drag.enabled && cursorMode === CursorOptions.GRAB,
-                    }
-                )}
-            >
-                <div className="flex z-10">
-                    <XCircle className="text-red-600 h-8 w-8" />
-                </div>
-            </div>
-        </>
+        <div
+            style={{
+                position: "absolute",
+                top: `${partPosition.top}%`,
+                left: `${partPosition.left}%`,
+                cursor: Cursor(),
+            }}
+            className={cn(
+                "hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none",
+                {
+                    "after:opacity-30": rocketPart.id === highlightPartId,
+                }
+            )}
+        >
+            <Image
+                key={`part_img_${rocketPart.id}`}
+                alt={rocketPart.name}
+                width={rocketPart.width * rocketPart.scale * rocket.scaleSlider}
+                height={
+                    rocketPart.height * rocketPart.scale * rocket.scaleSlider
+                }
+                src={`/rocket_parts/${rocketPart.image}`}
+                draggable="false"
+                onMouseDown={handlePartMoveStart}
+                onTouchStart={handlePartMoveStart}
+                className="z-10"
+            />
+        </div>
     );
 };
 
