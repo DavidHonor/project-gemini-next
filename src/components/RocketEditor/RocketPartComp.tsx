@@ -11,7 +11,7 @@ interface RocketPartCompProps {
     rocketPart: RocketPart;
     setActivePart: (part: RocketPart | null) => void;
     editorAreaRef: React.RefObject<HTMLDivElement>;
-    deleteAreaRef: React.RefObject<any>;
+    deleteAreaRef: React.RefObject<HTMLDivElement>;
     rocket: Rocket;
 }
 
@@ -126,23 +126,17 @@ const RocketPartComp = ({
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
         if (cursorMode !== CursorOptions.GRAB) return;
-        if (!deleteAreaRef.current) throw new Error("missing deleteAreaRef");
+        if (!deleteAreaRef.current) return;
         const coords = getEventCoords(editorAreaRef, event, true);
         if (!coords) throw new Error("handlePartMoveEnd no coords");
 
         const deleteArea = deleteAreaRef.current.getBoundingClientRect();
         if (!deleteArea.y) return;
 
-        //since the delete div is fixed positioned, the height of the top bar
-        //has to be taken into count
-        const topBarHeight = 56;
         const halfPartHeight =
             (rocketPart.height * rocket.scaleSlider * rocketPart.scale) / 2;
 
-        if (
-            deleteArea.y - topBarHeight <
-            coords.y + drag.offset_y + halfPartHeight
-        ) {
+        if (deleteArea.y < coords.y + halfPartHeight) {
             deletePart(rocketPart);
             return;
         }
@@ -177,23 +171,8 @@ const RocketPartComp = ({
         return "pointer";
     };
 
-    if (!editorAreaRef.current) return "";
-
     return (
-        <div
-            style={{
-                position: "absolute",
-                top: `${partPosition.top}px`,
-                left: `${partPosition.left}px`,
-                cursor: Cursor(),
-            }}
-            className={cn(
-                "hover:after:opacity-30 transition duration-300 ease-in-out after:absolute after:inset-0 after:bg-white after:content-[''] after:z-20 after:opacity-0 after:pointer-events-none",
-                {
-                    "after:opacity-30": rocketPart.id === highlightPartId,
-                }
-            )}
-        >
+        <div>
             <Image
                 key={`part_img_${rocketPart.id}`}
                 alt={rocketPart.name}
@@ -205,7 +184,19 @@ const RocketPartComp = ({
                 draggable="false"
                 onMouseDown={handlePartMoveStart}
                 onTouchStart={handlePartMoveStart}
-                className="z-10"
+                style={{
+                    position: "absolute",
+                    top: `${partPosition.top}px`,
+                    left: `${partPosition.left}px`,
+                    cursor: Cursor(),
+                }}
+                className={cn(
+                    "z-10 hover:z-20 hover:border-blue-500 hover:border-3 select-none",
+                    {
+                        "border-3 z-20 border-blue-500":
+                            rocketPart.id === highlightPartId,
+                    }
+                )}
             />
         </div>
     );

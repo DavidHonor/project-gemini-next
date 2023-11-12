@@ -12,6 +12,7 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import { RocketContext } from "../RocketEditor/RocketContext";
+import { CursorOptions } from "@/lib/utils";
 
 interface RocketPartResizeProps {
     setActivePart: (part: RocketPart | null) => void;
@@ -24,9 +25,9 @@ const RocketPartResize = ({
     activePart,
     editorAreaRef,
 }: RocketPartResizeProps) => {
-    const { updatePartScale } = useContext(RocketContext);
+    const { updatePartScale, cursorMode } = useContext(RocketContext);
 
-    if (!activePart) return "";
+    if (!activePart || cursorMode === CursorOptions.GRAB) return "";
 
     const POPUP_WIDTH = 200;
 

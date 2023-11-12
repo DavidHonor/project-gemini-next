@@ -54,7 +54,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
         );
 
     return (
-        <div ref={ref} className="h-full w-full relative">
+        <div ref={ref} className="h-full w-full relative select-none">
             {rocket.stages.flatMap((stage) => {
                 return stage.parts.map((part: RocketPart) => {
                     return (
@@ -78,16 +78,10 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                 editorAreaRef={ref}
             />
 
-            {/* delete parts area */}
             <div
                 ref={deleteAreaRef}
-                className="fixed bottom-0 left-0 right-0 h-16 pointer-events-none"
-            />
-
-            {/* animation for deleting parts */}
-            <div
                 className={cn(
-                    "fixed flex items-center justify-center curve-effect bottom-0 left-0 right-0 h-16 pointer-events-none slide-in",
+                    `absolute flex items-center justify-center bottom-0 left-0 right-0 h-16 pointer-events-none slide-in border-t-3 border-dashed border-red-500`,
                     {
                         "slide-in-active": cursorMode === CursorOptions.GRAB,
                     }
