@@ -1,4 +1,8 @@
-import React from "react";
+import { useContext } from "react";
+
+import ControlledSlider from "../ControlledSlider/ControlledSlider";
+import { RocketPart } from "../../../prisma/generated/zod";
+import { XCircle } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -7,27 +11,46 @@ import {
     CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
-import ControlledSlider from "../ControlledSlider/ControlledSlider";
+import { RocketContext } from "../RocketEditor/RocketContext";
 
-const RocketPartResize = () => {
+interface RocketPartResizeProps {
+    setActivePart: (part: RocketPart | null) => void;
+    activePart: RocketPart | null;
+    editorAreaRef: React.RefObject<HTMLDivElement>;
+}
+
+const RocketPartResize = ({
+    setActivePart,
+    activePart,
+    editorAreaRef,
+}: RocketPartResizeProps) => {
+    const { updatePartScale } = useContext(RocketContext);
+
+    if (!activePart) return "";
+
+    const POPUP_WIDTH = 200;
+
     const PartPopupPosition = () => {
-        const canvasBounds = deleteAreaRef.current.getBoundingClientRect();
-        const PART_POPUP_WIDTH = 200;
+        if (editorAreaRef.current === null)
+            return {
+                left: activePart.x,
+                top: activePart.y,
+            };
 
-        let xModif = 0;
-        if (canvasBounds.width < drag.offset_x + PART_POPUP_WIDTH) {
-            xModif = canvasBounds.width - (drag.offset_x + PART_POPUP_WIDTH);
-        }
-
+        const bounds = editorAreaRef.current.getBoundingClientRect();
+        const minusX =
+            bounds.width < activePart.x + POPUP_WIDTH
+                ? activePart.x + POPUP_WIDTH - bounds.width
+                : 0;
         return {
-            left: drag.offset_x + xModif,
-            top: drag.offset_y,
+            left: activePart.x - minusX,
+            top: activePart.y,
         };
     };
 
     return (
         <Card
-            className="absolute w-[200px] z-30"
+            className={`absolute w-[${POPUP_WIDTH}px] z-30`}
             style={{ ...PartPopupPosition() }}
         >
             <CardHeader className="p-2">
@@ -36,31 +59,25 @@ const RocketPartResize = () => {
                     <Button
                         className="p-1 h-6 flex"
                         variant={"ghost"}
-                        onClick={() =>
-                            setDrag({
-                                enabled: false,
-                                offset_x: 0,
-                                offset_y: 0,
-                            })
-                        }
+                        onClick={() => setActivePart(null)}
                     >
                         <XCircle className="w-5 h-5 cursor-pointer" />
                     </Button>
                 </CardTitle>
                 <CardDescription className="flex text-sm">
-                    {`Scale of part: ${rocketPart.name}`}
+                    {`Scale of part: ${activePart.name}`}
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-2">
                 <ControlledSlider
-                    value={rocketPart.scale}
-                    min={0.3}
+                    value={activePart.scale}
+                    min={0.1}
                     max={1.5}
                     step={0.1}
                     onValueCommit={(values) =>
                         updatePartScale({
                             partScale: values[0],
-                            partId: rocketPart.id,
+                            partId: activePart.id,
                         })
                     }
                 />

@@ -9,15 +9,14 @@ import React, {
     useState,
 } from "react";
 import RocketPartComp from "./RocketPartComp";
-import { Grab, Loader2, MousePointerSquareDashed, XCircle } from "lucide-react";
-import { Card, CardContent } from "../ui/card";
+
+import { Loader2, XCircle } from "lucide-react";
 import { RocketContext } from "./RocketContext";
 import { CursorOptions, cn } from "@/lib/utils";
 
-import ControlledSlider from "../ControlledSlider/ControlledSlider";
-
 import { toPng } from "html-to-image";
-import { Button } from "../ui/button";
+import EditorControls from "./EditorControls";
+import RocketPartResize from "../PocketPartComponents/RocketPartResize";
 
 interface RocketCanvasProps {
     rocket: Rocket;
@@ -27,12 +26,9 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
     const ref = useRef<HTMLDivElement>(null);
     const deleteAreaRef = useRef<HTMLDivElement>(null);
 
-    const {
-        setCursorMode,
-        cursorMode,
-        updateRocketScale,
-        uploadRocketPreview,
-    } = useContext(RocketContext);
+    const [activePart, setActivePart] = useState<RocketPart | null>(null);
+
+    const { cursorMode, uploadRocketPreview } = useContext(RocketContext);
 
     const captureRocketImage = async () => {
         if (!ref || !ref.current) return;
@@ -58,61 +54,29 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
         );
 
     return (
-        <div className="h-full w-full relative">
-            <div ref={ref} className="h-full w-full relative">
-                {rocket.stages.flatMap((stage) => {
-                    return stage.parts.map((part: RocketPart) => {
-                        return (
-                            <RocketPartComp
-                                key={"rocketPart_" + part.id}
-                                rocketPart={part}
-                                editorAreaRef={ref}
-                                deleteAreaRef={deleteAreaRef}
-                                rocket={rocket}
-                            />
-                        );
-                    });
-                })}
-            </div>
-
-            {/* Canvas related controls */}
-            <div className="absolute flex left-1 top-1 z-30 gap-1">
-                <Button
-                    variant={"outline"}
-                    className={cn("px-2", {
-                        "bg-zinc-300": cursorMode === CursorOptions.GRAB,
-                    })}
-                    onClick={() => setCursorMode(CursorOptions.GRAB)}
-                >
-                    <Grab className="w-5 h-5" />
-                </Button>
-
-                <Button
-                    variant={"outline"}
-                    className={cn("px-2", {
-                        "bg-zinc-300": cursorMode === CursorOptions.SELECT,
-                    })}
-                    onClick={() => setCursorMode(CursorOptions.SELECT)}
-                >
-                    <MousePointerSquareDashed className="w-5 h-5" />
-                </Button>
-
-                <Card className="flex items-center justify-center">
-                    <CardContent className="flex flex-row p-1 w-[170px]">
-                        <ControlledSlider
-                            max={1.5}
-                            min={0.3}
-                            step={0.1}
-                            value={rocket.scaleSlider}
-                            onValueCommit={(values) => {
-                                updateRocketScale({
-                                    scale: values[0],
-                                });
-                            }}
+        <div ref={ref} className="h-full w-full relative">
+            {rocket.stages.flatMap((stage) => {
+                return stage.parts.map((part: RocketPart) => {
+                    return (
+                        <RocketPartComp
+                            key={"rocketPart_" + part.id}
+                            rocketPart={part}
+                            setActivePart={setActivePart}
+                            editorAreaRef={ref}
+                            deleteAreaRef={deleteAreaRef}
+                            rocket={rocket}
                         />
-                    </CardContent>
-                </Card>
-            </div>
+                    );
+                });
+            })}
+
+            <EditorControls />
+
+            <RocketPartResize
+                setActivePart={setActivePart}
+                activePart={activePart}
+                editorAreaRef={ref}
+            />
 
             {/* delete parts area */}
             <div

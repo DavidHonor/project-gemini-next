@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Metadata } from "next";
-import { MouseEvent } from "react";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -59,11 +58,37 @@ export function constructMetadata({
     };
 }
 
-export function getCursorPosition<T extends Element>(event: MouseEvent<T>) {
-    if (!event) return null;
+export const getEventCoords = (
+    editorAreaRef: React.RefObject<HTMLDivElement>,
+    event:
+        | React.MouseEvent<Element, MouseEvent>
+        | React.TouchEvent<Element>
+        | MouseEvent
+        | TouchEvent,
+    isTouchEnd: boolean = false
+) => {
+    if (!editorAreaRef.current) return;
+    let x, y;
 
-    console.log(event.clientX, event.clientY);
-}
+    if ("clientX" in event && event.button === 0) {
+        x = event.clientX;
+        y = event.clientY;
+    } else if ("touches" in event) {
+        if (isTouchEnd) {
+            x = event.changedTouches[0].pageX;
+            y = event.changedTouches[0].pageY;
+        } else {
+            x = event.touches[0].clientX;
+            y = event.touches[0].clientY;
+        }
+    } else return;
+
+    const rect = editorAreaRef.current.getBoundingClientRect();
+    x = x - rect.left;
+    y = y - rect.top;
+
+    return { x, y };
+};
 
 export function capitalizeFirstLetter(word: string) {
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();

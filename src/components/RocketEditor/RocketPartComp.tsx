@@ -1,4 +1,4 @@
-import { CursorOptions, cn } from "@/lib/utils";
+import { CursorOptions, cn, getEventCoords } from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -9,6 +9,7 @@ import { Rocket } from "@/types/rocket";
 
 interface RocketPartCompProps {
     rocketPart: RocketPart;
+    setActivePart: (part: RocketPart | null) => void;
     editorAreaRef: React.RefObject<HTMLDivElement>;
     deleteAreaRef: React.RefObject<any>;
     rocket: Rocket;
@@ -16,6 +17,7 @@ interface RocketPartCompProps {
 
 const RocketPartComp = ({
     rocketPart,
+    setActivePart,
     editorAreaRef,
     deleteAreaRef,
     rocket,
@@ -63,6 +65,18 @@ const RocketPartComp = ({
     }, [rocketPart.x, rocketPart.y]);
 
     useEffect(() => {
+        //do not cancel the drag if a dynamic part is being dragged
+        if (rocketPartIdDrag) return;
+
+        setDrag({
+            enabled: false,
+            offset_x: 0,
+            offset_y: 0,
+        });
+        setActivePart(null);
+    }, [cursorMode]);
+
+    useEffect(() => {
         if (drag.enabled) {
             window.addEventListener("mousemove", handlePartMove);
             window.addEventListener("touchmove", handlePartMove);
@@ -72,49 +86,7 @@ const RocketPartComp = ({
         }
     }, [drag]);
 
-    useEffect(() => {
-        //do not cancel the drag if a dynamic part is being dragged
-        if (rocketPartIdDrag) return;
-
-        setDrag({
-            enabled: false,
-            offset_x: 0,
-            offset_y: 0,
-        });
-    }, [cursorMode]);
-
     if (!rocketPart) return "";
-
-    const getEventCoords = (
-        event:
-            | React.MouseEvent<HTMLImageElement>
-            | React.TouchEvent<HTMLImageElement>
-            | MouseEvent
-            | TouchEvent,
-        isTouchEnd: boolean = false
-    ) => {
-        if (!editorAreaRef.current) return;
-        let x, y;
-
-        if ("clientX" in event && event.button === 0) {
-            x = event.clientX;
-            y = event.clientY;
-        } else if ("touches" in event) {
-            if (isTouchEnd) {
-                x = event.changedTouches[0].pageX;
-                y = event.changedTouches[0].pageY;
-            } else {
-                x = event.touches[0].clientX;
-                y = event.touches[0].clientY;
-            }
-        } else return;
-
-        const rect = editorAreaRef.current.getBoundingClientRect();
-        x = x - rect.left;
-        y = y - rect.top;
-
-        return { x, y };
-    };
 
     const handlePartMoveStart = (
         event:
@@ -122,7 +94,7 @@ const RocketPartComp = ({
             | React.TouchEvent<HTMLImageElement>
     ) => {
         if (rocketPartIdDrag) return;
-        const coords = getEventCoords(event);
+        const coords = getEventCoords(editorAreaRef, event);
         if (!coords) return;
 
         if (cursorMode === CursorOptions.GRAB) {
@@ -132,6 +104,7 @@ const RocketPartComp = ({
                 offset_y: rocketPart.y - coords.y,
             });
         } else if (cursorMode === CursorOptions.SELECT) {
+            setActivePart(rocketPart);
             setDrag({
                 enabled: !drag.enabled,
                 offset_x: drag.enabled ? 0 : coords.x,
@@ -142,8 +115,8 @@ const RocketPartComp = ({
 
     const handlePartMove = (event: MouseEvent | TouchEvent) => {
         if (cursorMode !== CursorOptions.GRAB) return;
-        const coords = getEventCoords(event);
-        if (!coords) return;
+        const coords = getEventCoords(editorAreaRef, event);
+        if (!coords) throw new Error("handlePartMove no coords");
 
         setPartPosition({
             left: coords.x + drag.offset_x,
@@ -152,9 +125,10 @@ const RocketPartComp = ({
     };
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
-        if (cursorMode !== CursorOptions.GRAB || !deleteAreaRef.current) return;
-        const coords = getEventCoords(event, true);
-        if (!coords) return;
+        if (cursorMode !== CursorOptions.GRAB) return;
+        if (!deleteAreaRef.current) throw new Error("missing deleteAreaRef");
+        const coords = getEventCoords(editorAreaRef, event, true);
+        if (!coords) throw new Error("handlePartMoveEnd no coords");
 
         const deleteArea = deleteAreaRef.current.getBoundingClientRect();
         if (!deleteArea.y) return;
