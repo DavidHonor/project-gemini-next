@@ -7,7 +7,12 @@ import { useToast } from "../ui/use-toast";
 import type { RocketPart } from "@prisma/client";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
-import { partScaleChanged, rocketScaleChanged } from "@/lib/ship_functions";
+import {
+    partScaleChanged,
+    rocketBounds,
+    rocketScaleChanged,
+    translateRocket,
+} from "@/lib/ship_functions";
 import { RocketStats } from "@/types/rocket_stats";
 import { calculateRocketStats } from "../../rocket_stats/rocket_stats";
 
@@ -17,6 +22,8 @@ interface Props {
 }
 
 export const RocketContext = createContext({
+    fitToView: (editorBounds: DOMRect) => {},
+
     getRocket: (rocketId: string) => {},
     getRocketPreview: () => {},
     uploadRocketPreview: (image: string) => {},
@@ -324,6 +331,41 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }
     );
 
+    //Other
+    const fitToView = (editorBounds: DOMRect) => {
+        if (!rocket) return;
+
+        const rbounds = rocketBounds(rocket);
+        const padding = 150;
+
+        console.log("editor", editorBounds);
+        console.log("rocket bounds", rbounds);
+
+        const unscaledWidth = rbounds.width / rocket.scaleSlider;
+        const unscaledHeight = rbounds.height / rocket.scaleSlider;
+
+        const fitScaleWidth = editorBounds.width / (unscaledWidth + padding);
+        const fitScaleHeight = editorBounds.height / (unscaledHeight + padding);
+
+        const newScale = Math.min(fitScaleHeight, fitScaleWidth);
+        const rocketScaled = rocketScaleChanged(rocket, newScale);
+
+        const rScaledBounds = rocketBounds(rocketScaled);
+
+        const shiftVector = {
+            x: -rScaledBounds.minX,
+            y: -rScaledBounds.minY,
+        };
+        const translatedRocket = translateRocket(rocketScaled, shiftVector);
+
+        setRocket(translatedRocket);
+
+        utils.client.rocket.updateRocketScale.mutate({
+            rocket: translatedRocket,
+            scaleSlider: newScale,
+        });
+    };
+
     return (
         <RocketContext.Provider
             value={{
@@ -334,6 +376,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 highlightPartId,
                 cursorMode,
                 menuOption,
+
+                fitToView: fitToView,
 
                 getRocket: getRocketMutation.mutate,
                 updateRocketScale: updateRocketScale.mutate,

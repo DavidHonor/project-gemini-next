@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Slider } from "../ui/slider";
 import { roundToDecimalPlaces } from "@/lib/utils";
 
@@ -18,6 +18,10 @@ const ControlledSlider = ({
     onValueCommit,
 }: ControlledSliderProps) => {
     const [stateValue, setValue] = useState<number>(value);
+
+    useEffect(() => {
+        if (value !== stateValue) setValue(value);
+    }, [value]);
 
     return (
         <div className="flex w-full">

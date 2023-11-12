@@ -172,33 +172,29 @@ const RocketPartComp = ({
     };
 
     return (
-        <div>
-            <Image
-                key={`part_img_${rocketPart.id}`}
-                alt={rocketPart.name}
-                width={rocketPart.width * rocketPart.scale * rocket.scaleSlider}
-                height={
-                    rocketPart.height * rocketPart.scale * rocket.scaleSlider
+        <Image
+            key={`part_img_${rocketPart.id}`}
+            alt={rocketPart.name}
+            width={rocketPart.width * rocketPart.scale * rocket.scaleSlider}
+            height={rocketPart.height * rocketPart.scale * rocket.scaleSlider}
+            src={`/rocket_parts/${rocketPart.image}`}
+            draggable="false"
+            onMouseDown={handlePartMoveStart}
+            onTouchStart={handlePartMoveStart}
+            style={{
+                position: "absolute",
+                top: `${partPosition.top}px`,
+                left: `${partPosition.left}px`,
+                cursor: Cursor(),
+            }}
+            className={cn(
+                "z-10 hover:z-20 hover:border-blue-500 hover:border-3 select-none",
+                {
+                    "border-3 z-20 border-blue-500":
+                        rocketPart.id === highlightPartId,
                 }
-                src={`/rocket_parts/${rocketPart.image}`}
-                draggable="false"
-                onMouseDown={handlePartMoveStart}
-                onTouchStart={handlePartMoveStart}
-                style={{
-                    position: "absolute",
-                    top: `${partPosition.top}px`,
-                    left: `${partPosition.left}px`,
-                    cursor: Cursor(),
-                }}
-                className={cn(
-                    "z-10 hover:z-20 hover:border-blue-500 hover:border-3 select-none",
-                    {
-                        "border-3 z-20 border-blue-500":
-                            rocketPart.id === highlightPartId,
-                    }
-                )}
-            />
-        </div>
+            )}
+        />
     );
 };
 

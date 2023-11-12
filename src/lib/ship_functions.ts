@@ -63,7 +63,10 @@ export function rocketScaleChanged(rocket: Rocket, newScale: number) {
             // set the reference part, this will act as the reference point for scaling
             if (referencePart === null) {
                 referencePart = part;
-                referencePartOldPos = { x: part.x, y: part.y };
+                referencePartOldPos = {
+                    x: part.x,
+                    y: part.y,
+                };
             }
 
             const partScale = part.scale;
@@ -99,6 +102,52 @@ export function rocketScaleChanged(rocket: Rocket, newScale: number) {
         }
     }
     return shipCopy;
+}
+
+export function translateRocket(
+    rocket: Rocket,
+    vector: { x: number; y: number }
+) {
+    const shipCopy = structuredClone(rocket);
+    for (const stage of shipCopy.stages) {
+        for (const part of stage.parts) {
+            part.x += vector.x;
+            part.y += vector.y;
+        }
+    }
+    return shipCopy;
+}
+
+export function rocketBounds(rocket: Rocket) {
+    let bounds = {
+        minX: 999999999,
+        minY: 999999999,
+        maxX: 0,
+        maxY: 0,
+        height: 0,
+        width: 0,
+    };
+
+    for (let stage of rocket.stages) {
+        for (let part of stage.parts) {
+            if (bounds.minX > part.x) {
+                bounds.minX = part.x;
+            }
+            if (bounds.minY > part.y) {
+                bounds.minY = part.y;
+            }
+            if (bounds.maxX < part.x) {
+                bounds.maxX = part.x;
+            }
+            if (bounds.maxY < part.y) {
+                bounds.maxY = part.y;
+            }
+        }
+    }
+    bounds.width = bounds.maxX - bounds.minX;
+    bounds.height = bounds.maxY - bounds.minY;
+
+    return bounds;
 }
 
 export function fuelMassCalc(object: { diameter: number; length: number }) {

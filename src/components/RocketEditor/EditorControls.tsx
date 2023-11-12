@@ -6,8 +6,12 @@ import { Grab, MousePointerSquareDashed } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
-const EditorControls = () => {
-    const { setCursorMode, cursorMode, updateRocketScale, rocket } =
+const EditorControls = ({
+    editorAreaRef,
+}: {
+    editorAreaRef: React.RefObject<HTMLDivElement>;
+}) => {
+    const { setCursorMode, cursorMode, updateRocketScale, rocket, fitToView } =
         useContext(RocketContext);
 
     if (!rocket) return "";
@@ -38,8 +42,8 @@ const EditorControls = () => {
                 <CardContent className="flex flex-row p-1 w-[170px]">
                     <ControlledSlider
                         max={1.5}
-                        min={0.3}
-                        step={0.1}
+                        min={0.1}
+                        step={0.05}
                         value={rocket.scaleSlider}
                         onValueCommit={(values) => {
                             updateRocketScale({
@@ -49,6 +53,16 @@ const EditorControls = () => {
                     />
                 </CardContent>
             </Card>
+
+            <Button
+                variant={"outline"}
+                className={cn("px-2", {})}
+                onClick={() =>
+                    fitToView(editorAreaRef!.current!.getBoundingClientRect())
+                }
+            >
+                Fit to screen
+            </Button>
         </div>
     );
 };

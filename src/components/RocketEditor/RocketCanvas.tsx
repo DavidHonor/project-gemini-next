@@ -70,7 +70,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                 });
             })}
 
-            <EditorControls />
+            <EditorControls editorAreaRef={ref} />
 
             <RocketPartResize
                 setActivePart={setActivePart}
