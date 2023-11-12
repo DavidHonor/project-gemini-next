@@ -1,25 +1,10 @@
-import {
-    CursorOptions,
-    cn,
-    getCursorPosition,
-    positionPercentage,
-} from "@/lib/utils";
+import { CursorOptions, cn } from "@/lib/utils";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
 import type { RocketPart } from "@prisma/client";
 import { RocketContext } from "./RocketContext";
 
-import { XCircle } from "lucide-react";
-import ControlledSlider from "../ControlledSlider/ControlledSlider";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
 import { Rocket } from "@/types/rocket";
 
 interface RocketPartCompProps {
@@ -60,16 +45,15 @@ const RocketPartComp = ({
     useEffect(() => {
         //simulate the drag start on the dynamically created part
         if (rocketPartIdDrag === rocketPart.id) {
-            const offsetXPx = -(rocketPart.width * rocketPart.scale) / 2;
-            const offsetYPx = -(rocketPart.height * rocketPart.scale) / 2;
-            const offset = positionPercentage(
-                { x: offsetXPx, y: offsetYPx },
-                editorAreaRef!.current!.getBoundingClientRect()
-            );
+            const offsetXPx =
+                -(rocketPart.width * rocketPart.scale * rocket.scaleSlider) / 2;
+            const offsetYPx =
+                -(rocketPart.height * rocketPart.scale * rocket.scaleSlider) /
+                2;
             setDrag({
                 enabled: true,
-                offset_x: offset.x,
-                offset_y: offset.y,
+                offset_x: offsetXPx,
+                offset_y: offsetYPx,
             });
         }
     }, [rocketPartIdDrag]);
@@ -129,7 +113,7 @@ const RocketPartComp = ({
         x = x - rect.left;
         y = y - rect.top;
 
-        return positionPercentage({ x, y }, rect);
+        return { x, y };
     };
 
     const handlePartMoveStart = (
@@ -225,8 +209,8 @@ const RocketPartComp = ({
         <div
             style={{
                 position: "absolute",
-                top: `${partPosition.top}%`,
-                left: `${partPosition.left}%`,
+                top: `${partPosition.top}px`,
+                left: `${partPosition.left}px`,
                 cursor: Cursor(),
             }}
             className={cn(

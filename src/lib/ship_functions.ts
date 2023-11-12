@@ -49,11 +49,7 @@ export function partScaleChanged(
     return { updatedRocket: shipCopy, updatedPart };
 }
 
-export function rocketScaleChanged(
-    rocket: Rocket,
-    newScale: number,
-    editorSize: DOMRect
-) {
+export function rocketScaleChanged(rocket: Rocket, newScale: number) {
     const shipCopy = structuredClone(rocket);
 
     const oldScaleSlider = shipCopy.scaleSlider;

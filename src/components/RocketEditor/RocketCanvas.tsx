@@ -18,7 +18,6 @@ import ControlledSlider from "../ControlledSlider/ControlledSlider";
 
 import { toPng } from "html-to-image";
 import { Button } from "../ui/button";
-import { rocketScaleChanged } from "@/lib/ship_functions";
 
 interface RocketCanvasProps {
     rocket: Rocket;
@@ -108,9 +107,6 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
                             onValueCommit={(values) => {
                                 updateRocketScale({
                                     scale: values[0],
-                                    rocketUpdated: rocket,
-                                    editorSize:
-                                        ref!.current!.getBoundingClientRect(),
                                 });
                             }}
                         />

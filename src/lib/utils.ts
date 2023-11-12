@@ -132,15 +132,3 @@ export function calculateCircumferenceDistance(
 
     return arcLength;
 }
-
-export function positionPercentage(
-    { x, y }: PartPosition,
-    editorBounds: DOMRect
-) {
-    const leftPrct = (x / editorBounds.width) * 100;
-    const topPrct = (y / editorBounds.height) * 100;
-    return {
-        x: leftPrct,
-        y: topPrct,
-    };
-}

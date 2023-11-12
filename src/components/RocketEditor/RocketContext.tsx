@@ -20,15 +20,7 @@ export const RocketContext = createContext({
     getRocket: (rocketId: string) => {},
     getRocketPreview: () => {},
     uploadRocketPreview: (image: string) => {},
-    updateRocketScale: ({
-        scale,
-        rocketUpdated,
-        editorSize,
-    }: {
-        scale: number;
-        rocketUpdated: Rocket;
-        editorSize: DOMRect;
-    }) => {},
+    updateRocketScale: ({ scale }: { scale: number }) => {},
 
     addRocketStage: () => {},
     updatePartStage: ({
@@ -138,19 +130,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     });
 
     const updateRocketScale = useMutation(
-        async ({
-            scale,
-            rocketUpdated,
-            editorSize,
-        }: {
-            scale: number;
-            rocketUpdated: Rocket;
-            editorSize: DOMRect;
-        }) => {
+        async ({ scale }: { scale: number }) => {
             if (!rocket) return handleAPIError();
-            if (!editorSize) return handleAPIError("", "Editor size not found");
 
-            const rocketScaled = rocketScaleChanged(rocket, scale, editorSize);
+            const rocketScaled = rocketScaleChanged(rocket, scale);
 
             setRocket(rocketScaled);
 
