@@ -68,12 +68,13 @@ const RocketListItem = ({
             >
                 <div className="text-md text-center group-hover:underline relative">
                     <span
-                        className=" text-base text-zinc-700 font-bold"
-                        data-testid={`rocket-item-${index}`}
+                        className="text-base text-zinc-700 font-bold"
+                        data-testid={`card-rocket-item-${index}`}
                     >
                         {rocket.name}
                     </span>
                     <div
+                        data-testid={`delete-rocket-${index}`}
                         className="absolute right-0 top-0"
                         onClick={(e) => e.preventDefault()}
                     >

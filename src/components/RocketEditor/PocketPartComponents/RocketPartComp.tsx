@@ -49,7 +49,7 @@ const RocketPartComp = ({
 
     return (
         <Image
-            key={`part_img_${rocketPart.id}`}
+            data-testid={`part-rocket-${rocketPart.id}`}
             alt={rocketPart.name}
             width={rocketPart.width * rocketPart.scale * rocket.scaleSlider}
             height={rocketPart.height * rocketPart.scale * rocket.scaleSlider}

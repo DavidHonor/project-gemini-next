@@ -28,7 +28,10 @@ const UserAccountNav = async ({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild className="overflow-visible">
-                <Button className="rounded-full h-8 w-8 aspect-square bg-slate-400">
+                <Button
+                    className="rounded-full h-8 w-8 aspect-square bg-slate-400"
+                    data-testid={"navbar-profile-btn"}
+                >
                     <Avatar className="relative w-8 h-8">
                         {imageUrl ? (
                             <div className="relative aspect-square h-full w-full">
