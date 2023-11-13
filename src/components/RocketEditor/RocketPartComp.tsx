@@ -138,14 +138,13 @@ const RocketPartComp = ({
 
         if (deleteArea.y < coords.y + halfPartHeight) {
             deletePart(rocketPart);
-            return;
+        } else {
+            updatePartPosition({
+                ...rocketPart,
+                x: coords.x + drag.offset_x,
+                y: coords.y + drag.offset_y,
+            });
         }
-
-        updatePartPosition({
-            ...rocketPart,
-            x: coords.x + drag.offset_x,
-            y: coords.y + drag.offset_y,
-        });
 
         //Clear the dynamically returned dragging part id
         //to clear the blocking

@@ -100,12 +100,22 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         }
     }, [rocket]);
 
-    const handleAPIError = (title?: string, description?: string) =>
+    const handleAPIError = ({
+        title,
+        description,
+        info,
+    }: {
+        title?: string;
+        description?: string;
+        info?: string;
+    }) => {
         toast({
             title: title ?? "Something went wrong",
             description: description ?? "Please try again later",
             variant: "destructive",
         });
+        info ? console.error(info) : null;
+    };
 
     //========================================
     //=========== Rocket mutations ===========
@@ -116,7 +126,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             rocketId,
         });
         if (!response) {
-            handleAPIError();
+            handleAPIError({ info: "getRocketMutation, no response" });
             return;
         }
 
@@ -138,7 +148,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
 
     const updateRocketScale = useMutation(
         async ({ scale }: { scale: number }) => {
-            if (!rocket) return handleAPIError();
+            if (!rocket)
+                return handleAPIError({ info: "updateRocketScale, no rocket" });
 
             const rocketScaled = rocketScaleChanged(rocket, scale);
 
@@ -152,7 +163,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     );
 
     const uploadRocketPreview = useMutation(async (image: string) => {
-        if (!rocket) return handleAPIError();
+        if (!rocket)
+            return handleAPIError({ info: "uploadRocketPreview, no rocket" });
 
         utils.client.rocket.uploadRocketPreview.mutate({
             image: image,
@@ -161,7 +173,8 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     });
 
     const getRocketPreview = useMutation(async () => {
-        if (!rocketId) return handleAPIError();
+        if (!rocketId)
+            return handleAPIError({ info: "getRocketPreview, no rocketId" });
 
         utils.client.rocket.getRocketPreview.query({ rocketId });
     });
@@ -171,13 +184,17 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     //========================================
 
     const addRocketStage = useMutation(async () => {
-        if (!rocketId) return handleAPIError();
+        if (!rocketId)
+            return handleAPIError({ info: "addRocketStage, no rocketId" });
 
         const response = await utils.client.stage.addRocketStage.mutate({
             rocketId,
         });
 
-        if (!("id" in response)) return handleAPIError();
+        if (!("id" in response))
+            return handleAPIError({
+                info: "addRocketStage, no id in response",
+            });
         const newStage = {
             ...response,
             createdAt: new Date(response.createdAt),
@@ -200,7 +217,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             partId: string;
             stageIndex: number;
         }) => {
-            if (!rocket) return handleAPIError();
+            if (!rocket)
+                return handleAPIError({
+                    info: "updatePartStage, no rocket",
+                });
 
             const response = await utils.client.stage.updatePartStage.mutate({
                 rocketId,
@@ -208,19 +228,28 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 stageIndex,
             });
 
-            if (!("status" in response)) return handleAPIError();
+            if (!("status" in response))
+                return handleAPIError({
+                    info: "updatePartStage, no status in response",
+                });
 
             getRocketMutation.mutate(rocketId);
         }
     );
 
     const deleteStage = useMutation(async (stageId: string) => {
-        if (!rocket) return handleAPIError();
+        if (!rocket)
+            return handleAPIError({
+                info: "deleteStage, no rocket",
+            });
 
         const rocketCopy = structuredClone(rocket);
         const stageIndex = rocketCopy.stages.findIndex((x) => x.id === stageId);
 
-        if (!stageIndex) return handleAPIError();
+        if (!stageIndex)
+            return handleAPIError({
+                info: "deleteStage, no stageIndex",
+            });
 
         rocketCopy.stages.splice(stageIndex, 1);
         setRocket(rocketCopy);
@@ -230,7 +259,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 stageId,
             })
             .then((resp) => {
-                if (!("status" in resp)) return handleAPIError();
+                if (!("status" in resp))
+                    return handleAPIError({
+                        info: "deleteStage, no status in response",
+                    });
             });
     });
 
@@ -244,102 +276,21 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 index,
             });
 
-            if (!("status" in response)) return handleAPIError();
+            if (!("status" in response))
+                return handleAPIError({
+                    info: "updateStageIndex, no status in response",
+                });
 
             getRocketMutation.mutate(rocketId);
         }
     );
 
-    //========================================
-    //=========== Part mutations ===========
-    //========================================
-
-    const createRocketPart = useMutation(async (partName: string) => {
-        if (!rocket) return handleAPIError();
-
-        const response = await utils.client.part.createRocketPart.mutate({
-            rocketId: rocket.id,
-            partName,
-        });
-        if (!response || !("id" in response)) return handleAPIError();
-
-        setRocketPartIdDrag(response.id);
-        getRocketMutation.mutate(rocketId);
-    });
-
-    const deletePart = useMutation(async (rocketPart: RocketPart) => {
-        if (!rocket) return handleAPIError();
-
-        const stageIndex = rocket.stages.findIndex(
-            (x) => x.id === rocketPart.stageId
-        );
-        const partIndex = rocket.stages[stageIndex].parts.findIndex(
-            (x) => x.id === rocketPart.id
-        );
-
-        const rocketCopy = structuredClone(rocket);
-        rocketCopy.stages[stageIndex].parts.splice(partIndex, 1);
-        setRocket(rocketCopy);
-
-        utils.client.part.deletePart.mutate({
-            partId: rocketPart.id,
-        });
-    });
-
-    const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
-        if (!rocketPart) return handleAPIError();
-
-        const rocketClone = structuredClone(rocket);
-        const stageIndex = rocketClone?.stages.findIndex(
-            (x) => x.id === rocketPart.stageId
-        );
-        const partIndex = rocketClone?.stages[stageIndex!].parts.findIndex(
-            (x) => x.id === rocketPart.id
-        );
-
-        rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
-        setRocket(rocketClone);
-
-        utils.client.part.updatePartPosition
-            .mutate({
-                rocketPart,
-            })
-            .then((response) => {
-                if (!response || !("id" in response)) {
-                    handleAPIError();
-                }
-            })
-            .catch((err) => handleAPIError());
-    });
-
-    const updatePartScale = useMutation(
-        async ({
-            partScale,
-            partId,
-        }: {
-            partScale: number;
-            partId: string;
-        }) => {
-            if (rocket === null || rocket.id === null) return handleAPIError();
-
-            const partScaleResult = partScaleChanged(rocket, partScale, partId);
-            setRocket(partScaleResult.updatedRocket);
-
-            const response = await utils.client.part.updatePartScale.mutate({
-                part: partScaleResult.updatedPart,
-            });
-        }
-    );
-
-    //Other
     const fitToView = (editorBounds: DOMRect) => {
-        if (!rocket) return;
+        if (!rocket || !rocket.stages.length || !rocket.stages[0].parts.length)
+            return;
 
         const rbounds = rocketBounds(rocket);
         const padding = 150;
-
-        console.log("editor", editorBounds);
-        console.log("rocket bounds", rbounds);
 
         const unscaledWidth = rbounds.width / rocket.scaleSlider;
         const unscaledHeight = rbounds.height / rocket.scaleSlider;
@@ -365,6 +316,103 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             scaleSlider: newScale,
         });
     };
+
+    //========================================
+    //=========== Part mutations ===========
+    //========================================
+
+    const createRocketPart = useMutation(async (partName: string) => {
+        if (!rocket)
+            return handleAPIError({
+                info: "createRocketPart, no rocket",
+            });
+
+        const response = await utils.client.part.createRocketPart.mutate({
+            rocketId: rocket.id,
+            partName,
+        });
+        if (!response || !("id" in response))
+            return handleAPIError({
+                info: "createRocketPart, no id in response",
+            });
+
+        setRocketPartIdDrag(response.id);
+        getRocketMutation.mutate(rocketId);
+    });
+
+    const deletePart = useMutation(async (rocketPart: RocketPart) => {
+        if (!rocket)
+            return handleAPIError({
+                info: "deletePart, no rocket",
+            });
+
+        const stageIndex = rocket.stages.findIndex(
+            (x) => x.id === rocketPart.stageId
+        );
+        const partIndex = rocket.stages[stageIndex].parts.findIndex(
+            (x) => x.id === rocketPart.id
+        );
+
+        const rocketCopy = structuredClone(rocket);
+        rocketCopy.stages[stageIndex].parts.splice(partIndex, 1);
+        setRocket(rocketCopy);
+
+        utils.client.part.deletePart.mutate({
+            partId: rocketPart.id,
+        });
+    });
+
+    const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
+        if (!rocketPart)
+            return handleAPIError({
+                info: "updatePartPosition, no rocketPart",
+            });
+
+        const rocketClone = structuredClone(rocket);
+        const stageIndex = rocketClone?.stages.findIndex(
+            (x) => x.id === rocketPart.stageId
+        );
+        const partIndex = rocketClone?.stages[stageIndex!].parts.findIndex(
+            (x) => x.id === rocketPart.id
+        );
+
+        rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
+        setRocket(rocketClone);
+
+        utils.client.part.updatePartPosition
+            .mutate({
+                rocketPart,
+            })
+            .then((response) => {
+                if (!response || !("id" in response)) {
+                    handleAPIError({
+                        info: "updatePartPosition, no id in response",
+                    });
+                }
+            });
+    });
+
+    const updatePartScale = useMutation(
+        async ({
+            partScale,
+            partId,
+        }: {
+            partScale: number;
+            partId: string;
+        }) => {
+            if (!rocket)
+                return handleAPIError({
+                    info: "updatePartScale, no rocket",
+                });
+
+            const partScaleResult = partScaleChanged(rocket, partScale, partId);
+            setRocket(partScaleResult.updatedRocket);
+
+            const response = await utils.client.part.updatePartScale.mutate({
+                part: partScaleResult.updatedPart,
+            });
+        }
+    );
 
     return (
         <RocketContext.Provider
