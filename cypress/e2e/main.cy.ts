@@ -25,7 +25,7 @@ describe("E2E test", () => {
 
         cy.get('[data-testid="create-rocket-confirm-btn"]').click();
 
-        cy.get('[data-testid^="card-rocket-item"]').then((items) => {
+        cy.get('[data-testid^="card-rocket-item-"]').then((items) => {
             const rocketCount = items.length;
 
             cy.log(`Number of rocket items: ${rocketCount}`);
