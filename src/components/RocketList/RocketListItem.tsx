@@ -95,7 +95,7 @@ const RocketListItem = ({
                     Stages: {rocket.stages.length}
                 </div>
 
-                <div className="flex items-center justify-center ">
+                <div className="flex items-center justify-center">
                     <div className="border border-zinc-200 p-2">
                         {isLoading ? (
                             <Skeleton

@@ -2,7 +2,9 @@
 
 Build a rocket from parts, orgonize stages, view performance details, 2D plots, 3D trajectory. Configure flight parameters, such as heading, simulation length, climb rate.
 
-### [Working demo](https://project-gemini-next.vercel.app/about)
+### [Working demo](https://project-gemini-next.vercel.app)
+
+<img src="./public/editor_preview.png" alt="Editor preview" width="200"/>
 
 ## Getting Started
 

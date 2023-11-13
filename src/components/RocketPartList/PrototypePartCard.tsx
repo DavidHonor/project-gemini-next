@@ -38,27 +38,34 @@ const PrototypePartCard = ({ part }: PrototypePartCardProps) => {
                             src={`/rocket_parts/${part.image}`}
                         />
                     </div>
-                    <div className="flex flex-col gap-0.5 items-center justify-center">
+                    <div className="flex flex-col gap-0.5 items-end">
                         <span className="text-base">{part.name}</span>
+
                         <Separator />
+
                         <span className="text-xs">
-                            {protPart.weight + " kg"}
+                            {`Mass - ${protPart.weight} kg`}
                         </span>
 
                         {protPart.part_type === PartTypes.FUELTANK &&
                         protPart.diameter ? (
                             <span className="text-xs">
-                                {roundToDecimalPlaces(
+                                {`Wet mass - ${roundToDecimalPlaces(
                                     fuelMassCalc(protPart),
                                     0
-                                ) + " kg"}
+                                )} kg`}
                             </span>
                         ) : null}
 
                         {protPart.part_type === PartTypes.ENGINE ? (
-                            <span className="text-xs">
-                                {protPart.thrust_sl + " kN"}
-                            </span>
+                            <>
+                                <span className="text-xs">
+                                    {`Thrust - ${protPart.thrust_sl} kN`}
+                                </span>
+                                <span className="text-xs">
+                                    {`Isp - ${protPart.isp_sl} s`}
+                                </span>
+                            </>
                         ) : null}
                     </div>
                 </div>
