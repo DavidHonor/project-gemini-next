@@ -28,7 +28,8 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     const [activePart, setActivePart] = useState<RocketPart | null>(null);
 
-    const { cursorMode, uploadRocketPreview } = useContext(RocketContext);
+    const { cursorMode, uploadRocketPreview, deleteAreaActive } =
+        useContext(RocketContext);
 
     const captureRocketImage = async () => {
         if (!ref || !ref.current) return;
@@ -81,9 +82,11 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
             <div
                 ref={deleteAreaRef}
                 className={cn(
-                    `absolute flex items-center justify-center bottom-0 left-0 right-0 h-16 pointer-events-none slide-in border-t-3 border-dashed border-red-500`,
+                    `absolute flex items-center justify-center bottom-0 left-0 right-0 h-16 pointer-events-none slide-in border-t-3 border-dashed border-red-500 bg-red-200`,
                     {
-                        "slide-in-active": cursorMode === CursorOptions.GRAB,
+                        "slide-in-active":
+                            cursorMode === CursorOptions.GRAB &&
+                            deleteAreaActive,
                     }
                 )}
             >

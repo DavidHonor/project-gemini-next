@@ -21,9 +21,11 @@ export const useDraggable = ({
         cursorMode,
         rocketPartIdDrag,
         rocket,
+        deleteAreaActive,
         deletePart,
         updatePartPosition,
         setRocketPartIdDrag,
+        setDeleteActive,
     } = useContext(RocketContext);
 
     const [drag, setDrag] = useState({
@@ -38,11 +40,15 @@ export const useDraggable = ({
             window.addEventListener("touchmove", handlePartMove);
             window.addEventListener("mouseup", handlePartMoveEnd);
             window.addEventListener("touchend", handlePartMoveEnd);
+
+            setDeleteActive(true);
         } else {
             window.removeEventListener("mousemove", handlePartMove);
             window.removeEventListener("touchmove", handlePartMove);
             window.removeEventListener("mouseup", handlePartMoveEnd);
             window.removeEventListener("touchend", handlePartMoveEnd);
+
+            setDeleteActive(false);
         }
 
         return () => {

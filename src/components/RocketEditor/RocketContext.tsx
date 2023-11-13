@@ -61,12 +61,14 @@ export const RocketContext = createContext({
     setMenuOption: (menuOption: EditorMenuOptions) => {},
     setRocketPartIdDrag: (partId: string) => {},
     setHighLightPartId: (partId: string) => {},
+    setDeleteActive: (state: boolean) => {},
 
     rocket: null as Rocket | null,
     stats: null as RocketStats | null,
     isLoading: false,
     rocketPartIdDrag: "",
     highlightPartId: "",
+    deleteAreaActive: false,
 
     cursorMode: CursorOptions.GRAB,
     menuOption: EditorMenuOptions.PARTS,
@@ -76,6 +78,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     const [rocket, setRocket] = useState<Rocket | null>(null);
     const [stats, setStats] = useState<RocketStats | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [deleteAreaActive, setDeleteActive] = useState<boolean>(false);
 
     //rocketPartIdDrag stores a partId which was selected from the next parts list
     //to enable the dragging effect after the it was created on the server
@@ -424,6 +427,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 highlightPartId,
                 cursorMode,
                 menuOption,
+                deleteAreaActive,
 
                 fitToView: fitToView,
 
@@ -446,6 +450,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
                 setCursorMode,
                 setRocketPartIdDrag,
                 setHighLightPartId,
+                setDeleteActive,
             }}
         >
             {children}
