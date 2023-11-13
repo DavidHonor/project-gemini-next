@@ -16,7 +16,7 @@ import { CursorOptions, cn } from "@/lib/utils";
 
 import EditorControls from "./EditorControls";
 import RocketPartResize from "./PocketPartComponents/RocketPartResize";
-import { imageUpload } from "./imageUpload";
+import { useImageUpload } from "./useImageUpload";
 
 interface RocketCanvasProps {
     rocket: Rocket;
@@ -30,7 +30,7 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     const { cursorMode, deleteAreaActive } = useContext(RocketContext);
 
-    const {} = imageUpload({ editorRef: ref, rocket });
+    const {} = useImageUpload({ editorRef: ref, rocket });
 
     if (!rocket || !rocket.stages)
         return (

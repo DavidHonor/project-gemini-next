@@ -3,11 +3,11 @@ import { toPng } from "html-to-image";
 import React, { useContext, useEffect, useRef } from "react";
 import { RocketContext } from "./RocketContext";
 
-interface imageUploadProps {
+interface useImageUploadProps {
     editorRef: React.RefObject<HTMLDivElement>;
     rocket: Rocket;
 }
-export const imageUpload = ({ editorRef, rocket }: imageUploadProps) => {
+export const useImageUpload = ({ editorRef, rocket }: useImageUploadProps) => {
     const { uploadRocketPreview } = useContext(RocketContext);
     const uploadTimeoutRef = useRef<any>();
 
