@@ -39,12 +39,12 @@ export const DefaultRockets = [
         key: "falcon9block5",
         stages: [
             {
-                engine: "Merlin",
+                engine: "Merlin 1D",
                 engine_nmb: 9,
                 fuel: "3.7m Falcon 9 tank",
             },
             {
-                engine: "Merlin Vacuum",
+                engine: "Merlin 1D Vacuum",
                 engine_nmb: 1,
                 fuel: "3m tank",
             },
@@ -80,7 +80,7 @@ export const RocketPartPrototypes = [
     },
     {
         part_type: PartTypes.ENGINE,
-        name: "Merlin",
+        name: "Merlin 1D",
         image: "merlin_c.png",
         fuel_type: "kerolox",
         thrust_sl: 845,

@@ -14,9 +14,9 @@ import { Loader2, XCircle } from "lucide-react";
 import { RocketContext } from "./RocketContext";
 import { CursorOptions, cn } from "@/lib/utils";
 
-import { toPng } from "html-to-image";
 import EditorControls from "./EditorControls";
 import RocketPartResize from "./PocketPartComponents/RocketPartResize";
+import { imageUpload } from "./imageUpload";
 
 interface RocketCanvasProps {
     rocket: Rocket;
@@ -28,21 +28,9 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     const [activePart, setActivePart] = useState<RocketPart | null>(null);
 
-    const { cursorMode, uploadRocketPreview, deleteAreaActive } =
-        useContext(RocketContext);
+    const { cursorMode, deleteAreaActive } = useContext(RocketContext);
 
-    const captureRocketImage = async () => {
-        if (!ref || !ref.current) return;
-
-        const dataUrl = await toPng(ref.current, { cacheBust: true });
-        return dataUrl;
-    };
-
-    const uploadRocketImage = async () => {
-        const img = await captureRocketImage();
-        if (img && img.includes("data:image/png;base64"))
-            uploadRocketPreview(img);
-    };
+    const {} = imageUpload({ editorRef: ref, rocket });
 
     if (!rocket || !rocket.stages)
         return (
