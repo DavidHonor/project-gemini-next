@@ -8,7 +8,7 @@ import React, {
     useRef,
     useState,
 } from "react";
-import RocketPartComp from "./RocketPartComp";
+import RocketPartComp from "./PocketPartComponents/RocketPartComp";
 
 import { Loader2, XCircle } from "lucide-react";
 import { RocketContext } from "./RocketContext";
@@ -16,7 +16,7 @@ import { CursorOptions, cn } from "@/lib/utils";
 
 import { toPng } from "html-to-image";
 import EditorControls from "./EditorControls";
-import RocketPartResize from "../PocketPartComponents/RocketPartResize";
+import RocketPartResize from "./PocketPartComponents/RocketPartResize";
 
 interface RocketCanvasProps {
     rocket: Rocket;

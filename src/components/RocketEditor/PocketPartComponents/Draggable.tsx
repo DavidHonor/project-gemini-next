@@ -1,35 +1,28 @@
-import { CursorOptions, cn, getEventCoords } from "@/lib/utils";
-import Image from "next/image";
-import React, { useContext, useEffect, useRef, useState } from "react";
-
+import { useContext, useEffect, useState } from "react";
 import type { RocketPart } from "@prisma/client";
-import { RocketContext } from "./RocketContext";
+import { CursorOptions, getEventCoords } from "@/lib/utils";
+import { RocketContext } from "../RocketContext";
 
-import { Rocket } from "@/types/rocket";
-
-interface RocketPartCompProps {
+interface useDraggable {
     rocketPart: RocketPart;
-    setActivePart: (part: RocketPart | null) => void;
     editorAreaRef: React.RefObject<HTMLDivElement>;
     deleteAreaRef: React.RefObject<HTMLDivElement>;
-    rocket: Rocket;
+    setActivePart: (part: RocketPart | null) => void;
+    setPartPosition: ({ left, top }: { left: number; top: number }) => void;
 }
-
-const RocketPartComp = ({
+export const useDraggable = ({
     rocketPart,
-    setActivePart,
     editorAreaRef,
     deleteAreaRef,
-    rocket,
-}: RocketPartCompProps) => {
+    setActivePart,
+    setPartPosition,
+}: useDraggable) => {
     const {
-        updatePartPosition,
-        rocketPartIdDrag,
-        highlightPartId,
         cursorMode,
-
-        updatePartScale,
+        rocketPartIdDrag,
+        rocket,
         deletePart,
+        updatePartPosition,
         setRocketPartIdDrag,
     } = useContext(RocketContext);
 
@@ -39,14 +32,30 @@ const RocketPartComp = ({
         offset_y: 0,
     });
 
-    const [partPosition, setPartPosition] = useState({
-        left: rocketPart.x,
-        top: rocketPart.y,
-    });
+    useEffect(() => {
+        if (drag.enabled) {
+            window.addEventListener("mousemove", handlePartMove);
+            window.addEventListener("touchmove", handlePartMove);
+            window.addEventListener("mouseup", handlePartMoveEnd);
+            window.addEventListener("touchend", handlePartMoveEnd);
+        } else {
+            window.removeEventListener("mousemove", handlePartMove);
+            window.removeEventListener("touchmove", handlePartMove);
+            window.removeEventListener("mouseup", handlePartMoveEnd);
+            window.removeEventListener("touchend", handlePartMoveEnd);
+        }
+
+        return () => {
+            window.removeEventListener("mousemove", handlePartMove);
+            window.removeEventListener("touchmove", handlePartMove);
+            window.removeEventListener("mouseup", handlePartMoveEnd);
+            window.removeEventListener("touchend", handlePartMoveEnd);
+        };
+    }, [drag]);
 
     useEffect(() => {
         //simulate the drag start on the dynamically created part
-        if (rocketPartIdDrag === rocketPart.id) {
+        if (rocketPartIdDrag === rocketPart.id && rocket) {
             const offsetXPx =
                 -(rocketPart.width * rocketPart.scale * rocket.scaleSlider) / 2;
             const offsetYPx =
@@ -75,18 +84,6 @@ const RocketPartComp = ({
         });
         setActivePart(null);
     }, [cursorMode]);
-
-    useEffect(() => {
-        if (drag.enabled) {
-            window.addEventListener("mousemove", handlePartMove);
-            window.addEventListener("touchmove", handlePartMove);
-
-            window.addEventListener("mouseup", handlePartMoveEnd);
-            window.addEventListener("touchend", handlePartMoveEnd);
-        }
-    }, [drag]);
-
-    if (!rocketPart) return "";
 
     const handlePartMoveStart = (
         event:
@@ -125,8 +122,10 @@ const RocketPartComp = ({
     };
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
+        if (!rocket) return;
         if (cursorMode !== CursorOptions.GRAB) return;
         if (!deleteAreaRef.current) return;
+
         const coords = getEventCoords(editorAreaRef, event, true);
         if (!coords) throw new Error("handlePartMoveEnd no coords");
 
@@ -155,46 +154,12 @@ const RocketPartComp = ({
             offset_x: 0,
             offset_y: 0,
         });
-
-        window.removeEventListener("mousemove", handlePartMove);
-        window.removeEventListener("touchmove", handlePartMove);
-
-        window.removeEventListener("mouseup", handlePartMoveEnd);
-        window.removeEventListener("touchend", handlePartMoveEnd);
     };
 
-    const Cursor = () => {
-        if (cursorMode === CursorOptions.GRAB) {
-            return drag.enabled ? "grabbing" : "grab";
-        }
-        return "pointer";
+    return {
+        drag,
+        handlePartMoveStart,
+        handlePartMove,
+        handlePartMoveEnd,
     };
-
-    return (
-        <Image
-            key={`part_img_${rocketPart.id}`}
-            alt={rocketPart.name}
-            width={rocketPart.width * rocketPart.scale * rocket.scaleSlider}
-            height={rocketPart.height * rocketPart.scale * rocket.scaleSlider}
-            src={`/rocket_parts/${rocketPart.image}`}
-            draggable="false"
-            onMouseDown={handlePartMoveStart}
-            onTouchStart={handlePartMoveStart}
-            style={{
-                position: "absolute",
-                top: `${partPosition.top}px`,
-                left: `${partPosition.left}px`,
-                cursor: Cursor(),
-            }}
-            className={cn(
-                "z-10 hover:z-20 hover:border-blue-500 hover:border-3 select-none",
-                {
-                    "border-3 z-20 border-blue-500":
-                        rocketPart.id === highlightPartId,
-                }
-            )}
-        />
-    );
 };
-
-export default RocketPartComp;

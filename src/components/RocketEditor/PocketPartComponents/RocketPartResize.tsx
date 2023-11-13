@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import ControlledSlider from "../ControlledSlider/ControlledSlider";
-import { RocketPart } from "../../../prisma/generated/zod";
+import ControlledSlider from "../../ControlledSlider/ControlledSlider";
+import { RocketPart } from "../../../../prisma/generated/zod";
 import { XCircle } from "lucide-react";
 import {
     Card,
@@ -9,9 +9,9 @@ import {
     CardDescription,
     CardHeader,
     CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { RocketContext } from "../RocketEditor/RocketContext";
+} from "../../ui/card";
+import { Button } from "../../ui/button";
+import { RocketContext } from "../RocketContext";
 import { CursorOptions } from "@/lib/utils";
 
 interface RocketPartResizeProps {
