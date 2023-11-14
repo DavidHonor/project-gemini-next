@@ -40,7 +40,7 @@ const CreateRocketDialog = ({
     const { mutate: completeTutorialStep } =
         trpc.user.completeTutorialStep.useMutation();
 
-    const { isActive } = useTutorial({
+    const { stepActive } = useTutorial({
         stepIdentity: TutorialStep.FIRSTROCKET,
     });
 
@@ -83,7 +83,7 @@ const CreateRocketDialog = ({
                 onClick={onOpen}
                 data-testid={"create-rocket-btn"}
                 className={cn("", {
-                    "animate-pulse-border border-2 rounded-md": isActive,
+                    "animate-pulse-border border-2 rounded-md": stepActive,
                 })}
             >
                 <PlusCircle className={cn("w-5 h-5")} />
@@ -125,7 +125,7 @@ const CreateRocketDialog = ({
                                 <Button
                                     variant={"default"}
                                     onClick={(e) => {
-                                        if (isActive)
+                                        if (stepActive)
                                             completeTutorialStep({
                                                 currentStep:
                                                     TutorialStep.FIRSTROCKET,
@@ -141,7 +141,7 @@ const CreateRocketDialog = ({
                                     data-testid={"create-rocket-confirm-btn"}
                                     className={cn("", {
                                         "animate-pulse-border border-2 rounded-md":
-                                            isActive,
+                                            stepActive,
                                     })}
                                 >
                                     Confirm

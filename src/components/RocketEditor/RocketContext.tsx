@@ -4,7 +4,7 @@ import { trpc } from "@/app/_trpc/client";
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
-import type { RocketPart } from "@prisma/client";
+import { User, type RocketPart } from "@prisma/client";
 import { Rocket, RocketStage } from "@/types/rocket";
 import { CursorOptions, EditorMenuOptions } from "@/lib/utils";
 import {

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Combine, Gauge, Hammer } from "lucide-react";
 import { EditorMenuOptions, cn } from "@/lib/utils";
@@ -9,11 +9,25 @@ import RocketPerformance from "../RocketPerformance/RocketPerformance";
 
 import { TutorialStatus, TutorialStep } from "@prisma/client";
 import { useTutorial } from "../useTutorial";
+import { trpc } from "@/app/_trpc/client";
 
 const RocketEditorMenu = () => {
     const { menuOption, setMenuOption } = useContext(RocketContext);
 
-    const { isActive } = useTutorial({ stepIdentity: TutorialStep.FIRSTPART });
+    const { isActive, activeStep, fetchTutorial } = useTutorial({});
+
+    const { mutate: completeTutorialStep, status } =
+        trpc.user.completeTutorialStep.useMutation();
+
+    const nextStep = (currentStep: TutorialStep) => {
+        if (!isActive) return;
+
+        completeTutorialStep({ currentStep });
+    };
+
+    useEffect(() => {
+        if (status === "success") fetchTutorial();
+    }, [status]);
 
     return (
         <>
@@ -22,9 +36,13 @@ const RocketEditorMenu = () => {
                     variant={"outline"}
                     className={cn("p-1", {
                         "bg-zinc-300": menuOption === EditorMenuOptions.PARTS,
-                        "animate-pulse-border border-2 rounded-md": isActive,
+                        "animate-pulse-border border-2 rounded-md":
+                            activeStep === TutorialStep.FIRSTPART,
                     })}
-                    onClick={() => setMenuOption(EditorMenuOptions.PARTS)}
+                    onClick={() => {
+                        nextStep(TutorialStep.FIRSTPART);
+                        setMenuOption(EditorMenuOptions.PARTS);
+                    }}
                 >
                     <span className="text-xs xl:text-base">Parts</span>
                     <Hammer className="hidden lg:block h-4 w-4 xl:h-5 xl:w-5 ml-1" />
@@ -33,8 +51,13 @@ const RocketEditorMenu = () => {
                     variant={"outline"}
                     className={cn("p-1", {
                         "bg-zinc-300": menuOption === EditorMenuOptions.STAGES,
+                        "animate-pulse-border border-2 rounded-md":
+                            activeStep === TutorialStep.STAGES,
                     })}
-                    onClick={() => setMenuOption(EditorMenuOptions.STAGES)}
+                    onClick={() => {
+                        nextStep(TutorialStep.STAGES);
+                        setMenuOption(EditorMenuOptions.STAGES);
+                    }}
                 >
                     <span className="text-xs xl:text-base">Stages</span>
                     <Combine className="hidden lg:block h-4 w-4 xl:h-5 xl:w-5 ml-1" />
@@ -44,8 +67,13 @@ const RocketEditorMenu = () => {
                     className={cn("p-1", {
                         "bg-zinc-300":
                             menuOption === EditorMenuOptions.PERFORMANCE,
+                        "animate-pulse-border border-2 rounded-md":
+                            activeStep === TutorialStep.PERFORMANCE,
                     })}
-                    onClick={() => setMenuOption(EditorMenuOptions.PERFORMANCE)}
+                    onClick={() => {
+                        nextStep(TutorialStep.PERFORMANCE);
+                        setMenuOption(EditorMenuOptions.PERFORMANCE);
+                    }}
                 >
                     <span className="text-xs xl:text-base">Performance</span>
                     <Gauge className="hidden lg:block h-4 w-4 xl:h-5 xl:w-5 ml-1" />

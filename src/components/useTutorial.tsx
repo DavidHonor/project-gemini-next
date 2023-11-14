@@ -2,22 +2,32 @@ import { trpc } from "@/app/_trpc/client";
 import { TutorialStatus, TutorialStep } from "@prisma/client";
 
 interface useTutorialProps {
-    stepIdentity: TutorialStep;
+    stepIdentity?: TutorialStep;
 }
 export const useTutorial = ({ stepIdentity }: useTutorialProps) => {
-    const { data: dbUser } = trpc.user.getUser.useQuery();
+    const { data: dbUser, refetch: fetchTutorial } =
+        trpc.user.getUser.useQuery();
 
-    const active = () => {
-        if (!dbUser || "code" in dbUser) return false;
+    const result = () => {
+        if (!dbUser || "code" in dbUser)
+            return { isActive: false, stepActive: false, activeStep: "" };
 
-        if (dbUser.tutorialStatus !== TutorialStatus.STARTED) return false;
+        if (dbUser.tutorialStatus !== TutorialStatus.STARTED)
+            return { isActive: false, stepActive: false, activeStep: "" };
 
-        if (stepIdentity !== dbUser.tutorialStep) return false;
-
-        return true;
+        return {
+            isActive: true,
+            stepActive: stepIdentity === dbUser.tutorialStep,
+            activeStep: dbUser.tutorialStep,
+        };
     };
 
+    const active = result();
+
     return {
-        isActive: active(),
+        isActive: active.isActive,
+        stepActive: active.stepActive,
+        activeStep: active.activeStep,
+        fetchTutorial,
     };
 };
