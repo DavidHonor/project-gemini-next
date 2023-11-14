@@ -44,7 +44,7 @@ model Rocket {
     scaleSlider Float @default(1)
     stages RocketStage[]
 
-    User User? @relation(fields: [userId], references: [id])
+    User User? @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String?
 }
 
@@ -54,7 +54,7 @@ model RocketStage {
 
     stageIndex Int
 
-    rocket Rocket? @relation(fields: [rocketId], references: [id])
+    rocket Rocket? @relation(fields: [rocketId], references: [id], onDelete: Cascade)
     rocketId String?
 
     parts RocketPart[]
@@ -64,7 +64,7 @@ model RocketPart{
     id String @id @default(cuid())
     createdAt DateTime @default(now())
     
-    rocketStage RocketStage? @relation(fields: [stageId], references: [id])
+    rocketStage RocketStage? @relation(fields: [stageId], references: [id], onDelete: Cascade)
     stageId String?
 
     part_type       String
