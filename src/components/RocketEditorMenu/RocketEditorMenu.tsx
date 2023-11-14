@@ -7,8 +7,13 @@ import RocketStages from "../RocketStages/RocketStages";
 import { RocketContext } from "../RocketEditor/RocketContext";
 import RocketPerformance from "../RocketPerformance/RocketPerformance";
 
+import { TutorialStatus, TutorialStep } from "@prisma/client";
+import { useTutorial } from "../useTutorial";
+
 const RocketEditorMenu = () => {
     const { menuOption, setMenuOption } = useContext(RocketContext);
+
+    const { isActive } = useTutorial({ stepIdentity: TutorialStep.FIRSTPART });
 
     return (
         <>
@@ -17,6 +22,7 @@ const RocketEditorMenu = () => {
                     variant={"outline"}
                     className={cn("p-1", {
                         "bg-zinc-300": menuOption === EditorMenuOptions.PARTS,
+                        "animate-pulse-border border-2 rounded-md": isActive,
                     })}
                     onClick={() => setMenuOption(EditorMenuOptions.PARTS)}
                 >

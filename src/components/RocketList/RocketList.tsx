@@ -4,20 +4,15 @@ import { trpc } from "@/app/_trpc/client";
 import React, { useEffect } from "react";
 import Skeleton from "react-loading-skeleton";
 import RocketListItem from "./RocketListItem";
-import { Ban, Loader2, PlusSquareIcon, Rocket } from "lucide-react";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "../ui/tooltip";
+import { Ban, Loader2, Rocket } from "lucide-react";
+
 import { useToast } from "../ui/use-toast";
 import CreateRocketDialog from "../Dialogs/CreateRocketDialog/CreateRocketDialog";
 
 const RocketList = () => {
     const {
         data: rockets,
-        isLoading,
+        isLoading: rocketsLoading,
         refetch,
     } = trpc.rocket.getUserRockets.useQuery();
 
@@ -56,7 +51,7 @@ const RocketList = () => {
         }
     }, [status]);
 
-    if (isLoading)
+    if (rocketsLoading)
         return (
             <div className="max-h-[calc(100vh-3.5rem)] flex flex-col">
                 <div className="flex w-full justify-between items-center px-2">
@@ -74,7 +69,7 @@ const RocketList = () => {
         <div className="max-h-[calc(100vh-3.5rem)] flex flex-col">
             <div className="flex w-full justify-center items-center relative py-2">
                 <h2 className="font-bold text-3xl text-gray-900">My rockets</h2>
-                <div className="absolute right-0 ">
+                <div className={"absolute right-0"}>
                     <CreateRocketDialog
                         noRockets={rockets!.length}
                         createRocket={createRocket}

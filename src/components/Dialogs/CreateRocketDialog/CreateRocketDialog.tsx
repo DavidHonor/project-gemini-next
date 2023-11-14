@@ -13,9 +13,13 @@ import {
 
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
-import { PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DefaultRockets } from "@/config/rocket_parts";
+
+import { trpc } from "@/app/_trpc/client";
+import { TutorialStep } from "@prisma/client";
+import { useTutorial } from "@/components/useTutorial";
 
 interface CreateRocketDialogProps {
     noRockets: number | undefined;
@@ -32,6 +36,13 @@ const CreateRocketDialog = ({
     createRocket,
 }: CreateRocketDialogProps) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+    const { mutate: completeTutorialStep } =
+        trpc.user.completeTutorialStep.useMutation();
+
+    const { isActive } = useTutorial({
+        stepIdentity: TutorialStep.FIRSTROCKET,
+    });
 
     const [fromExisting, setExisting] = useState(true);
     const [selected, setSelected] = useState(DefaultRockets[0].key);
@@ -71,6 +82,9 @@ const CreateRocketDialog = ({
                 variant={"ghost"}
                 onClick={onOpen}
                 data-testid={"create-rocket-btn"}
+                className={cn("", {
+                    "animate-pulse-border border-2 rounded-md": isActive,
+                })}
             >
                 <PlusCircle className={cn("w-5 h-5")} />
             </Button>
@@ -111,6 +125,11 @@ const CreateRocketDialog = ({
                                 <Button
                                     variant={"default"}
                                     onClick={(e) => {
+                                        if (isActive)
+                                            completeTutorialStep({
+                                                currentStep:
+                                                    TutorialStep.FIRSTROCKET,
+                                            });
                                         createRocket({
                                             name: fromExisting
                                                 ? selected
@@ -120,6 +139,10 @@ const CreateRocketDialog = ({
                                         onClose();
                                     }}
                                     data-testid={"create-rocket-confirm-btn"}
+                                    className={cn("", {
+                                        "animate-pulse-border border-2 rounded-md":
+                                            isActive,
+                                    })}
                                 >
                                     Confirm
                                 </Button>

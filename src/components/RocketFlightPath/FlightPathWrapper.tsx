@@ -63,7 +63,7 @@ const FlightPathWrapper = ({
     return (
         <>
             <Button variant={"outline"} onClick={onOpen}>
-                <span className="text-xs lg:text-base">3D trajectory</span>
+                <span className="text-xs xl:text-base">3D trajectory</span>
                 <Plane className="w-4 h-4 ml-1" />
             </Button>
             <Modal

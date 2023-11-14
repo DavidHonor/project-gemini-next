@@ -98,12 +98,24 @@
 }
 
 .slide-in {
-    transform: translateY(100%); /* Start from the bottom */
-    opacity: 0; /* Fully transparent */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Transition effect */
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     z-index: 5;
 }
 .slide-in-active {
-    transform: translateY(0); /* End at its original position */
-    opacity: 1; /* Fully visible */
+    transform: translateY(0);
+    opacity: 1;
+}
+
+@keyframes pulse-border {
+    0% {
+        border-color: transparent;
+    }
+    50% {
+        border-color: orange;
+    }
+    100% {
+        border-color: transparent;
+    }
 }

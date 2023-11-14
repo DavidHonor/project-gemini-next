@@ -43,7 +43,7 @@ const FlightPerformance = ({
     return (
         <>
             <Button variant={"outline"} onClick={onOpen}>
-                <span className="text-xs lg:text-base">2D visuals</span>
+                <span className="text-xs xl:text-base">2D visuals</span>
                 <BarChart className="w-4 h-4 ml-1" />
             </Button>
             <Modal

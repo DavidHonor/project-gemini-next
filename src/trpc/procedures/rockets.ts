@@ -58,7 +58,7 @@ export const rocketRouter = router({
         }),
 
     getUserRockets: privateProcedure.query(async ({ ctx }) => {
-        const { userId, user } = ctx;
+        const { userId } = ctx;
 
         return await db.rocket.findMany({
             where: {
