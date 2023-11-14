@@ -37,10 +37,10 @@ const CreateRocketDialog = ({
 }: CreateRocketDialogProps) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-    const { mutate: completeTutorialStep } =
+    const { mutate: completeTutorialStep, status } =
         trpc.user.completeTutorialStep.useMutation();
 
-    const { stepActive } = useTutorial({
+    const { stepActive, fetchTutorial } = useTutorial({
         stepIdentity: TutorialStep.FIRSTROCKET,
     });
 
@@ -49,6 +49,10 @@ const CreateRocketDialog = ({
     const [name, setName] = useState(
         noRockets ? `Rocket ${noRockets + 1}` : "Rocket 1"
     );
+
+    useEffect(() => {
+        if (status === "success") fetchTutorial();
+    }, [status]);
 
     const RocketNew = () => {
         if (fromExisting)
