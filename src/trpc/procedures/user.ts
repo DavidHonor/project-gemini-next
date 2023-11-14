@@ -47,6 +47,7 @@ export const userRouter = router({
             let tutorialStatus: TutorialStatus = dbUser.tutorialStatus;
 
             if (tutorialStatus !== TutorialStatus.STARTED) return;
+            if (currentStep !== dbUser.tutorialStep) return;
 
             switch (currentStep) {
                 case "FIRSTROCKET":

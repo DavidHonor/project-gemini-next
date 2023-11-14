@@ -122,8 +122,20 @@ export const partRouter = router({
                 orderBy: {
                     stageIndex: "desc",
                 },
+                include: {
+                    parts: true,
+                },
             });
             if (!latestStage) return new TRPCError({ code: "NOT_FOUND" });
+
+            //Find scale from other part on this stage
+            let scale = prototypePart.scale;
+            if (latestStage.parts.length) {
+                const result = latestStage.parts.find(
+                    (x) => x.name === partName
+                );
+                if (result) scale = result.scale;
+            }
 
             const newPart = await db.rocketPart.create({
                 data: {
@@ -135,9 +147,7 @@ export const partRouter = router({
                     height: prototypePart.height,
                     width: prototypePart.width,
                     image: prototypePart.image ?? "",
-                    scale: prototypePart.scale,
-                    scaled_height: 0,
-                    scaled_width: 0,
+                    scale: scale,
                     targetStage: rocket.stages.length - 1,
                     weight: prototypePart.weight,
                     length: prototypePart.length ?? 0,
