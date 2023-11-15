@@ -3,14 +3,9 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import { z } from "zod";
 
-import {
-    RocketStageSchema,
-    RocketPartSchema,
-    RocketSchema,
-    RocketPart,
-} from "../../../prisma/generated/zod";
+import { RocketPartSchema, RocketPart } from "../../../prisma/generated/zod";
 
-import { PartTypes, RocketPartPrototypes } from "@/config/rocket_parts";
+import { RocketPartPrototypes } from "@/config/rocket_parts";
 
 export const partRouter = router({
     updatePartPosition: privateProcedure
@@ -23,27 +18,7 @@ export const partRouter = router({
             const { userId } = ctx;
             const { rocketPart } = input;
 
-            // Fetch the part with its associated rocket
-            const partWithRocket = await db.rocketPart.findUnique({
-                where: { id: rocketPart.id },
-                include: { rocketStage: { include: { rocket: true } } },
-            });
-
-            if (
-                partWithRocket === null ||
-                partWithRocket.rocketStage === null ||
-                partWithRocket.rocketStage.rocket === null
-            )
-                return new TRPCError({ code: "NOT_FOUND" });
-
-            // Check if the part's rocket's userId matches the current user's userId
-            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
-            if (partRocketUserId !== userId) {
-                return new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "You don't have permission to update this part.",
-                });
-            }
+            checkUserHasPartPermission(rocketPart.id, userId);
 
             const part = await db.rocketPart.update({
                 where: {
@@ -164,29 +139,8 @@ export const partRouter = router({
             const { userId } = ctx;
             const { part } = input;
 
-            // Fetch the part with its associated rocket
-            const partWithRocket = await db.rocketPart.findUnique({
-                where: { id: part.id },
-                include: { rocketStage: { include: { rocket: true } } },
-            });
+            checkUserHasPartPermission(part.id, userId);
 
-            if (
-                partWithRocket === null ||
-                partWithRocket.rocketStage === null ||
-                partWithRocket.rocketStage.rocket === null
-            )
-                return new TRPCError({ code: "NOT_FOUND" });
-
-            // Check if the part's rocket's userId matches the current user's userId
-            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
-            if (partRocketUserId !== userId) {
-                return new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "You don't have permission to update this part.",
-                });
-            }
-
-            // If the user has permission, update the part
             await db.rocketPart.update({
                 where: { id: part.id },
                 data: {
@@ -210,29 +164,8 @@ export const partRouter = router({
             const { userId } = ctx;
             const { partId } = input;
 
-            // Fetch the part with its associated rocket
-            const partWithRocket = await db.rocketPart.findUnique({
-                where: { id: partId },
-                include: { rocketStage: { include: { rocket: true } } },
-            });
+            checkUserHasPartPermission(partId, userId);
 
-            if (
-                partWithRocket === null ||
-                partWithRocket.rocketStage === null ||
-                partWithRocket.rocketStage.rocket === null
-            )
-                return new TRPCError({ code: "NOT_FOUND" });
-
-            // Check if the part's rocket's userId matches the current user's userId
-            const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
-            if (partRocketUserId !== userId) {
-                return new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "You don't have permission to update this part.",
-                });
-            }
-
-            // If the user has permission, update the part
             await db.rocketPart.delete({
                 where: { id: partId },
             });
@@ -243,3 +176,25 @@ export const partRouter = router({
             };
         }),
 });
+
+const checkUserHasPartPermission = async (partId: string, userId: string) => {
+    const partWithRocket = await db.rocketPart.findUnique({
+        where: { id: partId },
+        include: { rocketStage: { include: { rocket: true } } },
+    });
+
+    if (
+        partWithRocket === null ||
+        partWithRocket.rocketStage === null ||
+        partWithRocket.rocketStage.rocket === null
+    )
+        return new TRPCError({ code: "NOT_FOUND" });
+
+    const partRocketUserId = partWithRocket.rocketStage.rocket.userId;
+    if (partRocketUserId !== userId) {
+        return new TRPCError({
+            code: "FORBIDDEN",
+            message: "You don't have permission to update this part.",
+        });
+    }
+};

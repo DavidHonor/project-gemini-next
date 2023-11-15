@@ -1,6 +1,8 @@
 "use client";
 
 import { trpc } from "@/app/_trpc/client";
+import { TRPCError } from "@trpc/server";
+
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
@@ -382,17 +384,9 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
         rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
         setRocket(rocketClone);
 
-        utils.client.part.updatePartPosition
-            .mutate({
-                rocketPart,
-            })
-            .then((response) => {
-                if (!response || !("id" in response)) {
-                    handleAPIError({
-                        info: "updatePartPosition, no id in response",
-                    });
-                }
-            });
+        utils.client.part.updatePartPosition.mutate({
+            rocketPart,
+        });
     });
 
     const updatePartScale = useMutation(
