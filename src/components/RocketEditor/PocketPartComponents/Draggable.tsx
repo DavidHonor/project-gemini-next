@@ -8,7 +8,6 @@ interface useDraggable {
     editorAreaRef: React.RefObject<HTMLDivElement>;
     deleteAreaRef: React.RefObject<HTMLDivElement>;
     setActivePart: (part: RocketPart | null) => void;
-    setPartPosition: ({ left, top }: { left: number; top: number }) => void;
 }
 
 export const useDraggable = ({
@@ -16,7 +15,6 @@ export const useDraggable = ({
     editorAreaRef,
     deleteAreaRef,
     setActivePart,
-    setPartPosition,
 }: useDraggable) => {
     const {
         cursorMode,
@@ -35,11 +33,23 @@ export const useDraggable = ({
         offset_y: 0,
     });
 
+    const [translate, setTranslate] = useState({
+        x: 0,
+        y: 0,
+    });
+
     useEffect(() => {
-        window.addEventListener("mousemove", handlePartMove);
-        window.addEventListener("touchmove", handlePartMove);
-        window.addEventListener("mouseup", handlePartMoveEnd);
-        window.addEventListener("touchend", handlePartMoveEnd);
+        if (drag.current.enabled) {
+            window.addEventListener("mousemove", handlePartMove);
+            window.addEventListener("touchmove", handlePartMove);
+            window.addEventListener("mouseup", handlePartMoveEnd);
+            window.addEventListener("touchend", handlePartMoveEnd);
+        } else {
+            window.removeEventListener("mousemove", handlePartMove);
+            window.removeEventListener("touchmove", handlePartMove);
+            window.removeEventListener("mouseup", handlePartMoveEnd);
+            window.removeEventListener("touchend", handlePartMoveEnd);
+        }
 
         return () => {
             window.removeEventListener("mousemove", handlePartMove);
@@ -47,7 +57,7 @@ export const useDraggable = ({
             window.removeEventListener("mouseup", handlePartMoveEnd);
             window.removeEventListener("touchend", handlePartMoveEnd);
         };
-    }, []);
+    }, [drag.current]);
 
     useEffect(() => {
         //simulate the drag start on the dynamically created part
@@ -107,9 +117,9 @@ export const useDraggable = ({
 
         if (coords.button === 2) return;
 
-        setPartPosition({
-            left: coords.x + drag.current.offset_x,
-            top: coords.y + drag.current.offset_y,
+        setTranslate({
+            x: coords.x + drag.current.offset_x - rocketPart.x,
+            y: coords.y + drag.current.offset_y - rocketPart.y,
         });
     };
 
@@ -121,6 +131,11 @@ export const useDraggable = ({
 
         const coords = getEventCoords(editorAreaRef, event, true);
         if (!coords) throw new Error("handlePartMoveEnd no coords");
+
+        setTranslate({
+            x: 0,
+            y: 0,
+        });
 
         const deleteArea = deleteAreaRef.current.getBoundingClientRect();
         if (!deleteArea.y) return;
@@ -156,9 +171,10 @@ export const useDraggable = ({
     };
 
     return {
-        drag,
+        dragging: drag.current.enabled,
         handlePartMoveStart,
         handlePartMove,
         handlePartMoveEnd,
+        translate: translate,
     };
 };
