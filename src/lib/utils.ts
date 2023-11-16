@@ -68,11 +68,12 @@ export const getEventCoords = (
     isTouchEnd: boolean = false
 ) => {
     if (!editorAreaRef.current) return;
-    let x, y;
+    let x, y, button;
 
-    if ("clientX" in event && event.button === 0) {
+    if ("clientX" in event) {
         x = event.clientX;
         y = event.clientY;
+        button = event.button;
     } else if ("touches" in event) {
         if (isTouchEnd) {
             x = event.changedTouches[0].pageX;
@@ -87,7 +88,7 @@ export const getEventCoords = (
     x = x - rect.left;
     y = y - rect.top;
 
-    return { x, y };
+    return { x, y, button };
 };
 
 export function capitalizeFirstLetter(word: string) {
@@ -144,16 +145,27 @@ export function calculateCircumferenceDistance(
     const angleA = Math.atan2(pointA.y, pointA.x);
     const angleB = Math.atan2(pointB.y, pointB.x);
 
-    // Find the difference in angles, considering the clockwise direction
     let deltaAngle = angleA - angleB;
 
-    // If the angle is negative, we need to add 2 * PI to get the clockwise angle
     if (deltaAngle < 0) {
         deltaAngle += 2 * Math.PI;
     }
 
-    // The arc length is the angle in radians multiplied by the radius of the circle
     const arcLength = deltaAngle * radius;
 
     return arcLength;
+}
+
+export function debounce(func: (...args: any[]) => void, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    return function executedFunction(...args: any[]) {
+        const later = () => {
+            timeout = null;
+            func(...args);
+        };
+
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }

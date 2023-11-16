@@ -368,6 +368,10 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
     });
 
     const updatePartPosition = useMutation(async (rocketPart: RocketPart) => {
+        if (!rocket)
+            return handleAPIError({
+                info: "updatePartPosition, no rocket",
+            });
         if (!rocketPart)
             return handleAPIError({
                 info: "updatePartPosition, no rocketPart",
@@ -381,7 +385,16 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             (x) => x.id === rocketPart.id
         );
 
-        rocketClone!.stages[stageIndex!].parts[partIndex!] = rocketPart;
+        if (stageIndex === -1 || partIndex === -1)
+            return handleAPIError({
+                info: "updatePartPosition, index not found",
+            });
+
+        rocketClone.stages[stageIndex].parts[partIndex] = {
+            ...rocketClone.stages[stageIndex].parts[partIndex],
+            x: rocketPart.x,
+            y: rocketPart.y,
+        };
         setRocket(rocketClone);
 
         utils.client.part.updatePartPosition.mutate({
@@ -405,7 +418,7 @@ export const RocketContextProvider = ({ rocketId, children }: Props) => {
             const partScaleResult = partScaleChanged(rocket, partScale, partId);
             setRocket(partScaleResult.updatedRocket);
 
-            const response = await utils.client.part.updatePartScale.mutate({
+            utils.client.part.updatePartScale.mutate({
                 part: partScaleResult.updatedPart,
             });
         }

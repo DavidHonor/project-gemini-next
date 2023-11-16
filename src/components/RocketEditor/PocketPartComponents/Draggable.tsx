@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type { RocketPart } from "@prisma/client";
-import { CursorOptions, getEventCoords } from "@/lib/utils";
+import { CursorOptions, debounce, getEventCoords } from "@/lib/utils";
 import { RocketContext } from "../RocketContext";
 
 interface useDraggable {
@@ -10,6 +10,7 @@ interface useDraggable {
     setActivePart: (part: RocketPart | null) => void;
     setPartPosition: ({ left, top }: { left: number; top: number }) => void;
 }
+
 export const useDraggable = ({
     rocketPart,
     editorAreaRef,
@@ -28,28 +29,17 @@ export const useDraggable = ({
         setDeleteActive,
     } = useContext(RocketContext);
 
-    const [drag, setDrag] = useState({
+    const drag = useRef({
         enabled: false,
         offset_x: 0,
         offset_y: 0,
     });
 
     useEffect(() => {
-        if (drag.enabled) {
-            window.addEventListener("mousemove", handlePartMove);
-            window.addEventListener("touchmove", handlePartMove);
-            window.addEventListener("mouseup", handlePartMoveEnd);
-            window.addEventListener("touchend", handlePartMoveEnd);
-
-            setDeleteActive(true);
-        } else {
-            window.removeEventListener("mousemove", handlePartMove);
-            window.removeEventListener("touchmove", handlePartMove);
-            window.removeEventListener("mouseup", handlePartMoveEnd);
-            window.removeEventListener("touchend", handlePartMoveEnd);
-
-            setDeleteActive(false);
-        }
+        window.addEventListener("mousemove", handlePartMove);
+        window.addEventListener("touchmove", handlePartMove);
+        window.addEventListener("mouseup", handlePartMoveEnd);
+        window.addEventListener("touchend", handlePartMoveEnd);
 
         return () => {
             window.removeEventListener("mousemove", handlePartMove);
@@ -57,7 +47,7 @@ export const useDraggable = ({
             window.removeEventListener("mouseup", handlePartMoveEnd);
             window.removeEventListener("touchend", handlePartMoveEnd);
         };
-    }, [drag]);
+    }, []);
 
     useEffect(() => {
         //simulate the drag start on the dynamically created part
@@ -67,27 +57,23 @@ export const useDraggable = ({
             const offsetYPx =
                 -(rocketPart.height * rocketPart.scale * rocket.scaleSlider) /
                 2;
-            setDrag({
+            drag.current = {
                 enabled: true,
                 offset_x: offsetXPx,
                 offset_y: offsetYPx,
-            });
+            };
         }
     }, [rocketPartIdDrag]);
-
-    useEffect(() => {
-        setPartPosition({ left: rocketPart.x, top: rocketPart.y });
-    }, [rocketPart.x, rocketPart.y]);
 
     useEffect(() => {
         //do not cancel the drag if a dynamic part is being dragged
         if (rocketPartIdDrag) return;
 
-        setDrag({
+        drag.current = {
             enabled: false,
             offset_x: 0,
             offset_y: 0,
-        });
+        };
         setActivePart(null);
     }, [cursorMode]);
 
@@ -100,34 +86,35 @@ export const useDraggable = ({
         const coords = getEventCoords(editorAreaRef, event);
         if (!coords) return;
 
-        if (cursorMode === CursorOptions.GRAB) {
-            setDrag({
+        if (cursorMode === CursorOptions.GRAB && coords.button !== 2) {
+            drag.current = {
                 enabled: true,
                 offset_x: rocketPart.x - coords.x,
                 offset_y: rocketPart.y - coords.y,
-            });
-        } else if (cursorMode === CursorOptions.SELECT) {
+            };
+            setDeleteActive(true);
+            setActivePart(null);
+        } else if (coords.button === 2 || cursorMode === CursorOptions.SELECT) {
             setActivePart(rocketPart);
-            setDrag({
-                enabled: !drag.enabled,
-                offset_x: drag.enabled ? 0 : coords.x,
-                offset_y: drag.enabled ? 0 : coords.y,
-            });
         }
     };
 
     const handlePartMove = (event: MouseEvent | TouchEvent) => {
+        if (!drag.current.enabled) return;
         if (cursorMode !== CursorOptions.GRAB) return;
         const coords = getEventCoords(editorAreaRef, event);
         if (!coords) throw new Error("handlePartMove no coords");
 
+        if (coords.button === 2) return;
+
         setPartPosition({
-            left: coords.x + drag.offset_x,
-            top: coords.y + drag.offset_y,
+            left: coords.x + drag.current.offset_x,
+            top: coords.y + drag.current.offset_y,
         });
     };
 
     const handlePartMoveEnd = (event: MouseEvent | TouchEvent) => {
+        if (!drag.current.enabled) return;
         if (!rocket) return;
         if (cursorMode !== CursorOptions.GRAB) return;
         if (!deleteAreaRef.current) return;
@@ -138,6 +125,11 @@ export const useDraggable = ({
         const deleteArea = deleteAreaRef.current.getBoundingClientRect();
         if (!deleteArea.y) return;
 
+        const calcedPos = {
+            x: coords.x + drag.current.offset_x,
+            y: coords.y + drag.current.offset_y,
+        };
+
         const halfPartHeight =
             (rocketPart.height * rocket.scaleSlider * rocketPart.scale) / 2;
 
@@ -146,8 +138,7 @@ export const useDraggable = ({
         } else {
             updatePartPosition({
                 ...rocketPart,
-                x: coords.x + drag.offset_x,
-                y: coords.y + drag.offset_y,
+                ...calcedPos,
             });
         }
 
@@ -155,11 +146,13 @@ export const useDraggable = ({
         //to clear the blocking
         if (rocketPartIdDrag) setRocketPartIdDrag("");
 
-        setDrag({
+        drag.current = {
             enabled: false,
             offset_x: 0,
             offset_y: 0,
-        });
+        };
+
+        setDeleteActive(false);
     };
 
     return {

@@ -32,6 +32,17 @@ const RocketCanvas = ({ rocket }: RocketCanvasProps) => {
 
     const {} = useImageUpload({ editorRef: ref, rocket });
 
+    const stopContext = (event: any) => {
+        event.preventDefault();
+    };
+
+    useEffect(() => {
+        window.addEventListener("contextmenu", stopContext);
+        return () => {
+            window.removeEventListener("contextmenu", stopContext);
+        };
+    }, []);
+
     if (!rocket || !rocket.stages)
         return (
             <div className="flex items-center justify-center h-20 w-full">

@@ -30,6 +30,10 @@ const RocketPartComp = ({
         top: rocketPart.y,
     });
 
+    useEffect(() => {
+        setPartPosition({ left: rocketPart.x, top: rocketPart.y });
+    }, [rocketPart.x, rocketPart.y]);
+
     const { drag, handlePartMoveStart } = useDraggable({
         rocketPart,
         editorAreaRef,
@@ -42,7 +46,7 @@ const RocketPartComp = ({
 
     const Cursor = () => {
         if (cursorMode === CursorOptions.GRAB) {
-            return drag.enabled ? "grabbing" : "grab";
+            return drag.current.enabled ? "grabbing" : "grab";
         }
         return "pointer";
     };
@@ -64,7 +68,7 @@ const RocketPartComp = ({
                 cursor: Cursor(),
             }}
             className={cn(
-                "z-10 hover:z-20 hover:border-blue-500 hover:border-2 select-none",
+                `z-10 hover:z-20 hover:border-blue-500 hover:border-2 select-none`,
                 {
                     "border-2 z-20 border-blue-500":
                         rocketPart.id === highlightPartId,

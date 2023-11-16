@@ -27,7 +27,7 @@ const RocketPartResize = ({
 }: RocketPartResizeProps) => {
     const { updatePartScale, cursorMode } = useContext(RocketContext);
 
-    if (!activePart || cursorMode === CursorOptions.GRAB) return "";
+    if (!activePart) return "";
 
     const POPUP_WIDTH = 200;
 
